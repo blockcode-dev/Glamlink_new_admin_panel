@@ -15,19 +15,18 @@ body {
 }
 
 
-
 .logo {
   height: 32px;
   margin: 16px;
   background: rgba(255, 255, 255, 0.3);
-  background-color: #8f001e !important;
+  background-color: #8B0D0E !important;
   margin: 0;
   height: 64px;
   position: sticky;
   top: 0;
   z-index: 1;
-
 }
+
 .ant-layout {
   min-height: 100vh;
 }
@@ -53,11 +52,7 @@ body {
 .ant-layout-sider-collapsed .lg-logo {
   display: none;
 }
-.logo {
-  background-color: #8f001e !important;
-  margin: 0;
-  height: 64px;
-}
+
 main {
   height: 85vh;
   overflow-y: scroll;

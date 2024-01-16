@@ -12,13 +12,13 @@ import { Button } from "primereact/button";
 const AddCustomer = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState("");
-  const [disable, setDisable] = useState(false)
+  const [roleId, setRoleId] = useState("");
+  const [disable, setDisable] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setDisable(true)
+    setDisable(true);
 
     if (!name) {
       toast.error("Please enter name ");
@@ -28,8 +28,8 @@ const AddCustomer = () => {
       toast.error("Please enter  email");
       return;
     }
-    if (!paymentStatus) {
-      toast.error("Please select Payment status");
+    if (!roleId) {
+      toast.error("Please select User type");
       return;
     }
 
@@ -37,7 +37,7 @@ const AddCustomer = () => {
       const response = await AddUser({
         email: email,
         name: name,
-        payment_status: paymentStatus,
+        role_id: parseInt(roleId, 10),
       });
 
       if (response.status === 200) {
@@ -46,10 +46,10 @@ const AddCustomer = () => {
       setTimeout(() => {
         navigate("/customers");
       }, 1000);
-      setDisable(false)
+      setDisable(false);
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        toast.error("Email already exists",{
+        toast.error("Email already exists", {
           position: "top-right",
           autoClose: 500,
           hideProgressBar: false,
@@ -68,7 +68,7 @@ const AddCustomer = () => {
       } else {
         toast.error("Something went wrong");
       }
-      setDisable(false)
+      setDisable(false);
     }
   };
 
@@ -79,7 +79,7 @@ const AddCustomer = () => {
   return (
     <Box m="20px">
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <h3 style={{ marginBottom: "50px" }}>Create New Customer</h3>
+        <h3 style={{ marginBottom: "50px" }}>Create New User</h3>
       </Box>
       <Card>
         <div>
@@ -109,16 +109,16 @@ const AddCustomer = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Payment Status:</Form.Label>
+              <Form.Label>User Type:</Form.Label>
               <Form.Select
                 aria-label="Default select example"
                 className="new_form_control"
-                value={paymentStatus}
-                onChange={(e) => setPaymentStatus(e.target.value)}
+                value={roleId}
+                onChange={(e) => setRoleId(e.target.value)}
               >
                 <option>Select Status:</option>
-                <option value="SUBSCRIBED">PAID</option>
-                <option value="UNSUBSCRIBED">UNPAID</option>
+                <option value="6">CUSTOMER</option>
+                <option value="7">DRIVER</option>
               </Form.Select>
             </Form.Group>
 
@@ -136,7 +136,7 @@ const AddCustomer = () => {
                   // width:"10px"
                 }}
               >
-                {disable? "Saving...." : "Save"}
+                {disable ? "Saving...." : "Save"}
               </Button>
 
               <Button

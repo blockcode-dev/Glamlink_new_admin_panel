@@ -72,7 +72,7 @@ const ViewAdmin = () => {
               }}
               style={{ borderRadius: "10px", marginLeft: "10px" }}
             >
-              Return to Admin List
+              Return to Dashboard
             </Button>
           </div>
         </div>

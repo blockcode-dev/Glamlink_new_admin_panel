@@ -3,7 +3,7 @@ import { Button } from "primereact/button";
 import { Box } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import Form from "react-bootstrap/Form";
-import { Row } from "react-bootstrap";
+import { Row, Col } from "react-bootstrap";
 import { GetUserById } from "../../services/Api/Api";
 import { BASE_URL_IMAGE } from "../../services/Host";
 import { Card } from "primereact/card";
@@ -23,6 +23,7 @@ const ViewCustomer = () => {
     GetUserById(id)
       .then((res) => {
         setUserData(res.data.data);
+        console.log("user", res.data.data);
       })
       .catch((err) => {
         console.log(err, "error");
@@ -32,7 +33,7 @@ const ViewCustomer = () => {
     <Box m="20px">
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <h3 style={{ marginTop: "5px", marginBottom: "30px" }}>
-          View Customer Details
+          View User Details
         </h3>
       </Box>
 
@@ -43,11 +44,12 @@ const ViewCustomer = () => {
               <Form.Group className="mb-3">
                 <Form.Label>User's Profile Picture:</Form.Label>
                 <br />
-                {userData?.attachements &&
-                userData?.attachements[0]?.file_name ? (
+                {userData?.user_attachments &&
+                userData?.user_attachments[0]?.file_name ? (
                   <img
-                    src={`${BASE_URL_IMAGE}${userData?.attachements[0]?.file_name}`}
-                    alt="Story Icon"
+                    src={`${BASE_URL_IMAGE}${userData?.user_attachments[0]?.file_name}`}
+                    // src = "https://nmnode.blockcod.in:8080/images/images-1705307791412.jpg"
+                    alt="User's Dp"
                     className="category-icon-preview"
                     style={{ height: "100px", width: "100px" }}
                   />
@@ -58,15 +60,29 @@ const ViewCustomer = () => {
             </Row>
 
             <Row>
-              <Form.Group className="mb-3">
-                <Form.Label>Customer's Name</Form.Label>
-                <Form.Control
-                  name="name"
-                  defaultValue={userData?.name}
-                  type="text"
-                  disabled
-                />
-              </Form.Group>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control
+                    name="name"
+                    defaultValue={userData?.user_profile?.name}
+                    type="text"
+                    disabled
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>User Name</Form.Label>
+                  <Form.Control
+                    name="name"
+                    defaultValue={userData?.user_name}
+                    type="text"
+                    disabled
+                  />
+                </Form.Group>
+              </Col>
             </Row>
 
             <Row>
@@ -82,15 +98,55 @@ const ViewCustomer = () => {
             </Row>
 
             <Row>
-              <Form.Group className="mb-3">
-                <Form.Label>Mobile</Form.Label>
-                <Form.Control
-                  name="mobile"
-                  defaultValue={userData?.mobile}
-                  type="text"
-                  disabled
-                />
-              </Form.Group>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>Mobile</Form.Label>
+                  <Form.Control
+                    name="mobile"
+                    defaultValue={userData?.user_profile?.mobile}
+                    type="text"
+                    disabled
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>Date Of Birth</Form.Label>
+                  <Form.Control
+                    name="mobile"
+                    defaultValue={userData?.user_profile?.dob}
+                    type="text"
+                    disabled
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>Address</Form.Label>
+                  <Form.Control
+                    name="mobile"
+                    defaultValue={userData?.user_profile?.address}
+                    type="text"
+                    disabled
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>Country:</Form.Label>
+                  <Form.Control
+                    name="mobile"
+                    defaultValue={userData?.user_profile?.country}
+                    type="text"
+                    disabled
+                  />
+                </Form.Group>
+              </Col>
             </Row>
 
             <div>

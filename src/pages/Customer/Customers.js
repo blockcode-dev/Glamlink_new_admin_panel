@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Tab, Tabs } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "primereact/button";
@@ -7,20 +7,24 @@ import { GetUsers, DeleteUser } from "../../services/Api/Api";
 import { toast } from "react-toastify";
 import { InputText } from "primereact/inputtext";
 import "./Customers.css";
-import axios from "axios";
-import { BASE_URL } from "../../services/Host";
-import { Select } from "@mui/material";
+import PersonPinIcon from "@mui/icons-material/PersonPin";
 
 const Customers = () => {
   const [pageSize, setPageSize] = useState(50);
   const [dataGridHeight, setDataGridHeight] = useState("550px");
   const [userData, setUserData] = useState([]);
+  const [driverData, setDriverData] = useState([]);
   const [anchorEl, setAnchorEl] = React.useState();
   const [userId, setUserId] = useState();
   const [userIdToNavigate, setUserIdToNavigate] = useState();
   const [globalFilter, setGlobalFilter] = useState(null);
   const [menteeDataBackup, setMenteeDataBackup] = useState([]);
   const navigate = useNavigate();
+  const [tabValue, setTabValue] = useState(0);
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
 
   const handleClick = (event, value) => {
     setUserIdToNavigate(value);
@@ -30,16 +34,33 @@ const Customers = () => {
   //get all user
   const getData = async () => {
     try {
-      let result = await GetUsers(localStorage.getItem("adminToken"));
+      // Fetch user data from your API with role_id 6 for customers
+      let result = await GetUsers(localStorage.getItem("adminToken"), 6);
       setUserData(result.data.data);
+      console.log("user", result.data.data);
       setMenteeDataBackup(result.data.data);
     } catch (e) {
       console.log(e);
     }
   };
+
+  const getDriverData = async () => {
+    try {
+      // Fetch driver data from your API with role_id 7 for drivers
+      let result = await GetUsers(localStorage.getItem("adminToken"), 7);
+      setDriverData(result.data.data);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   useEffect(() => {
-    getData();
-  }, []);
+    if (tabValue === 0) {
+      getData();
+    } else if (tabValue === 1) {
+      getDriverData();
+    }
+  }, [tabValue]);
 
   //Code to get dynamic height
   useEffect(() => {
@@ -125,35 +146,6 @@ const Customers = () => {
     setUserData(finalData);
   };
 
-  const data = [
-    // Your table data here
-    { is_subscribed: true /* other fields */ },
-    { is_subscribed: false /* other fields */ },
-    // ...
-  ];
-
-  const updateStatus = async (user_id, payment_status) => {
-    try {
-      const response = await axios.post(
-        `${BASE_URL}admin/updatepaymentStatus`, // Update with your API endpoint
-        {
-          user_id: user_id,
-          payment_status: payment_status,
-        },
-        {
-          headers: {
-            "x-access-token": `${localStorage.getItem("adminToken")}`,
-          },
-        }
-      );
-      // Handle success
-      window.location.reload(true);
-    } catch (error) {
-      // Handle error
-      console.error("Error updating status:", error);
-    }
-  };
-
   const columns = [
     {
       field: "id",
@@ -169,36 +161,8 @@ const Customers = () => {
       flex: 1,
       headerClassName: "custom-header",
       cellClassName: "custom-cell",
+      valueGetter: (params) => params.row.user_profile?.name || "",
     },
-    // {
-    //   field: "image",
-    //   headerName: "Image",
-    //   width: 150,
-    //   flex: 1,
-    //   headerClassName: "custom-header",
-    //   cellClassName: "custom-cell",
-    //   sortable: false,
-    //   renderCell: (cellValues) => {
-    //     const attachments = cellValues.row.attachements;
-    //     if (attachments && attachments.length > 0) {
-    //       const attachment = attachments[0];
-    //       const imageUrl = `https://node.mystorybank.info:4000${attachment.file_uri}/${attachment.file_name}`;
-    //       return (
-    //         <div>
-    //           <img
-    //             src={imageUrl}
-    //             alt="User profile"
-    //             className="category-icon-preview_in_list"
-    //             style={{ width: "100px", height: "60px" }}
-    //           />
-    //         </div>
-    //       );
-    //     } else {
-    //       // Handle the case where there are no attachments for the user
-    //       return <div>No Image Available</div>;
-    //     }
-    //   },
-    // },
     {
       field: "email",
       headerName: "Email",
@@ -207,44 +171,7 @@ const Customers = () => {
       cellClassName: "custom-cell",
       flex: 1,
     },
-    // {
-    //   field: "status",
-    //   headerName: "Status",
-    //   headerClassName: "custom-header",
-    //   cellClassName: "custom-cell",
-    //   width: 150,
-    //   flex: 1,
-    //   renderCell: (cellValues) => {
-    //     const handleStatusChange = async (event) => {
-    //       const newStatus = event.target.value;
-    //       updateStatus(cellValues.row.id, newStatus);
-    //
-    //
-    //     };
 
-    //     return (
-    //       <Select
-    //         native
-    //         value={cellValues.row.payment_status}
-    //         onChange={handleStatusChange}
-    //       >
-    //         <option value="UNSUBSCRIBED">UNSUBSCRIBED</option>
-    //         <option value="SUBSCRIBED">SUBSCRIBED</option>
-    //       </Select>
-    //     );
-    //   },
-    // },
-    // {
-    //   field: "is_subscribed",
-    //   headerName: "Is Subscribed?",
-    //   width: 250,
-    //   headerClassName: "custom-header",
-    //   cellClassName: "custom-cell",
-    //   flex: 1,
-    //   renderCell: (params) => (
-    //     params.value ? "Yes" : "No"
-    //   ),
-    // },
     {
       field: "action",
       headerName: "Actions",
@@ -262,7 +189,7 @@ const Customers = () => {
               rounded
               outlined
               className="mr-2"
-              style={{ margin: "0px " }}
+              style={{ margin: "0px ", borderRadius: "25px" }}
               onClick={(event) => navigateToViewUser(event, cellValues.id)}
             />
             <Button
@@ -270,7 +197,7 @@ const Customers = () => {
               rounded
               outlined
               severity="danger"
-              style={{ margin: "0px 10px" }}
+              style={{ margin: "0px 10px", borderRadius: "25px" }}
               onClick={(e) => removeUser(e, cellValues.id)}
             />
           </div>
@@ -281,9 +208,25 @@ const Customers = () => {
 
   return (
     <Box m="20px">
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        {/* <Header title="USER MANAGEMENT" subtitle="Create Category" /> */}
-        <h3> Manage Customers</h3>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        marginTop="20px"
+      >
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          style={{ marginBottom: "10px" }}
+        >
+          <Tab
+            icon={<PersonPinIcon />}
+            iconPosition="start"
+            label="Customers"
+          />
+          <Tab icon={<PersonPinIcon />} iconPosition="end" label="Drivers" />
+        </Tabs>
+        {/* <h3> Manage {tabValue === 0 ? "Customers" : "Drivers"}</h3> */}
         <Box>
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
@@ -299,9 +242,9 @@ const Customers = () => {
           <Button
             label=" Add New User"
             icon="pi pi-plus"
-            severity="success"
+            severity="info"
+            style={{ margin: "0px 10px", borderRadius: "5px" }}
             onClick={navigateToAddUser}
-            style={{ margin: "0px 10px" }}
           />
         </Box>
       </Box>
@@ -314,7 +257,7 @@ const Customers = () => {
         }}
       >
         <DataGrid
-          rows={userData}
+          rows={tabValue === 0 ? userData : driverData} // Use userData for Customers, driverData for Drivers
           columns={columns}
           pageSize={pageSize}
           rowHeight={80}
