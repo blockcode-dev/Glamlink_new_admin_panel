@@ -26,6 +26,7 @@ const RoleList = () => {
     try {
       let result = await GetAllRoles(localStorage.getItem("adminToken"));
       setRoleData(result.data.data);
+      console.log("roles",result.data.data)
     } catch (e) {
       console.log(e);
     }
@@ -33,21 +34,6 @@ const RoleList = () => {
   useEffect(() => {
     getData();
   }, []);
-
-  //Code to get dynamic height
-  useEffect(() => {
-    // Update dataGridHeight based on the pageSize value
-    if (pageSize === 50) {
-      setDataGridHeight("550px");
-    } else if (pageSize === 75) {
-      setDataGridHeight("700px");
-    } else if (pageSize === 100) {
-      setDataGridHeight("850px");
-    } else {
-      // Set a default height if pageSize is not 10 or 15
-      setDataGridHeight("550px");
-    }
-  }, [pageSize]);
 
   //delete role
   const removeRole = async (e, role_id) => {

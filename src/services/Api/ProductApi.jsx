@@ -10,7 +10,7 @@ export const GetAllProducts = async () => {
 
 //get products byid
 export const GetProductById = async (id) => {
-  return await axios.get(BASE_URL + "product/findProductById");
+  return await axios.get(BASE_URL + `product/findProductById/${id}`);
 };
 
 //create products
@@ -24,24 +24,15 @@ export const CreateProduct = async (formData) => {
 };
 
 //update products
-export const UpdateProduct = async (formData) => {
-  return await axios.put(BASE_URL + "product/updateProduct", formData, {
+export const UpdateProduct = async (id, formData) => {
+  return await axios.put(BASE_URL + `product/updateProduct/${id}`, formData, {
     headers: {
       "x-access-token": `${localStorage.getItem("adminToken")}`,
       "Content-Type": "multipart/form-data",
     },
   });
 };
-
 //delete products
-export const DeleteProduct = async (role_id, adminToken) => {
-  const formData = new FormData();
-  formData.append("role_id", role_id);
-  return axios.delete(BASE_URL + "product/deleteProduct", {
-    data: formData,
-    headers: {
-      "Content-Type": "multipart/form-data",
-      "x-access-token": adminToken,
-    },
-  });
+export const DeleteProduct = async (id) => {
+  return axios.delete(BASE_URL + `product/deleteProduct/${id}`);
 };

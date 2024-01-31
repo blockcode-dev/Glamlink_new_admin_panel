@@ -2,9 +2,10 @@ import { Box } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
-import { GetAllProducts, DeleteProduct } from "../../../services/Api/Product";
-import { toast } from "react-toastify";
+import { GetAllProducts, DeleteProduct } from "../../../services/Api/ProductApi";
 import { Button } from "primereact/button";
+import Alert from "../../Customer/Alert";
+import { message } from "antd";
 
 const ProductList = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const ProductList = () => {
   const [anchorEl, setAnchorEl] = React.useState();
   const [userId, setUserId] = useState();
   const [userIdToNavigate, setUserIdToNavigate] = useState();
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleClick = (event, value) => {
     setUserIdToNavigate(value);
@@ -33,74 +35,29 @@ const ProductList = () => {
   useEffect(() => {
     getData();
   }, []);
-
-  //Code to get dynamic height
-  useEffect(() => {
-    // Update dataGridHeight based on the pageSize value
-    if (pageSize === 50) {
-      setDataGridHeight("550px");
-    } else if (pageSize === 75) {
-      setDataGridHeight("700px");
-    } else if (pageSize === 100) {
-      setDataGridHeight("850px");
-    } else {
-      // Set a default height if pageSize is not 10 or 15
-      setDataGridHeight("550px");
-    }
-  }, [pageSize]);
-
-  //delete role
-  const removeRole = async (e, role_id) => {
-    const confirmed = window.confirm(
-      "Do you really want to delete this Product?"
-    );
-    if (!confirmed) return;
-
-    try {
-      const result = await DeleteProduct(
-        role_id,
-        localStorage.getItem("adminToken")
-      );
-
-      toast.success("Product deleted successfully!", {
-        position: "top-right",
-        autoClose: 500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+  const handleDelete = (id) => {
+    setIsModalVisible(false);
+    DeleteProduct(id)
+      .then((res) => {
+        console.log(res, "res");
+        message.success(res?.data?.message);
+        getData();
+      })
+      .catch((error) => {
+        console.log(error, "error");
       });
-      window.location.reload(true);
-      setTimeout(() => {
-        navigate("/role-list");
-      }, 3000);
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        toast.error("Token expired", {
-          position: "top-right",
-          autoClose: 500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-      }
-      localStorage.removeItem("adminToken");
-      setTimeout(() => {
-        navigate("/Login");
-      }, 3000);
-    }
   };
 
-  const navigateToAddRole = () => {
-    navigate("/addRole");
+
+  const navigateToAddProduct = () => {
+    navigate("/addProduct");
   };
-  const navigateToEditRole = (event, id) => {
-    navigate(`/editRole/${id}`);
+
+  const navigateToViewProduct = (event, id) => {
+    navigate(`/viewProduct/${id}`);
+  };
+  const navigateToEditProduct = (event, id) => {
+    navigate(`/editProduct/${id}`);
   };
 
   const columns = [
@@ -146,23 +103,19 @@ const ProductList = () => {
               severity="warning"
               className=" product"
               style={{ borderRadius:"25px" }}
-              onClick={(event) => navigateToEditRole(event, cellValues.id)}
+              onClick={(event) => navigateToViewProduct(event, cellValues.id)}
             />
             <Button
               icon="pi pi-pencil"
               rounded
               outlined
               className="mr-2"
-              style={{ margin: "0px 10px" ,borderRadius:"25px" }}
-              onClick={(event) => navigateToEditRole(event, cellValues.id)}
+              style={{  marginLeft: "10px",borderRadius:"25px" }}
+              onClick={(event) => navigateToEditProduct(event, cellValues.id)}
             />
-            <Button
-              icon="pi pi-trash"
-              rounded
-              outlined
-              severity="danger"
-              style={{borderRadius:"25px" }}
-              onClick={(e) => removeRole(e, cellValues.id)}
+              <Alert
+              title="Product"
+              handleDelete={() => handleDelete(cellValues.id)}
             />
           </div>
         );
@@ -179,7 +132,7 @@ const ProductList = () => {
             label=" Add New Product"
             icon="pi pi-plus"
             severity="info"
-            onClick={navigateToAddRole}
+            onClick={navigateToAddProduct}
             style={{ margin: "0px 10px", borderRadius: "5px" }}
           />
         </Box>

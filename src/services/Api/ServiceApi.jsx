@@ -9,12 +9,12 @@ export const GetServices = async () => {
 
 //get products byid
 export const GetServiceById = async (id) => {
-  return await axios.get(BASE_URL + "product/findProductById");
+  return await axios.get(BASE_URL + `service/findServiceById/${id}`);
 };
 
 //create products
 export const CreateSerice = async (formData) => {
-  return await axios.post(BASE_URL + "product/createProduct", formData, {
+  return await axios.post(BASE_URL + "service/createService", formData, {
     headers: {
       "x-access-token": `${localStorage.getItem("adminToken")}`,
       "Content-Type": "multipart/form-data",
@@ -23,8 +23,8 @@ export const CreateSerice = async (formData) => {
 };
 
 //update products
-export const UpdateService = async (formData) => {
-  return await axios.put(BASE_URL + "product/updateProduct", formData, {
+export const UpdateService = async (id, formData) => {
+  return await axios.put(BASE_URL + `service/updateService/${id}`, formData, {
     headers: {
       "x-access-token": `${localStorage.getItem("adminToken")}`,
       "Content-Type": "multipart/form-data",
@@ -33,14 +33,6 @@ export const UpdateService = async (formData) => {
 };
 
 //delete products
-export const DeleteService = async (role_id, adminToken) => {
-  const formData = new FormData();
-  formData.append("role_id", role_id);
-  return axios.delete(BASE_URL + "product/deleteProduct", {
-    data: formData,
-    headers: {
-      "Content-Type": "multipart/form-data",
-      "x-access-token": adminToken,
-    },
-  });
+export const DeleteService = async (id) => {
+  return axios.delete(BASE_URL + `service/deleteService/${id}`);
 };

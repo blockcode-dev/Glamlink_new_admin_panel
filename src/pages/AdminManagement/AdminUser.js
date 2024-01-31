@@ -26,6 +26,7 @@ const AdminUser = () => {
     try {
       let result = await GetAdmins(localStorage.getItem("adminToken"));
       setRoleData(result.data.data);
+      console.log("admins",result.data.data);
     } catch (e) {
       console.log(e);
     }
@@ -34,20 +35,6 @@ const AdminUser = () => {
     getData();
   }, []);
 
-  //Code to get dynamic height
-  useEffect(() => {
-    // Update dataGridHeight based on the pageSize value
-    if (pageSize === 50) {
-      setDataGridHeight("550px");
-    } else if (pageSize === 75) {
-      setDataGridHeight("700px");
-    } else if (pageSize === 100) {
-      setDataGridHeight("850px");
-    } else {
-      // Set a default height if pageSize is not 10 or 15
-      setDataGridHeight("550px");
-    }
-  }, [pageSize]);
 
   //delete role
   const removeAdmin = async (e, admin_id) => {
@@ -114,7 +101,7 @@ const AdminUser = () => {
       flex: 1,
     },
     {
-      field: "email_id",
+      field: "email",
       headerName: "Email",
       width: 350,
       headerClassName: "custom-header",
@@ -128,7 +115,7 @@ const AdminUser = () => {
       headerClassName: "custom-header",
       cellClassName: "custom-cell",
       flex: 1,
-      valueGetter: (params) => params.row.admin_roles?.name || "",
+      valueGetter: (params) => params.row.admin_role?.name || "",
     },
 
     {

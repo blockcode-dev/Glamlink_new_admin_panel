@@ -2,8 +2,7 @@ import { Box } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
-import { GetGuestBooking } from "../../../services/Api/Booking";
-import { toast } from "react-toastify";
+import { GetGuestBooking } from "../../../services/Api/BookingApi";
 import { Button } from "primereact/button";
 
 const GuestBookings = () => {
@@ -25,7 +24,6 @@ const GuestBookings = () => {
     try {
       let result = await GetGuestBooking(localStorage.getItem("adminToken"));
       setBookingData(result.data.data);
-      console.log("product==>", result.data.data);
     } catch (e) {
       console.log(e);
     }
@@ -34,11 +32,12 @@ const GuestBookings = () => {
     getData();
   }, []);
 
-  const navigateToAddRole = () => {
-    navigate("/addRole");
+  const navigateToViewBooking = (event, id) => {
+    navigate(`/viewGuestBooking/${id}`);
   };
+
   const navigateToEditRole = (event, id) => {
-    navigate(`/editRole/${id}`);
+    navigate(`/editGuestBooking/${id}`);
   };
 
   const columns = [
@@ -77,17 +76,29 @@ const GuestBookings = () => {
             fontSize = "16px";
             fontWeight = "500";
             break;
-          case "success":
+          case "SUCCESS":
             statusText = "Success";
             statusColor = "green";
+            fontSize = "16px";
+            fontWeight = "500";
             break;
-          case "rejected":
+          case "ACCEPTED":
+            statusText = "Accepted";
+            statusColor = "blue";
+            fontSize = "16px";
+            fontWeight = "500";
+            break;
+          case "REJECTED":
             statusText = "Rejected";
             statusColor = "red";
+            fontSize = "16px";
+            fontWeight = "500";
             break;
-          case "ongoing":
+          case "ONGOING":
             statusText = "Ongoing";
             statusColor = "purple";
+            fontSize = "16px";
+            fontWeight = "500";
             break;
           default:
             statusText = "Unknown";
@@ -125,7 +136,7 @@ const GuestBookings = () => {
               severity="warning"
               className=" product"
               style={{ borderRadius: "25px" }}
-              onClick={(event) => navigateToEditRole(event, cellValues.id)}
+              onClick={(event) => navigateToViewBooking(event, cellValues.id)}
             />
             <Button
               icon="pi pi-pencil"

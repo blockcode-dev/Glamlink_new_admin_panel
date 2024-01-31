@@ -1,13 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
 import { Outlet } from "react-router-dom";
-import { FaUsers, FaRegSun } from "react-icons/fa";
+import { FaUsers } from "react-icons/fa";
 import { MdOutlineManageAccounts } from "react-icons/md";
-import { MdOutlineAutoStories } from "react-icons/md";
 import { FiUser } from "react-icons/fi";
 import { VscBellDot } from "react-icons/vsc";
 import { PiChatTextBold } from "react-icons/pi";
@@ -16,7 +15,6 @@ import { LuSettings } from "react-icons/lu";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { FiActivity } from "react-icons/fi";
 import { CiLogin } from "react-icons/ci";
-import { toast } from "react-toastify";
 import { Layout, theme, Menu } from "antd";
 import { IoLayers } from "react-icons/io5";
 import { LuLayers } from "react-icons/lu";
@@ -26,19 +24,15 @@ import { useNavigate } from "react-router-dom";
 import { BiCategoryAlt } from "react-icons/bi";
 import { BiSolidCategoryAlt } from "react-icons/bi";
 import { MdManageAccounts } from "react-icons/md";
-
-
 import "./MainLayout.scss";
-// import {
-//   Menu,
-//   MenuItem,
-// } from "@mui/material";
-import { Toast } from "primereact/toast";
+import { message } from "antd";
 import Login from "../pages/Login/Login";
+import { GetAdminProfile } from "../services/Api/Api";
 const { Header, Sider, Content } = Layout;
 
 const MainLayout = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [idData, setIdData] = React.useState({});
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -46,6 +40,18 @@ const MainLayout = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const getData = async () => {
+    try {
+      let result = await GetAdminProfile(localStorage.getItem("adminToken"));
+      setIdData(result.data.data);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  useEffect(() => {
+    getData();
+  }, []);
   const handleMailClick = () => {
     // Redirect to the specified URL
     window.location.href =
@@ -70,23 +76,13 @@ const MainLayout = () => {
   function logout() {
     localStorage.removeItem("adminToken");
     // notify()
-    toast.warn("Logged Out!", {
-      position: "top-right",
-      autoClose: 500,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
-    });
+    message.success(" Logged Out Successfully");
     setTimeout(() => {
       navigate("/Login");
     }, 1000);
   }
 
   const token = localStorage.getItem("adminToken");
-  
 
   return (
     <>
@@ -100,76 +96,11 @@ const MainLayout = () => {
           >
             <div className="logo">
               <h2 className="text-white fs-5 text-center py-3 mb-0">
-                <span className="sm-logo">LAP</span>
-                <span className="lg-logo">LOGISTIC APP</span>
+                <span className="sm-logo">NM</span>
+                <span className="lg-logo">NUNAMOVING APP</span>
               </h2>
             </div>
-            {/* <Menu
-              anchorEl={anchorEl}
-              id="account-menu"
-              open={open}
-              onClose={handleClose}
-              onClick={handleClose}
-              PaperProps={{
-                elevation: 0,
-                sx: {
-                  overflow: "visible",
-                  filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-                  mt: 1.5,
-                  "& .MuiAvatar-root": {
-                    width: 32,
-                    height: 32,
-                    ml: -0.5,
-                    mr: 1,
-                  },
-                  "&:before": {
-                    content: '""',
-                    display: "block",
-                    position: "absolute",
-                    top: 0,
-                    right: 14,
-                    width: 10,
-                    height: 10,
-                    bgcolor: "background.paper",
-                    transform: "translateY(-50%) rotate(45deg)",
-                    zIndex: 0,
-                  },
-                },
-              }}
-              transformOrigin={{ horizontal: "right", vertical: "top" }}
-              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-            >
-              <MenuItem>Notifications</MenuItem>
-              <Divider />
-              <MenuItem>
-                <ListItemIcon>
-                  <PersonAdd fontSize="small" />
-                </ListItemIcon>
-                You have requested to Widthdrawl
-              </MenuItem>
-              <MenuItem>
-                <ListItemIcon>
-                  <PersonAdd fontSize="small" />
-                </ListItemIcon>
-                You have requested to Widthdrawl
-              </MenuItem>
-              <MenuItem>
-                <ListItemIcon>
-                  <PersonAdd fontSize="small" />
-                </ListItemIcon>
-                You have requested to Widthdrawl
-              </MenuItem>
-              <MenuItem fontSize="small">
-                <ListItemIcon>
-                  <Logout />
-                </ListItemIcon>
-                You have requested to Widthdrawl
-              </MenuItem>
-              <Divider />
-              <MenuItem onClick={() => navigateToAllNotifications()}>
-                View All
-              </MenuItem>
-            </Menu> */}
+
             <Menu
               theme="dark"
               mode="inline"
@@ -192,7 +123,7 @@ const MainLayout = () => {
                   label: "Users",
                 },
                 {
-                  key: "services",
+                  key: "/service",
                   icon: <BiSolidCategoryAlt className="fs-4" />,
                   label: "Services",
                   children: [
@@ -201,11 +132,6 @@ const MainLayout = () => {
                       icon: <BiCategoryAlt className="fs-4" />,
                       label: "Service List",
                     },
-                    // {
-                    //   key: "addService",
-                    //   icon: <BiCategoryAlt className="fs-4" />,
-                    //   label: "Add Service",
-                    // },
                     {
                       key: "bookings",
                       icon: <BiCategoryAlt className="fs-4" />,
@@ -219,7 +145,7 @@ const MainLayout = () => {
                   ],
                 },
                 {
-                  key: "productList",
+                  key: "/eCommerce",
                   icon: <FaShoppingCart className="fs-4" />,
                   label: "E-Commerce",
                   children: [
@@ -228,11 +154,11 @@ const MainLayout = () => {
                       icon: <PiShoppingCartBold className="fs-4" />,
                       label: "Product List",
                     },
-                    {
-                      key: "addProduct",
-                      icon: <PiShoppingCartBold className="fs-4" />,
-                      label: "Add Product",
-                    },
+                    // {
+                    //   key: "addProduct",
+                    //   icon: <PiShoppingCartBold className="fs-4" />,
+                    //   label: "Add Product",
+                    // },
                     {
                       key: "orders",
                       icon: <PiShoppingCartBold className="fs-4" />,
@@ -241,7 +167,7 @@ const MainLayout = () => {
                   ],
                 },
                 {
-                  key: "termsAndConditions",
+                  key: "/t&c1",
                   icon: <IoLayers className="fs-4" />,
                   label: "Content",
                   children: [
@@ -263,17 +189,17 @@ const MainLayout = () => {
                   ],
                 },
                 {
-                  key: "stories",
+                  key: "/admin1",
                   icon: <MdManageAccounts className="fs-4" />,
                   label: "Admin Management",
                   children: [
                     {
-                      key: "addStory",
+                      key: "adminList",
                       icon: <MdOutlineManageAccounts className="fs-4" />,
                       label: "Admin's List",
                     },
                     {
-                      key: "stories",
+                      key: "stories3",
                       icon: <MdOutlineManageAccounts className="fs-4" />,
                       label: "Departmemt",
                     },
@@ -310,47 +236,58 @@ const MainLayout = () => {
                   </span> */}
                 </div>
                 <div
-                      role="button"
-                      id="dropdownMenuLink"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                     className="d-flex align-items-center"
-                    >
-                
+                  role="button"
+                  id="dropdownMenuLink"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  className="d-flex align-items-center"
+                >
                   <div className="position-relative clicked">
-                  
                     <VscBellDot
                       className="fs-3"
-                       onClick={(event) => handleClick(event)}
+                      onClick={(event) => handleClick(event)}
                     />
-                   
+
                     {/* <span className="badge bg-warning rounded-circle p-1 position-absolute">
                     3
                   </span> */}
                   </div>
-                  </div>
+                </div>
+                <div
+                  className="dropdown-menu"
+                  aria-labelledby="dropdownMenuLink"
+                  style={{
+                    // margin: "10px !important",
+                    borderTopColor: "blue",
+                    borderTopWidth: "4px",
+                    maxWidth: "300px",
+                  }}
+                >
                   <div
-                      className="dropdown-menu"
-                      aria-labelledby="dropdownMenuLink"
-                      style={{
-                        // margin: "10px !important",
-                        borderTopColor: "blue",
-                        borderTopWidth: "4px",
-                        maxWidth: "300px"
-                      }}
-                    >
-                      <div style={{display : "flex", justifyContent:"space-around", alignItems: "center" }}>
-                     <p>Notifications</p>
-                     <p style={{ color: "blue"}} >Mark All as Read</p>
-                     </div>
-                     <hr></hr>
-                     <div style={{height:"250px" , overflow:"auto"}}>
-                        
-                     </div>
-                     <button style={{color : "blue", display:"block", width:"100%" , backgroundColor:"white" , border:"none" }}>View All</button>
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-around",
+                      alignItems: "center",
+                    }}
+                  >
+                    <p>Notifications</p>
+                    <p style={{ color: "blue" }}>Mark All as Read</p>
+                  </div>
+                  <hr></hr>
+                  <div style={{ height: "250px", overflow: "auto" }}></div>
+                  <button
+                    style={{
+                      color: "blue",
+                      display: "block",
+                      width: "100%",
+                      backgroundColor: "white",
+                      border: "none",
+                    }}
+                  >
+                    View All
+                  </button>
+                </div>
 
-                    </div>
-                
                 <div className="position-relative clicked">
                   <PiChatTextBold
                     onClick={() => navigateToChats()}
@@ -371,9 +308,9 @@ const MainLayout = () => {
                       <div className="d-flex flex-column">
                         {" "}
                         <p className="mb-0" style={{ fontWeight: "700" }}>
-                          SUPER ADMIN NAME
+                          {idData?.name}
                         </p>
-                        <p className="mb-0">DESIGNATION</p>
+                        <p className="mb-0">{idData?.admin_role?.name || ""}</p>
                       </div>
                     </div>
                     <div
@@ -415,7 +352,7 @@ const MainLayout = () => {
                           User Login Activity
                         </Link>
                       </li>
-                      <div class="dropdown-divider"></div>
+                      <div className="dropdown-divider"></div>
                       <li>
                         <Link
                           className="dropdown-item py-1 mb-1"

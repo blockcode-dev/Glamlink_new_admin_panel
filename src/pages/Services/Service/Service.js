@@ -3,10 +3,10 @@ import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { GetServices, DeleteService } from "../../../services/Api/ServiceApi";
-import { toast } from "react-toastify";
 import { Button } from "primereact/button";
-import { BASE_URL_IMAGE } from "../../../services/Host";
-import "./Service.css"
+import "./Service.css";
+import { message } from "antd";
+import Alert from "../../Customer/Alert";
 
 const Service = () => {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ const Service = () => {
   const [serviceData, setServiceData] = useState([]);
   const [anchorEl, setAnchorEl] = React.useState();
   const [userId, setUserId] = useState();
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [userIdToNavigate, setUserIdToNavigate] = useState();
 
   const handleClick = (event, value) => {
@@ -36,75 +37,27 @@ const Service = () => {
     getData();
   }, []);
 
-  //Code to get dynamic height
-  useEffect(() => {
-    // Update dataGridHeight based on the pageSize value
-    if (pageSize === 50) {
-      setDataGridHeight("550px");
-    } else if (pageSize === 75) {
-      setDataGridHeight("700px");
-    } else if (pageSize === 100) {
-      setDataGridHeight("850px");
-    } else {
-      // Set a default height if pageSize is not 10 or 15
-      setDataGridHeight("550px");
-    }
-  }, [pageSize]);
-
-  //delete role
-  const removeRole = async (e, role_id) => {
-    const confirmed = window.confirm(
-      "Do you really want to delete this Product?"
-    );
-    if (!confirmed) return;
-
-    try {
-      const result = await DeleteService(
-        role_id,
-        localStorage.getItem("adminToken")
-      );
-
-      toast.success("Product deleted successfully!", {
-        position: "top-right",
-        autoClose: 500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+  const handleDelete = (id) => {
+    setIsModalVisible(false);
+    DeleteService(id)
+      .then((res) => {
+        console.log(res, "res");
+        message.success(res?.data?.message);
+        getData();
+      })
+      .catch((error) => {
+        console.log(error, "error");
       });
-      window.location.reload(true);
-      setTimeout(() => {
-        navigate("/role-list");
-      }, 3000);
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        toast.error("Token expired", {
-          position: "top-right",
-          autoClose: 500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-      }
-      localStorage.removeItem("adminToken");
-      setTimeout(() => {
-        navigate("/Login");
-      }, 3000);
-    }
   };
 
   const navigateToAddService = () => {
     navigate("/addService");
   };
 
-  const navigateToViewService = () => {
-    navigate("/viewService");
+  const navigateToViewService = (event, id) => {
+    navigate(`/viewService/${id}`);
   };
+
   const navigateToEditService = (event, id) => {
     navigate(`/editService/${id}`);
   };
@@ -113,41 +66,41 @@ const Service = () => {
     { field: "id", headerName: "ID", width: 150 },
     {
       field: "name",
-      headerName: "Product Name",
+      headerName: "Service Name",
       width: 350,
       headerClassName: "custom-header",
       cellClassName: "custom-cell",
       flex: 1,
     },
 
-    {
-      field: "image",
-      headerName: "Image",
-      width: 150,
-      flex: 1,
-      headerClassName: "custom-header",
-      cellClassName: "custom-cell",
-      sortable: false,
-      renderCell: (cellValues) => {
-        const service = cellValues.row;
-        const imageUrl = service.file_name
-          ? `${BASE_URL_IMAGE}${service.file_name}`
-          : null;
+    // {
+    //   field: "image",
+    //   headerName: "Image",
+    //   width: 150,
+    //   flex: 1,
+    //   headerClassName: "custom-header",
+    //   cellClassName: "custom-cell",
+    //   sortable: false,
+    //   renderCell: (cellValues) => {
+    //     const service = cellValues.row;
+    //     const imageUrl = service.file_name
+    //       ? `${BASE_URL_IMAGE}${service.file_name}`
+    //       : null;
 
-        return imageUrl ? (
-          <div>
-            <img
-              src={imageUrl}
-              alt="Service Icon"
-              className="category-icon-preview_in_list"
-              style={{ width: "100px", height: "60px" }}
-            />
-          </div>
-        ) : (
-          <div>No Image Available</div>
-        );
-      },
-    },
+    //     return imageUrl ? (
+    //       <div>
+    //         <img
+    //           src={imageUrl}
+    //           alt="Service Icon"
+    //           className="category-icon-preview_in_list"
+    //           style={{ width: "100px", height: "60px" }}
+    //         />
+    //       </div>
+    //     ) : (
+    //       <div>No Image Available</div>
+    //     );
+    //   },
+    // },
 
     {
       field: "action",
@@ -173,16 +126,13 @@ const Service = () => {
               rounded
               outlined
               className="mr-2"
-              style={{ margin: "0px 10px", borderRadius: "25px" }}
+              style={{ marginLeft: "10px", borderRadius: "25px" }}
               onClick={(event) => navigateToEditService(event, cellValues.id)}
             />
-            <Button
-              icon="pi pi-trash"
-              rounded
-              outlined
-              severity="danger"
-              style={{ borderRadius: "25px" }}
-              onClick={(e) => removeRole(e, cellValues.id)}
+           <Alert
+          //  style={{marginLeft:"0px"}}
+              title="Service"
+              handleDelete={() => handleDelete(cellValues.id)}
             />
           </div>
         );
@@ -200,7 +150,7 @@ const Service = () => {
             icon="pi pi-plus"
             severity="info"
             onClick={navigateToAddService}
-            style={{ margin: "0px 0px", borderRadius: "5px",height:"40px" }}
+            style={{ margin: "0px 0px", borderRadius: "5px", height: "40px" }}
           />
         </Box>
       </Box>

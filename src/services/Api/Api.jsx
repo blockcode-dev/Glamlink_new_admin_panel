@@ -2,13 +2,8 @@ import axios from "axios";
 import { BASE_URL } from "../Host";
 
 //admin login
-export const AdminLogin = async (data) => {
-  let config = {
-    email: data?.email,
-    password: data?.password,
-  };
-
-  return await axios.post(BASE_URL + "admin/auth/login", config);
+export const AdminLogin = async (formdata) => {
+  return await axios.post(BASE_URL + "admin/auth/login", formdata);
 };
 
 //get all user
@@ -38,6 +33,10 @@ export const GetUserById = async (id) => {
   return await axios.get(BASE_URL + "admin/user/getUserById?id=" + id);
 };
 
+export const GetAllDriver = async (id) => {
+  return await axios.get(BASE_URL + "admin/user/getAllDrivers");
+};
+
 //admin add user
 export const AddUser = async ({ email, name, role_id }) => {
   const formData = new FormData();
@@ -58,18 +57,18 @@ export const AddUser = async ({ email, name, role_id }) => {
 export const DeleteUser = async (user_id, adminToken) => {
   const formData = new FormData();
   formData.append("user_id", user_id);
-  return axios.delete(BASE_URL + "admin/deleteUser", {
+  return axios.delete(BASE_URL + "admin/user/deleteUser", {
     data: formData,
-    headers: {
-      "Content-Type": "multipart/form-data",
-      "x-access-token": adminToken,
-    },
+    // headers: {
+    //   "Content-Type": "multipart/form-data",
+    //   "x-access-token": adminToken,
+    // },
   });
 };
 
 //get all roles
 export const GetAllRoles = async () => {
-  const res = await axios.get(BASE_URL + "role/all");
+  const res = await axios.get(BASE_URL + "role");
 
   return res;
 };
@@ -114,7 +113,7 @@ export const DeleteRole = async (role_id, adminToken) => {
 
 // ********************************ADMIN API***********************************************************
 export const ChangeAdminPassword = async (data) => {
-  return axios.post(BASE_URL + "admin/change-password", data, {
+  return axios.post(BASE_URL + "admin/auth/change-password", data, {
     headers: {
       "Content-Type": "multipart/form-data",
       "x-access-token": `${localStorage.getItem("adminToken")}`,
@@ -123,7 +122,7 @@ export const ChangeAdminPassword = async (data) => {
 };
 
 export const GetAdmins = async () => {
-  const res = await axios.get(BASE_URL + "admin/getAllAdmin");
+  const res = await axios.get(BASE_URL + "admin/auth/getAllAdmins");
   return res;
 };
 
@@ -152,13 +151,11 @@ export const DeleteAdmin = async (admin_id, adminToken) => {
   });
 };
 
-export const GetAdminProfile = async () => {
-  const token = await localStorage.getItem("adminToken");
-
-  return await axios.get(BASE_URL + "admin/getAdminProfile", {
+export const GetAdminProfile = async (adminToken) => {
+  return axios.get(BASE_URL + "admin/auth/getProfile", {
     headers: {
-      "x-access-token": `${token}`,
-      // "Content-Type": "multipart/form-data",
+      "Content-Type": "multipart/form-data",
+      "x-access-token": adminToken,
     },
   });
 };
@@ -216,5 +213,3 @@ export const GetLoginLogs = async ({ month, year }) => {
   formData.append("year", year);
   return await axios.post(BASE_URL + "admin/getLoginLogsOfUser", formData);
 };
-
-

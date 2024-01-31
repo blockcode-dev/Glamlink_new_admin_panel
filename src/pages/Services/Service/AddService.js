@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { Box } from "@mui/material";
 import { Button } from "primereact/button";
-import Form from "react-bootstrap/Form";
+import { Card } from "primereact/card";
+import { Editor } from "@tinymce/tinymce-react";
+import { Upload, Space, Form, Input } from "antd";
 import { CreateSerice } from "../../../services/Api/ServiceApi";
 import { useNavigate } from "react-router-dom";
-import "./Service.css";
-import { Card } from "primereact/card";
 import imageCompression from "browser-image-compression";
-import { Editor } from "@tinymce/tinymce-react";
-import { Upload, Space } from "antd";
+import "./Service.css";
 
 const AddService = () => {
   const [name, setName] = useState("");
@@ -21,7 +20,7 @@ const AddService = () => {
     const file = e.target.files[0];
 
     if (file) {
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"]; // Add more allowed types if needed
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
 
       if (!allowedTypes.includes(file.type)) {
         console.error("Error: Invalid file type. Images (JPEG, JPG,PNG) only!");
@@ -29,7 +28,6 @@ const AddService = () => {
       }
 
       if (file.size <= 1024 * 1024) {
-        // If image size is less than or equal to 1 MB, no need to compress
         setImages(file);
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -67,20 +65,9 @@ const AddService = () => {
       }
     }
   };
-  const handleRemoveImage = (e) => {
-    e.preventDefault();
-    setImages(null);
-    setImagePreview(null);
-
-    // Clear the file input value
-    const fileInput = document.getElementById("imageInput");
-    if (fileInput) {
-      fileInput.value = null;
-    }
-  };
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
+    // event.preventDefault();
 
     try {
       const formData = new FormData();
@@ -111,27 +98,36 @@ const AddService = () => {
   return (
     <Box>
       <Box style={{ marginBottom: "30px" }}>
-        <h3 className="page-title">About Service</h3>
+        <h3 className="page-title">Create Service</h3>
         <p className="page-sub-title">Add new Service</p>
       </Box>
-      <Card>
+      <Card className="service_card">
         <div>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Service Name:</Form.Label>
-              <Form.Control
-                type="text"
-                required
-                placeholder="Enter Service Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="new_form_control"
-              />
-            </Form.Group>
+          <Form
+            style={{ width: "98%" }}
+            onFinish={handleSubmit}
+            layout="vertical"
+          >
+            <Form.Item
+              label="Service Name"
+              name="username"
+              rules={[
+                { required: true, message: "Please input your Service Name!" },
+              ]}
+            >
+              <Input style={{height:"40px"}} onChange={(e) => setName(e.target.value)} />
+            </Form.Item>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Upload Image:</Form.Label>
-              <br />
+            <Form.Item
+
+              label="Upload Image"
+              name="images"
+              valuePropName="fileList"
+              getValueFromEvent={handleImageChange}
+              rules={[
+                { required: true, message: "Please input your Service Name!" },
+              ]}
+            >
               <Space
                 direction="vertical"
                 style={{ width: "100%" }}
@@ -140,7 +136,8 @@ const AddService = () => {
                 <Upload
                   action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
                   listType="picture"
-                  maxCount={1}
+                  maxCount={3}
+                  multiple
                 >
                   <Button
                     label=" Click to Upload"
@@ -155,21 +152,29 @@ const AddService = () => {
                   ></Button>
                 </Upload>
               </Space>
-            </Form.Group>
+            </Form.Item>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Description:</Form.Label>
-              <br />
+            <Form.Item
+              label="Description"
+              name="description"
+              rules={[
+                { required: true, message: "Please input the description!" },
+              ]}
+            >
               <Editor
-                apiKey="mibv7kc74dumv3uazcc6tu9xu601iqybxjb0qnglj1fn1258"
+                apiKey="984sn99khgad1wgf4btfw7jil4n458arpqkfgqgxc550lb9m"
                 value={description}
                 init={{
-                  plugins: "table tableofcontents",
+                  plugins:
+                    "ai tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss",
                   toolbar:
                     "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat",
                   tinycomments_mode: "embedded",
                   tinycomments_author: "Author name",
-
+                  mergetags_list: [
+                    { value: "First.Name", title: "First Name" },
+                    { value: "Email", title: "Email" },
+                  ],
                   ai_request: (request, respondWith) =>
                     respondWith.string(() =>
                       Promise.reject("See docs to implement AI Assistant")
@@ -179,14 +184,13 @@ const AddService = () => {
                   setDescription(newContent);
                 }}
               />
-            </Form.Group>
+            </Form.Item>
 
-            <div className="saving_buttons">
+            <Form.Item >
               <Button
                 icon="pi pi-check"
                 severity="success"
-                type="submit"
-                onClick={handleSubmit}
+                htmlType="submit"
                 style={{
                   borderRadius: "5px",
                   margin: "0px 0px",
@@ -199,9 +203,7 @@ const AddService = () => {
               <Button
                 icon="pi pi-times"
                 severity="secondary"
-                onClick={(e) => {
-                  navigateToService();
-                }}
+                onClick={navigateToService}
                 style={{
                   borderRadius: "5px",
                   marginLeft: "10px",
@@ -210,7 +212,7 @@ const AddService = () => {
               >
                 Cancel
               </Button>
-            </div>
+            </Form.Item>
           </Form>
         </div>
       </Card>

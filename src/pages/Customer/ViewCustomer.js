@@ -30,11 +30,10 @@ const ViewCustomer = () => {
       });
   }, [id]);
   return (
-    <Box m="20px">
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <h3 style={{ marginTop: "5px", marginBottom: "30px" }}>
-          View User Details
-        </h3>
+    <Box>
+      <Box style={{ marginBottom: "30px" }}>
+        <h3 className="page-title">User Details</h3>
+        <p className="page-sub-title">View Information of User</p>
       </Box>
 
       <Card>
@@ -47,11 +46,16 @@ const ViewCustomer = () => {
                 {userData?.user_attachments &&
                 userData?.user_attachments[0]?.file_name ? (
                   <img
+                    crossOrigin="anonymous"
                     src={`${BASE_URL_IMAGE}${userData?.user_attachments[0]?.file_name}`}
-                    // src = "https://nmnode.blockcod.in:8080/images/images-1705307791412.jpg"
+                    // src="https://nmnode.blockcod.in:8080/images/images-1705307791412.jpg"
                     alt="User's Dp"
                     className="category-icon-preview"
-                    style={{ height: "100px", width: "100px" }}
+                    style={{
+                      height: "150px",
+                      width: "150px",
+                      borderRadius: "10px",
+                    }}
                   />
                 ) : (
                   <span>No Image Available</span>
@@ -62,7 +66,7 @@ const ViewCustomer = () => {
             <Row>
               <Col>
                 <Form.Group className="mb-3">
-                  <Form.Label>Name</Form.Label>
+                  <Form.Label>Name:</Form.Label>
                   <Form.Control
                     name="name"
                     defaultValue={userData?.user_profile?.name}
@@ -74,7 +78,7 @@ const ViewCustomer = () => {
 
               <Col>
                 <Form.Group className="mb-3">
-                  <Form.Label>User Name</Form.Label>
+                  <Form.Label>User Name:</Form.Label>
                   <Form.Control
                     name="name"
                     defaultValue={userData?.user_name}
@@ -87,7 +91,7 @@ const ViewCustomer = () => {
 
             <Row>
               <Form.Group className="mb-3">
-                <Form.Label>Email Address</Form.Label>
+                <Form.Label>Email Address:</Form.Label>
                 <Form.Control
                   name="email"
                   defaultValue={userData?.email}
@@ -100,7 +104,7 @@ const ViewCustomer = () => {
             <Row>
               <Col>
                 <Form.Group className="mb-3">
-                  <Form.Label>Mobile</Form.Label>
+                  <Form.Label>Mobile:</Form.Label>
                   <Form.Control
                     name="mobile"
                     defaultValue={userData?.user_profile?.mobile}
@@ -112,7 +116,7 @@ const ViewCustomer = () => {
 
               <Col>
                 <Form.Group className="mb-3">
-                  <Form.Label>Date Of Birth</Form.Label>
+                  <Form.Label>Date Of Birth:</Form.Label>
                   <Form.Control
                     name="mobile"
                     defaultValue={userData?.user_profile?.dob}
@@ -150,17 +154,17 @@ const ViewCustomer = () => {
             </Row>
 
             <div>
-              <Button
-                // icon="pi pi-times"
-                severity="secondary"
-                onClick={(e) => {
-                  navigateToUser();
-                }}
-                style={{ borderRadius: "10px", marginLeft: "10px" }}
-              >
-                Return to User List
-              </Button>
-            </div>
+            <Button
+              icon="pi pi-arrow-left"
+              severity="secondary"
+              onClick={(e) => {
+                navigateToUser();
+              }}
+              style={{ borderRadius: "5px", height: "40px" }}
+            >
+              <span style={{ marginLeft: "5px" }}> Return to Users</span>
+            </Button>
+          </div>
           </Form>
         </div>
       </Card>

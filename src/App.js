@@ -40,6 +40,12 @@ import AddSupport from "./pages/Content/Support/AddSupport";
 import AboutUs from "./pages/Content/AboutUs/AboutUs";
 import AddAboutUs from "./pages/Content/AboutUs/AddAboutUs";
 import EditAboutUs from "./pages/Content/AboutUs/EditAboutUs";
+import ViewGuesBooking from "./pages/Services/GuestBookings/ViewGuesBooking";
+import EditGuestBooking from "./pages/Services/GuestBookings/EditGuestBooking";
+import ViewOrder from "./pages/ECommerce/Orders/ViewOrder";
+import EditOrder from "./pages/ECommerce/Orders/EditOrder";
+import EditBookings from "./pages/Services/Bookings/EditBookings";
+import ViewBooking from "./pages/Services/Bookings/ViewBooking";
 
 function App() {
   return (
@@ -67,18 +73,24 @@ function App() {
           <Route path="/chats" element={<FirebaseChat />} />
           <Route path="/services" element={<Service />} />
           <Route path="/addService" element={<AddService />} />
-          <Route path="/editService" element={<EditService />} />
-          <Route path="/viewService" element={<ViewService />} />
+          <Route path="/editService/:id" element={<EditService />} />
+          <Route path="/viewService/:id" element={<ViewService />} />
           <Route path="/bookings" element={<Bookings />} />
+          <Route path="/editBooking/:id" element={<EditBookings />} />
+          <Route path="/viewBooking/:id" element={<ViewBooking />} />
           <Route path="/guestBookings" element={<GuestBookings />} />
+          <Route path="/viewGuestBooking/:id" element={<ViewGuesBooking />} />
+          <Route path="/editGuestBooking/:id" element={<EditGuestBooking />} />
           <Route path="/productList" element={<ProductList />} />
           <Route path="/addProduct" element={<AddProduct />} />
-          <Route path="/viewProduct" element={<ViewProduct />} />
-          <Route path="/editProduct" element={<EditProduct />} />
+          <Route path="/viewProduct/:id" element={<ViewProduct />} />
+          <Route path="/editProduct/:id" element={<EditProduct />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/viewOrder/:id" element={<ViewOrder />} />
+          <Route path="/editOrder/:id" element={<EditOrder />} />
           <Route path="/termsAndConditions" element={<TermsAndConditions />} />
           <Route path="/addTermsAndConditions" element={<AddTermsAndConditions />} />
-          <Route path="/editTermsAndConditions" element={<EditTermsAndConditions />} />
+          <Route path="/editTermsAndConditions/:id" element={<EditTermsAndConditions />} />
           <Route path="/support" element={<Support />} />
           <Route path="/editSupport" element={<EditSupport />} />
           <Route path="/addSupport" element={<AddSupport />} />

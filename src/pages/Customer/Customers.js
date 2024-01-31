@@ -4,10 +4,11 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { GetUsers, DeleteUser } from "../../services/Api/Api";
-import { toast } from "react-toastify";
 import { InputText } from "primereact/inputtext";
 import "./Customers.css";
 import PersonPinIcon from "@mui/icons-material/PersonPin";
+import { message } from "antd";
+import Alert from "./Alert";
 
 const Customers = () => {
   const [pageSize, setPageSize] = useState(50);
@@ -19,6 +20,7 @@ const Customers = () => {
   const [userIdToNavigate, setUserIdToNavigate] = useState();
   const [globalFilter, setGlobalFilter] = useState(null);
   const [menteeDataBackup, setMenteeDataBackup] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
 
@@ -62,62 +64,19 @@ const Customers = () => {
     }
   }, [tabValue]);
 
-  //Code to get dynamic height
-  useEffect(() => {
-    // Update dataGridHeight based on the pageSize value
-    if (pageSize === 50) {
-      setDataGridHeight("550px");
-    } else if (pageSize === 75) {
-      setDataGridHeight("700px");
-    } else if (pageSize === 100) {
-      setDataGridHeight("850px");
-    } else {
-      // Set a default height if pageSize is not 10 or 15
-      setDataGridHeight("550px");
-    }
-  }, [pageSize]);
+  const removeUser = (user_id) => {
+    setIsModalVisible(false);
+    DeleteUser(user_id, localStorage.getItem("adminToken"))
+      .then((res) => {
+        console.log(res, "res");
+        message.success(res?.data?.message);
+        getData();
+        getDriverData();
+      })
 
-  const removeUser = async (e, user_id) => {
-    const confirmed = window.confirm("Do you really want to delete this user?");
-    if (!confirmed) return;
-
-    try {
-      const result = await DeleteUser(
-        user_id,
-        localStorage.getItem("adminToken")
-      );
-      toast.success("User deleted successfully!", {
-        position: "top-right",
-        autoClose: 500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+      .catch((error) => {
+        console.log(error, "error");
       });
-      window.location.reload(true);
-      setTimeout(() => {
-        navigate("/customers");
-      }, 3000);
-    } catch (error) {
-      if (error.response.status == 401) {
-        toast.error("Token expired", {
-          position: "top-right",
-          autoClose: 500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-      }
-      localStorage.removeItem("adminToken");
-      setTimeout(() => {
-        navigate("/Login");
-      }, 3000);
-    }
   };
 
   const navigateToAddUser = () => {
@@ -192,13 +151,9 @@ const Customers = () => {
               style={{ margin: "0px ", borderRadius: "25px" }}
               onClick={(event) => navigateToViewUser(event, cellValues.id)}
             />
-            <Button
-              icon="pi pi-trash"
-              rounded
-              outlined
-              severity="danger"
-              style={{ margin: "0px 10px", borderRadius: "25px" }}
-              onClick={(e) => removeUser(e, cellValues.id)}
+            <Alert
+              title="User"
+              handleDelete={() => removeUser(cellValues.id)}
             />
           </div>
         );
@@ -226,7 +181,7 @@ const Customers = () => {
           />
           <Tab icon={<PersonPinIcon />} iconPosition="end" label="Drivers" />
         </Tabs>
-        {/* <h3> Manage {tabValue === 0 ? "Customers" : "Drivers"}</h3> */}
+
         <Box>
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
@@ -252,7 +207,6 @@ const Customers = () => {
         style={{
           height: dataGridHeight,
           width: "100%",
-          // marginLeft: "10%",
           marginTop: "20px",
         }}
       >
