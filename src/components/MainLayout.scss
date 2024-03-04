@@ -18,19 +18,18 @@
   margin: 0 10px;
 }
 
-.dropdown-menu {
-  // position: absolute;
-  // inset: 0px auto auto 0px;
+.admin {
   margin: 9px !important;
-  // transform: translate3d(0px, 42px, 0px);
-  // border-top-width: 4px;
-  // display: block;
-  // border-top-color: purple;
+  margin-top: 5px;
+}
+
+.clicked:hover {
+  cursor: pointer;
+}
+
+.notification {
+  transform: translate3d(988px, 64px, 0px) !important;
+  // text-align: center !important;
 }
 
 
-  
-  .clicked:hover {
-    cursor: pointer;
-  }
-  

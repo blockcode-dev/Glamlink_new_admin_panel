@@ -15,6 +15,7 @@ const Orders = () => {
   const [anchorEl, setAnchorEl] = React.useState();
   const [userId, setUserId] = useState();
   const [userIdToNavigate, setUserIdToNavigate] = useState();
+  const [loading, setLoading] = useState(false);
 
   const handleClick = (event, value) => {
     setUserIdToNavigate(value);
@@ -24,11 +25,21 @@ const Orders = () => {
   //get all specialist
   const getData = async () => {
     try {
+      setLoading(true);
       let result = await GetAllOrders(localStorage.getItem("adminToken"));
       setOrderData(result.data.data);
       console.log("orderData==>", result.data.data);
     } catch (e) {
       console.log(e);
+      if (e.response && e.response.status === 401) {
+        navigate("/error401");
+
+        console.log("You do not have access to this page as a sub-admin.");
+      } else {
+        console.log("Error loading data. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -168,33 +179,39 @@ const Orders = () => {
 
   return (
     <Box m="20px">
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <h3>ORDERS</h3>
-      </Box>
-      <div
-        style={{
-          height: dataGridHeight,
-          width: "100%",
-          marginTop: "20px",
-        }}
-      >
-        <DataGrid
-          rows={orderData}
-          columns={columns}
-          pageSize={pageSize}
-          rowHeight={80}
-          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-          rowsPerPageOptions={[50, 75, 100]}
-          experimentalFeatures={{ newEditingApi: true }}
-          onSelectionModelChange={(id) => {
-            const selectedIDs = new Set([id]);
-            const selectedRowData = orderData.filter((row) =>
-              selectedIDs.has(row.id.toString())
-            );
-            setUserId(selectedIDs);
+      {loading ? (
+        <p style={{ fontSize: "16px" }}>Loading...</p>
+      ) : (
+      <>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <h3>ORDERS</h3>
+        </Box>
+        <div
+          style={{
+            height: dataGridHeight,
+            width: "100%",
+            marginTop: "20px",
           }}
-        />
-      </div>
+        >
+          <DataGrid
+            rows={orderData}
+            columns={columns}
+            pageSize={pageSize}
+            rowHeight={80}
+            onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+            rowsPerPageOptions={[50, 75, 100]}
+            experimentalFeatures={{ newEditingApi: true }}
+            onSelectionModelChange={(id) => {
+              const selectedIDs = new Set([id]);
+              const selectedRowData = orderData.filter((row) =>
+                selectedIDs.has(row.id.toString())
+              );
+              setUserId(selectedIDs);
+            }}
+          />
+        </div>
+      </>
+       )}
     </Box>
   );
 };

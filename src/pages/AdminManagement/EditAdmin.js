@@ -1,57 +1,33 @@
 import { Box } from "@mui/material";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useLayoutEffect } from "react";
 import { Form } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  GetAdminById,
-  UpdateAdmin,
-  GetAllRoles,
-} from "../../services/Api/Api.jsx";
-import { toast } from "react-toastify";
+import { GetAdminById, UpdateAdmin } from "../../services/Api/Api.jsx";
+import { message } from "antd";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
+import { Select } from "antd";
 
 const EditAdmin = () => {
   const { id } = useParams();
-  const [idData, setIdData] = React.useState({});
-  const [roleList, setRoleList] = useState([]);
-  const [selectedRole, setSelectedRole] = useState("");
+  const [idData, setIdData] = React.useState("");
 
   //get role By ID
   useLayoutEffect(() => {
     GetAdminById(id)
       .then((res) => {
         setIdData(res.data.data);
-        setSelectedRole(res.data.data.admin_roles.id);
       })
       .catch((err) => {
         console.log(err, "error");
       });
   }, [id]);
-
-  const getRoleList = async () => {
-    let res = await GetAllRoles();
-
-    if (res?.status === 200) {
-      setRoleList(res?.data?.data);
-
-    } else {
-    }
-  };
-  useEffect(() => {
-    getRoleList();
-  }, []);
-
-  const handleCategory = (e) => {
-    e.preventDefault();
-
-    const role = e.target.value;
-    setSelectedRole(role);
-  };
+  console.log("isdata---->", idData);
 
   //update role api implementation
-  const onChange = (e) => {
-    setIdData({ ...idData, [e.target.name]: e.target.value });
+  const handleNameChange = (e) => {
+    console.log("Selected value:", e.target.value);
+    setIdData({ ...idData, [e.target?.name]: e.target?.value });
   };
 
   const handleSubmit = (e) => {
@@ -59,25 +35,25 @@ const EditAdmin = () => {
     const formData = new FormData();
     formData.append("admin_id", id);
     formData.append("name", idData?.name ? idData?.name : "");
-    formData.append("email", idData?.email_id ? idData?.email_id : "");
-    formData.append("role_id", selectedRole);
-
+    formData.append("email", idData?.email ? idData?.email : "");
+    formData.append("role_id", idData?.role_id ? idData?.role_id : "");
+    console.log("formData", formData);
     UpdateAdmin(formData)
       .then((res) => {
         if (res.status === 200) {
-          toast.success("Admin edited successfully!");
+          message.success("Admin updated successfully!");
         }
         navigate("/adminList");
       })
       .catch((err) => {
         if (err.response && err.response.status === 401) {
-          toast.error("Token expired!");
+          message.error("Token expired!");
           localStorage.removeItem("adminToken");
           setTimeout(() => {
             navigate("/Login");
           }, 3000);
         } else {
-          toast.error("Something went wrong");
+          message.error("Something went wrong");
         }
       });
   };
@@ -100,7 +76,7 @@ const EditAdmin = () => {
                 type="text"
                 defaultValue={idData?.name}
                 name="name"
-                onChange={(e) => onChange(e)}
+                onChange={(e) => handleNameChange(e)}
               />
             </Form.Group>
 
@@ -108,51 +84,69 @@ const EditAdmin = () => {
               <Form.Label>Email</Form.Label>
               <Form.Control
                 type="text"
-                defaultValue={idData?.email_id}
-                name="email_id"
-                onChange={(e) => onChange(e)}
+                defaultValue={idData?.email}
+                name="email"
+                onChange={(e) => handleNameChange(e)}
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Select Role :</Form.Label>
-
-              <Form.Select
-                aria-label="Default select example"
-                value={selectedRole}
-                onChange={(e) => handleCategory(e)}
-                className="new_form_control"
-              >
-                {roleList.map((item, index) => (
-                  <option key={index} value={item.id}>
-                    {item?.name}
-                  </option>
-                ))}
-              </Form.Select>
+              {idData && (
+                <Select
+                  defaultValue={idData?.admin_role?.name || ""}
+                  style={{
+                    width: "100%",
+                    color: "black",
+                    height: "40px",
+                  }}
+                  onChange={(value) =>
+                    handleNameChange({ target: { name: "role_id", value } })
+                  }
+                  options={[
+                    {
+                      value: "1",
+                      label: "ADMIN",
+                    },
+                    {
+                      value: "2",
+                      label: "ADMIN LEVEL 2",
+                    },
+                    {
+                      value: "3",
+                      label: "ADMIN LEVEL 1",
+                    },
+                  ]}
+                />
+              )}
             </Form.Group>
           </Form>
           <div className="button">
             <Button
               icon="pi pi-check"
               severity="success"
-              type="submit"
+              htmlType="submit"
+              type="primary"
               onClick={handleSubmit}
               style={{
-                borderRadius: "10px",
-                marginLeft: "10px",
-                marginTop: "10px",
+                borderRadius: "5px",
+                margin: "0px 0px",
+                height: "40px",
               }}
             >
               Save
             </Button>
-
             <Button
               icon="pi pi-times"
               severity="secondary"
               onClick={(e) => {
                 navigateToRole();
               }}
-              style={{ borderRadius: "10px", marginLeft: "10px" }}
+              style={{
+                borderRadius: "5px",
+                marginLeft: "10px",
+                height: "40px",
+              }}
             >
               Cancel
             </Button>

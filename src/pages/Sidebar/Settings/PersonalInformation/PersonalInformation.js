@@ -3,24 +3,26 @@ import React, { useLayoutEffect } from "react";
 import { Form } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import { GetAdminProfile } from "../../../../services/Api/Api.jsx";
-
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
+import { useEffect } from "react";
 
 const ViewAdmin = () => {
   const { id } = useParams();
   const [idData, setIdData] = React.useState({});
 
-  //get role By ID
-  useLayoutEffect(() => {
-    GetAdminProfile(id)
-      .then((res) => {
-        setIdData(res.data.data);
-      })
-      .catch((err) => {
-        console.log(err, "error");
-      });
-  }, [id]);
+  //get admin profile
+  const getData = async () => {
+    try {
+      let result = await GetAdminProfile(localStorage.getItem("adminToken"));
+      setIdData(result.data.data);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  useEffect(() => {
+    getData();
+  }, []);
 
   const navigate = useNavigate();
   const navigateToAdmin = () => {
@@ -40,6 +42,7 @@ const ViewAdmin = () => {
                 type="text"
                 defaultValue={idData?.name}
                 name="name"
+                disabled
               />
             </Form.Group>
 
@@ -47,21 +50,21 @@ const ViewAdmin = () => {
               <Form.Label>Email</Form.Label>
               <Form.Control
                 type="text"
-                defaultValue={idData?.email_id}
+                defaultValue={idData?.email}
                 name="abbreviation"
+                disabled
               />
             </Form.Group>
-
 
             <Form.Group className="mb-3">
               <Form.Label>Role</Form.Label>
               <Form.Control
                 type="text"
-                defaultValue={idData?.admin_roles?.name || ''}
+                defaultValue={idData?.admin_role?.name || ""}
                 name="abbreviation"
+                disabled
               />
             </Form.Group>
-
           </Form>
           <div className="button">
             <Button

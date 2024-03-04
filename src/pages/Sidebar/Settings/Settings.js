@@ -68,7 +68,7 @@ const Settings = () => {
               </ListItemIcon>
               <ListItemText primary="Change Password" />
             </ListItemButton>
-            <ListItemButton
+            {/* <ListItemButton
               selected={selectedIndex === 2}
               onClick={(event) => handleListItemClick(event, 2)}
               sx={{
@@ -81,7 +81,7 @@ const Settings = () => {
                 <InsertChartOutlinedIcon />
               </ListItemIcon>
               <ListItemText primary="Account Activity" />
-            </ListItemButton>
+            </ListItemButton> */}
             <ListItemButton
               selected={selectedIndex === 3}
               onClick={(event) => handleListItemClick(event, 3)}

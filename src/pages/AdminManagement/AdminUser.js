@@ -1,11 +1,11 @@
 import { Box } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-
 import { useNavigate } from "react-router-dom";
 import { GetAdmins, DeleteAdmin } from "../../services/Api/Api";
-import { toast } from "react-toastify";
 import { Button } from "primereact/button";
+import Alert from "../Customer/Alert";
+import { message } from "antd";
 
 const AdminUser = () => {
   const navigate = useNavigate();
@@ -15,6 +15,8 @@ const AdminUser = () => {
   const [anchorEl, setAnchorEl] = React.useState();
   const [userId, setUserId] = useState();
   const [userIdToNavigate, setUserIdToNavigate] = useState();
+  const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleClick = (event, value) => {
     setUserIdToNavigate(value);
@@ -24,70 +26,46 @@ const AdminUser = () => {
   //get all specialist
   const getData = async () => {
     try {
+      setLoading(true);
       let result = await GetAdmins(localStorage.getItem("adminToken"));
       setRoleData(result.data.data);
-      console.log("admins",result.data.data);
+      console.log("admins", result.data.data);
     } catch (e) {
       console.log(e);
+      if (e.response && e.response.status === 401) {
+        navigate("/error401");
+
+        console.log("You do not have access to this page as a sub-admin.");
+      } else {
+        console.log("Error loading data. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
     getData();
   }, []);
 
-
-  //delete role
-  const removeAdmin = async (e, admin_id) => {
-    const confirmed = window.confirm(
-      "Do you really want to delete this admin?"
-    );
-    if (!confirmed) return;
-
-    try {
-      const result = await DeleteAdmin(
-        admin_id,
-        localStorage.getItem("adminToken")
-      );
-
-      toast.success("Role deleted successfully!", {
-        position: "top-right",
-        autoClose: 500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-      window.location.reload(true);
-      setTimeout(() => {
-        navigate("/adminList");
-      }, 3000);
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        toast.error("Token expired", {
-          position: "top-right",
-          autoClose: 500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-      }
-      localStorage.removeItem("adminToken");
-      setTimeout(() => {
-        navigate("/Login");
-      }, 3000);
-    }
-  };
-
   const navigateToAddAdmin = () => {
     navigate("/addAdmin");
   };
   const navigateToEditAdmin = (event, id) => {
     navigate(`/editAdmin/${id}`);
+  };
+
+  const removeUser = (user_id) => {
+    setIsModalVisible(false);
+    DeleteAdmin(user_id, localStorage.getItem("adminToken"))
+      .then((res) => {
+        console.log(res, "res");
+        message.success(res?.data?.message);
+        getData();
+      })
+
+      .catch((error) => {
+        console.log(error, "error");
+      });
   };
 
   const columns = [
@@ -133,15 +111,12 @@ const AdminUser = () => {
               rounded
               outlined
               className="mr-2"
-              style={{ margin: "0px 10px" }}
+              style={{ margin: "0px", borderRadius: "25px"  }}
               onClick={(event) => navigateToEditAdmin(event, cellValues.id)}
             />
-            <Button
-              icon="pi pi-trash"
-              rounded
-              outlined
-              severity="danger"
-              onClick={(e) => removeAdmin(e, cellValues.id)}
+           <Alert
+              title="Admin"
+              handleDelete={() => removeUser(cellValues.id)}
             />
           </div>
         );
@@ -151,43 +126,53 @@ const AdminUser = () => {
 
   return (
     <Box m="20px">
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <h3>Admin List</h3>
-        <Box>
-          <Button
-            label=" Add New Admin"
-            icon="pi pi-plus"
-            severity="success"
-            onClick={navigateToAddAdmin}
-            style={{ margin: "0px 10px" }}
-          />
-        </Box>
-      </Box>
-      <div
-        style={{
-          height: dataGridHeight,
-          width: "100%",
-          // marginLeft: "10%",
-          marginTop: "20px",
-        }}
-      >
-        <DataGrid
-          rows={roleData}
-          columns={columns}
-          pageSize={pageSize}
-          rowHeight={80}
-          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-          rowsPerPageOptions={[50, 75, 100]}
-          experimentalFeatures={{ newEditingApi: true }}
-          onSelectionModelChange={(id) => {
-            const selectedIDs = new Set([id]);
-            const selectedRowData = roleData.filter((row) =>
-              selectedIDs.has(row.id.toString())
-            );
-            setUserId(selectedIDs);
-          }}
-        />
-      </div>
+      {loading ? (
+        <p style={{ fontSize: "16px" }}>Loading...</p>
+      ) : (
+        <>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <h3>Admin List</h3>
+            <Box>
+            <Button
+                label=" Add New Admin"
+                icon="pi pi-plus"
+                severity="info"
+                style={{ margin: "0px 10px", borderRadius: "5px" }}
+                onClick={navigateToAddAdmin}
+              />
+            </Box>
+          </Box>
+          <div
+            style={{
+              height: dataGridHeight,
+              width: "100%",
+              // marginLeft: "10%",
+              marginTop: "20px",
+            }}
+          >
+            <DataGrid
+              rows={roleData}
+              columns={columns}
+              pageSize={pageSize}
+              rowHeight={80}
+              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+              rowsPerPageOptions={[50, 75, 100]}
+              experimentalFeatures={{ newEditingApi: true }}
+              onSelectionModelChange={(id) => {
+                const selectedIDs = new Set([id]);
+                const selectedRowData = roleData.filter((row) =>
+                  selectedIDs.has(row.id.toString())
+                );
+                setUserId(selectedIDs);
+              }}
+            />
+          </div>
+        </>
+      )}
     </Box>
   );
 };

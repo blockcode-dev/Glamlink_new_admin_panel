@@ -2,92 +2,123 @@ import React, { useState } from "react";
 import { Box } from "@mui/material";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { Editor } from "@tinymce/tinymce-react";
-import { Upload, Space, Form, Input } from "antd";
+import Form from "react-bootstrap/Form";
 import { CreateSerice } from "../../../services/Api/ServiceApi";
 import { useNavigate } from "react-router-dom";
 import imageCompression from "browser-image-compression";
 import "./Service.css";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { message } from "antd";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const AddService = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [images, setImages] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [disable, setDisable] = useState(false);
   const navigate = useNavigate();
 
   const handleImageChange = async (e) => {
-    const file = e.target.files[0];
+    const files = e.target.files;
 
-    if (file) {
+    if (files.length > 0) {
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
 
-      if (!allowedTypes.includes(file.type)) {
-        console.error("Error: Invalid file type. Images (JPEG, JPG,PNG) only!");
-        return;
-      }
+      const compressedImages = [];
+      const imagePreviews = [];
 
-      if (file.size <= 1024 * 1024) {
-        setImages(file);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        // Compress the image to 25% if its size is more than 1 MB
-        try {
-          const compressedFile = await imageCompression(file, {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1920,
-          });
-
-          // Check if compression actually reduced the size
-          if (compressedFile.size < file.size) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setImagePreview(reader.result);
-              setImages(new Blob([compressedFile], { type: "image/jpeg" }));
-            };
-            reader.readAsDataURL(compressedFile);
-          } else {
-            // If compression did not reduce the size, use the original image
-            setImages(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-          }
-        } catch (error) {
-          console.error("Error compressing image:", error);
+      for (const file of files) {
+        if (!allowedTypes.includes(file.type)) {
+          console.error(
+            "Error: Invalid file type. Images (JPEG, JPG, PNG) only!"
+          );
+          return;
         }
+
+        const compressedFile =
+          file.size <= 1024 * 1024
+            ? file
+            : await imageCompression(file, {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1920,
+              });
+
+        compressedImages.push(
+          new Blob([compressedFile], { type: "image/jpeg" })
+        );
+
+        // Create image preview URL
+        const previewUrl = URL.createObjectURL(compressedFile);
+        imagePreviews.push({ name: file.name, previewUrl });
       }
+
+      setImages(compressedImages);
+      setImagePreviews(imagePreviews);
     }
   };
 
+  const handleRemoveImage = (index) => {
+    const updatedImages = [...images];
+    const updatedPreviews = [...imagePreviews];
+
+    updatedImages.splice(index, 1);
+    updatedPreviews.splice(index, 1);
+
+    setImages(updatedImages);
+    setImagePreviews(updatedPreviews);
+  };
+
+  const handleEditorChange = (event, editor) => {
+    const data = editor.getData();
+    setDescription(data);
+  };
+
   const handleSubmit = async (event) => {
-    // event.preventDefault();
+    event.preventDefault();
+
+    setDisable(true);
+
+    if (!name) {
+      message.error("Please enter name");
+      setDisable(false);
+      return;
+    }
+    if (!description) {
+      message.error("Please enter description");
+      setDisable(false);
+      return;
+    }
 
     try {
       const formData = new FormData();
       formData.append("name", name);
       formData.append("description", description);
-      formData.append("images", images);
+      if (images.length > 0) {
+        images.forEach((image, index) => {
+          formData.append(`images`, image, `compressed_image_${index}.jpg`);
+        });
+      }
 
       const response = await CreateSerice(formData);
 
-      if (response.status === 200) {
+      if (response.status === 201) {
+        message.success("Service addedd successfully!");
       }
       navigate("/services");
+      setDisable(false);
     } catch (error) {
       if (error.response.status === 401) {
+        message.error("Token expired");
         localStorage.removeItem("adminToken");
         setTimeout(() => {
           navigate("/Login");
         }, 1000);
       } else {
+        message.error("Something went wrong");
       }
+      setDisable(false);
     }
   };
 
@@ -103,103 +134,88 @@ const AddService = () => {
       </Box>
       <Card className="service_card">
         <div>
-          <Form
-            style={{ width: "98%" }}
-            onFinish={handleSubmit}
-            layout="vertical"
-          >
-            <Form.Item
-              label="Service Name"
-              name="username"
-              rules={[
-                { required: true, message: "Please input your Service Name!" },
-              ]}
-            >
-              <Input style={{height:"40px"}} onChange={(e) => setName(e.target.value)} />
-            </Form.Item>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Service Name:</Form.Label>
+              <Form.Control
+                type="text"
+                required
+                placeholder="Enter Service Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="new_form_control"
+              />
+            </Form.Group>
 
-            <Form.Item
+            <Form.Group className="mb-3">
+              <Form.Label>Image:</Form.Label>
+              <Form.Control
+                type="file"
+                required
+                accept="image/*"
+                id="imageInput"
+                onChange={handleImageChange}
+                multiple
+              />
+            </Form.Group>
 
-              label="Upload Image"
-              name="images"
-              valuePropName="fileList"
-              getValueFromEvent={handleImageChange}
-              rules={[
-                { required: true, message: "Please input your Service Name!" },
-              ]}
-            >
-              <Space
-                direction="vertical"
-                style={{ width: "100%" }}
-                size="large"
-              >
-                <Upload
-                  action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
-                  listType="picture"
-                  maxCount={3}
-                  multiple
-                >
-                  <Button
-                    label=" Click to Upload"
-                    severity="secondary"
-                    outlined
-                    icon="pi pi-upload"
-                    style={{
-                      borderRadius: "5px",
-                      margin: "0px 0px",
-                      height: "36px",
-                    }}
-                  ></Button>
-                </Upload>
-              </Space>
-            </Form.Item>
-
-            <Form.Item
-              label="Description"
-              name="description"
-              rules={[
-                { required: true, message: "Please input the description!" },
-              ]}
-            >
-              <Editor
-                apiKey="984sn99khgad1wgf4btfw7jil4n458arpqkfgqgxc550lb9m"
-                value={description}
-                init={{
-                  plugins:
-                    "ai tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss",
-                  toolbar:
-                    "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat",
-                  tinycomments_mode: "embedded",
-                  tinycomments_author: "Author name",
-                  mergetags_list: [
-                    { value: "First.Name", title: "First Name" },
-                    { value: "Email", title: "Email" },
-                  ],
-                  ai_request: (request, respondWith) =>
-                    respondWith.string(() =>
-                      Promise.reject("See docs to implement AI Assistant")
-                    ),
+            {imagePreviews.map((preview, index) => (
+              <div
+                key={index}
+                style={{
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  marginBottom: "10px",
                 }}
-                onEditorChange={(newContent, editor) => {
-                  setDescription(newContent);
+              >
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <img
+                    src={preview.previewUrl}
+                    alt={`Preview ${index}`}
+                    style={{
+                      height: "80px",
+                      width: "80px",
+                      marginRight: "10px",
+                    }}
+                  />
+                  <span>{preview.name}</span>
+                  <DeleteIcon
+                    fontSize="large"
+                    color="warning"
+                    style={{ marginLeft: "auto", cursor: "pointer" }}
+                    onClick={() => handleRemoveImage(index)}
+                  />
+                </div>
+              </div>
+            ))}
+
+            <Form.Group className="mb-3">
+              <Form.Label>Description:</Form.Label>
+              <CKEditor
+                editor={ClassicEditor}
+                onChange={handleEditorChange}
+                config={{
+                  height: "50%",
                 }}
               />
-            </Form.Item>
+            </Form.Group>
 
-            <Form.Item >
+            <div>
               <Button
                 icon="pi pi-check"
                 severity="success"
                 htmlType="submit"
+                onClick={handleSubmit}
+                disabled={disable}
                 style={{
                   borderRadius: "5px",
                   margin: "0px 0px",
                   height: "40px",
                 }}
               >
-                Save
+                {disable ? "Saving...." : "Save"}
               </Button>
-
               <Button
                 icon="pi pi-times"
                 severity="secondary"
@@ -212,7 +228,7 @@ const AddService = () => {
               >
                 Cancel
               </Button>
-            </Form.Item>
+            </div>
           </Form>
         </div>
       </Card>

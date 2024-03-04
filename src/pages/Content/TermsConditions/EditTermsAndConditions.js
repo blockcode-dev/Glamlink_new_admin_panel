@@ -1,76 +1,73 @@
 import React, { useLayoutEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Box } from "@mui/material";
 import { Card } from "antd";
-import { Form, Input } from "antd";
+import { Form, Input, message } from "antd";
 import { Editor } from "@tinymce/tinymce-react";
 import { Button } from "primereact/button";
-import {
-  GetServiceById,
-  UpdateService,
-} from "../../../services/Api/ServiceApi";
+import { UpdateTandC } from "../../../services/Api/ContentApi";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 const EditTermsAndConditions = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [serviceData, setServiceData] = useState(null);
-
-  useLayoutEffect(() => {
-    GetServiceById(id)
-      .then((res) => {
-        setServiceData(res.data.data);
-        console.log("servicebyid=>", res.data.data);
-      })
-      .catch((err) => {
-        console.log(err, "error");
-      });
-  }, [id]);
+  const location = useLocation();
+  const { data } = location.state;
+  console.log("cardadta==>", data, data.id);
+  const [contentData, setContentData] = useState({
+    heading: data?.heading || "",
+    description: data?.description || "",
+  });
+  const [editorData, setEditorData] = useState(contentData?.description || "");
 
   const onChange = (e) => {
-    setServiceData({ ...serviceData, [e.target.name]: e.target.value });
+    setContentData({ ...contentData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("name", serviceData?.name ? serviceData?.name : "");
     formData.append(
-      "description",
-      serviceData?.description ? serviceData?.description : ""
+      "heading",
+      contentData?.heading ? contentData?.heading : ""
     );
-    if (serviceData.image) {
-      formData.append("images", serviceData.image);
-    }
+    formData.append("description", editorData ? editorData : "");
 
-    UpdateService(id, formData)
+    UpdateTandC(data.id, formData)
       .then((res) => {
         if (res.status === 200) {
-          // toast.success("Role edited successfully!");
+          message.success("Terms and Conditions edited successfully!");
         }
-        navigate("/services");
+        navigate("/termsAndConditions");
       })
       .catch((err) => {
         if (err.response && err.response.status === 401) {
-          // toast.error("Token expired!");
+          message.error("Token expired!");
           localStorage.removeItem("adminToken");
           setTimeout(() => {
             navigate("/Login");
           }, 3000);
         } else {
-          // toast.error("Something went wrong");
+          message.error("Something went wrong");
         }
       });
   };
 
+  const handleEditorChange = (event, editor) => {
+    const data = editor.getData();
+    setEditorData(data);
+  };
+
   const navigateToService = () => {
-    navigate("/services");
+    navigate("/termsAndConditions");
   };
 
   return (
     <Box>
       <Box style={{ marginBottom: "30px" }}>
         <h3 className="page-title">Update Terms & Conditions</h3>
-        <p className="page-sub-title">Edit Details of Service</p>
+        <p className="page-sub-title">Edit Terms & Conditions</p>
       </Box>
       <Card style={{ width: "100%" }}>
         <Form
@@ -79,39 +76,23 @@ const EditTermsAndConditions = () => {
           style={{ width: "1745px" }}
           layout="vertical"
         >
-          <Form.Item label="Service Name:">
+          <Form.Item label="Heading:">
             <Input
               style={{ color: "black", height: "40px" }}
-              value={serviceData?.name}
+              value={contentData.heading}
               onChange={(e) => onChange(e)}
-              name="name"
+              name="heading"
             />
           </Form.Item>
 
           <Form.Item label="Description:" name="description">
-            <Editor
-              apiKey="984sn99khgad1wgf4btfw7jil4n458arpqkfgqgxc550lb9m"
-              initialValue={serviceData?.description}
-              init={{
-                plugins:
-                  "ai tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss",
-                toolbar:
-                  "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat",
-                tinycomments_mode: "embedded",
-                tinycomments_author: "Author name",
-                mergetags_list: [
-                  { value: "First.Name", title: "First Name" },
-                  { value: "Email", title: "Email" },
-                ],
-                ai_request: (request, respondWith) =>
-                  respondWith.string(() =>
-                    Promise.reject("See docs to implement AI Assistant")
-                  ),
+            <CKEditor
+              data={contentData?.description}
+              editor={ClassicEditor}
+              onChange={handleEditorChange}
+              config={{
+                height: "50%",
               }}
-              onEditorChange={(newContent, editor) => {
-                setServiceData({ ...serviceData, description: newContent });
-              }}
-              onChange={(e) => onChange(e)}
             />
           </Form.Item>
 

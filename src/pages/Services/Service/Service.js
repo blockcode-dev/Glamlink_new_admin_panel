@@ -17,6 +17,7 @@ const Service = () => {
   const [userId, setUserId] = useState();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [userIdToNavigate, setUserIdToNavigate] = useState();
+  const [loading, setLoading] = useState(false);
 
   const handleClick = (event, value) => {
     setUserIdToNavigate(value);
@@ -26,11 +27,21 @@ const Service = () => {
   //get all specialist
   const getData = async () => {
     try {
+      setLoading(true);
       let result = await GetServices(localStorage.getItem("adminToken"));
       setServiceData(result.data.data);
       console.log("product==>", result.data.data);
     } catch (e) {
       console.log(e);
+      if (e.response && e.response.status === 401) {
+        navigate("/error401");
+
+        console.log("You do not have access to this page as a sub-admin.");
+      } else {
+        console.log("Error loading data. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -129,8 +140,8 @@ const Service = () => {
               style={{ marginLeft: "10px", borderRadius: "25px" }}
               onClick={(event) => navigateToEditService(event, cellValues.id)}
             />
-           <Alert
-          //  style={{marginLeft:"0px"}}
+            <Alert
+              //  style={{marginLeft:"0px"}}
               title="Service"
               handleDelete={() => handleDelete(cellValues.id)}
             />
@@ -142,42 +153,56 @@ const Service = () => {
 
   return (
     <Box m="20px">
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <h3 className="page-title">Services</h3>
-        <Box>
-          <Button
-            label=" Add Service"
-            icon="pi pi-plus"
-            severity="info"
-            onClick={navigateToAddService}
-            style={{ margin: "0px 0px", borderRadius: "5px", height: "40px" }}
-          />
-        </Box>
-      </Box>
-      <div
-        style={{
-          height: dataGridHeight,
-          width: "100%",
-          marginTop: "20px",
-        }}
-      >
-        <DataGrid
-          rows={serviceData}
-          columns={columns}
-          pageSize={pageSize}
-          rowHeight={80}
-          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-          rowsPerPageOptions={[50, 75, 100]}
-          experimentalFeatures={{ newEditingApi: true }}
-          onSelectionModelChange={(id) => {
-            const selectedIDs = new Set([id]);
-            const selectedRowData = serviceData.filter((row) =>
-              selectedIDs.has(row.id.toString())
-            );
-            setUserId(selectedIDs);
-          }}
-        />
-      </div>
+      {loading ? (
+        <p style={{ fontSize: "16px" }}>Loading...</p>
+      ) : (
+        <>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <h3 className="page-title">Services</h3>
+            <Box>
+              <Button
+                label=" Add Service"
+                icon="pi pi-plus"
+                severity="info"
+                onClick={navigateToAddService}
+                style={{
+                  margin: "0px 0px",
+                  borderRadius: "5px",
+                  height: "40px",
+                }}
+              />
+            </Box>
+          </Box>
+          <div
+            style={{
+              height: dataGridHeight,
+              width: "100%",
+              marginTop: "20px",
+            }}
+          >
+            <DataGrid
+              rows={serviceData}
+              columns={columns}
+              pageSize={pageSize}
+              rowHeight={80}
+              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+              rowsPerPageOptions={[50, 75, 100]}
+              experimentalFeatures={{ newEditingApi: true }}
+              onSelectionModelChange={(id) => {
+                const selectedIDs = new Set([id]);
+                const selectedRowData = serviceData.filter((row) =>
+                  selectedIDs.has(row.id.toString())
+                );
+                setUserId(selectedIDs);
+              }}
+            />
+          </div>
+        </>
+      )}
     </Box>
   );
 };

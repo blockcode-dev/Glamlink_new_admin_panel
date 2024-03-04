@@ -13,6 +13,7 @@ const GuestBookings = () => {
   const [anchorEl, setAnchorEl] = React.useState();
   const [userId, setUserId] = useState();
   const [userIdToNavigate, setUserIdToNavigate] = useState();
+  const [loading, setLoading] = useState(false);
 
   const handleClick = (event, value) => {
     setUserIdToNavigate(value);
@@ -22,10 +23,20 @@ const GuestBookings = () => {
   //get all booking
   const getData = async () => {
     try {
+      setLoading(true);
       let result = await GetGuestBooking(localStorage.getItem("adminToken"));
       setBookingData(result.data.data);
     } catch (e) {
       console.log(e);
+      if (e.response && e.response.status === 401) {
+        navigate("/error401");
+
+        console.log("You do not have access to this page as a sub-admin.");
+      } else {
+        console.log("Error loading data. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -154,9 +165,17 @@ const GuestBookings = () => {
 
   return (
     <Box m="20px">
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <h3>Guest Booking</h3>
-        {/* <Box>
+      {loading ? (
+        <p style={{ fontSize: "16px" }}>Loading...</p>
+      ) : (
+        <>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <h3>Guest Booking</h3>
+            {/* <Box>
           <Button
             label=" Add New Product"
             icon="pi pi-plus"
@@ -165,31 +184,33 @@ const GuestBookings = () => {
             style={{ margin: "0px 10px", borderRadius: "5px" }}
           />
         </Box> */}
-      </Box>
-      <div
-        style={{
-          height: dataGridHeight,
-          width: "100%",
-          marginTop: "20px",
-        }}
-      >
-        <DataGrid
-          rows={bookingData}
-          columns={columns}
-          pageSize={pageSize}
-          rowHeight={80}
-          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-          rowsPerPageOptions={[50, 75, 100]}
-          experimentalFeatures={{ newEditingApi: true }}
-          onSelectionModelChange={(id) => {
-            const selectedIDs = new Set([id]);
-            const selectedRowData = bookingData.filter((row) =>
-              selectedIDs.has(row.id.toString())
-            );
-            setUserId(selectedIDs);
-          }}
-        />
-      </div>
+          </Box>
+          <div
+            style={{
+              height: dataGridHeight,
+              width: "100%",
+              marginTop: "20px",
+            }}
+          >
+            <DataGrid
+              rows={bookingData}
+              columns={columns}
+              pageSize={pageSize}
+              rowHeight={80}
+              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+              rowsPerPageOptions={[50, 75, 100]}
+              experimentalFeatures={{ newEditingApi: true }}
+              onSelectionModelChange={(id) => {
+                const selectedIDs = new Set([id]);
+                const selectedRowData = bookingData.filter((row) =>
+                  selectedIDs.has(row.id.toString())
+                );
+                setUserId(selectedIDs);
+              }}
+            />
+          </div>
+        </>
+      )}
     </Box>
   );
 };

@@ -66,7 +66,7 @@ const ViewAdmin = () => {
               />
             </Form.Group>
 
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
               <Form.Label>Department</Form.Label>
               <Form.Control
                 type="text"
@@ -74,7 +74,7 @@ const ViewAdmin = () => {
                 name="abbreviation"
                 disabled
               />
-            </Form.Group>
+            </Form.Group> */}
           </Form>
           <div className="button">
             <Button

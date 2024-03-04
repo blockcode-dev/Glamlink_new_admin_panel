@@ -4,10 +4,9 @@ import { useState } from "react";
 import Form from "react-bootstrap/Form";
 import { AddUser } from "../../services/Api/Api";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
+import { message } from "antd";
 
 const AddCustomer = () => {
   const [name, setName] = useState("");
@@ -21,15 +20,15 @@ const AddCustomer = () => {
     setDisable(true);
 
     if (!name) {
-      toast.error("Please enter name ");
+      message.error("Please enter name ");
       return;
     }
     if (!email) {
-      toast.error("Please enter  email");
+      message.error("Please enter  email");
       return;
     }
     if (!roleId) {
-      toast.error("Please select User type");
+      message.error("Please select User type");
       return;
     }
 
@@ -41,7 +40,7 @@ const AddCustomer = () => {
       });
 
       if (response.status === 200) {
-        toast.success("User added successfully");
+        message.success("User added successfully");
       }
       setTimeout(() => {
         navigate("/customers");
@@ -49,24 +48,15 @@ const AddCustomer = () => {
       setDisable(false);
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        toast.error("Email already exists", {
-          position: "top-right",
-          autoClose: 500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
+        message.error("Email already exists");
       } else if (error.response.status === 401) {
-        toast.error("Token expired");
+        message.error("Token expired");
         localStorage.removeItem("adminToken");
         setTimeout(() => {
           navigate("/Login");
         }, 3000);
       } else {
-        toast.error("Something went wrong");
+        message.error("Something went wrong");
       }
       setDisable(false);
     }

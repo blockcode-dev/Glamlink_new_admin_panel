@@ -2,10 +2,21 @@ import axios from "axios";
 import { BASE_URL } from "../Host";
 
 // ****************************************** GUEST BOOKING *****************************************
-export const GetGuestBooking = async () => {
-  const res = await axios.get(BASE_URL + "booking/getAllGuestBooking");
+export const GetGuestBooking = async (adminToken, role_id) => {
+  try {
+    const res = await axios.get(BASE_URL + "booking/getAllGuestBooking", {
+      headers: {
+        "x-access-token": `${adminToken}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-  return res;
+    return res;
+  } catch (error) {
+    // Handle error if needed
+    console.error("Error fetching users:", error);
+    throw error;
+  }
 };
 
 export const GetGuestBookingById = async (id) => {
@@ -45,6 +56,7 @@ export const GetUserBooking = async (adminToken, booking_status) => {
     throw error;
   }
 };
+
 
 export const GetBookingById = async (id) => {
   return await axios.get(BASE_URL + `booking/getBookingById/${id}`);

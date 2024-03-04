@@ -13,6 +13,7 @@ const Bookings = () => {
   const [bookingData, setBookingData] = useState([]);
   const [userId, setUserId] = useState();
   const [userIdToNavigate, setUserIdToNavigate] = useState();
+  const [loading, setLoading] = useState(false);
 
   const handleClick = (event, value) => {
     setUserIdToNavigate(value);
@@ -38,6 +39,7 @@ const Bookings = () => {
   //get all booking
   const getData = async (booking_status) => {
     try {
+      setLoading(true);
       let result = await GetUserBooking(
         localStorage.getItem("adminToken"),
         booking_status
@@ -46,6 +48,16 @@ const Bookings = () => {
       console.log("userbooking==>", result.data.data);
     } catch (e) {
       console.log(e);
+      console.log(e);
+      if (e.response && e.response.status === 401) {
+        navigate("/error401");
+
+        console.log("You do not have access to this page as a sub-admin.");
+      } else {
+        console.log("Error loading data. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -60,7 +72,7 @@ const Bookings = () => {
   };
   const tabsContent = [
     { label: "All", key: "1" },
-    { label: "Ongoing", key: "2"},
+    { label: "Ongoing", key: "2" },
     { label: "Completed", key: "3" },
   ];
 
@@ -179,51 +191,57 @@ const Bookings = () => {
   ];
   return (
     <Box>
-      <div className="booking_container">
-        <div>
-          <h3 className="page-title">USER BOOKINGS</h3>
-          <p className="page-sub-title">View User's Bookings</p>
-        </div>
-        <div>
-          <Tabs
-            defaultActiveKey="1"
-            type="card"
-            size="large"
-            onChange={onChange}
-          >
-            {tabsContent.map((tab) => (
-              <Tabs.TabPane tab={tab.label} key={tab.key}>
-                {tab.children}
-              </Tabs.TabPane>
-            ))}
-          </Tabs>
-        </div>
-      </div>
+      {loading ? (
+        <p style={{ fontSize: "16px" }}>Loading...</p>
+      ) : (
+        <>
+          <div className="booking_container">
+            <div>
+              <h3 className="page-title">USER BOOKINGS</h3>
+              <p className="page-sub-title">View User's Bookings</p>
+            </div>
+            <div>
+              <Tabs
+                defaultActiveKey="1"
+                type="card"
+                size="large"
+                onChange={onChange}
+              >
+                {tabsContent.map((tab) => (
+                  <Tabs.TabPane tab={tab.label} key={tab.key}>
+                    {tab.children}
+                  </Tabs.TabPane>
+                ))}
+              </Tabs>
+            </div>
+          </div>
 
-      <div
-        style={{
-          height: "550px",
-          width: "100%",
-          marginTop: "20px",
-        }}
-      >
-        <DataGrid
-          rows={bookingData}
-          columns={columns}
-          pageSize={pageSize}
-          rowHeight={80}
-          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-          rowsPerPageOptions={[50, 75, 100]}
-          experimentalFeatures={{ newEditingApi: true }}
-          onSelectionModelChange={(id) => {
-            const selectedIDs = new Set([id]);
-            const selectedRowData = bookingData.filter((row) =>
-              selectedIDs.has(row.id.toString())
-            );
-            setUserId(selectedIDs);
-          }}
-        />
-      </div>
+          <div
+            style={{
+              height: "550px",
+              width: "100%",
+              marginTop: "20px",
+            }}
+          >
+            <DataGrid
+              rows={bookingData}
+              columns={columns}
+              pageSize={pageSize}
+              rowHeight={80}
+              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+              rowsPerPageOptions={[50, 75, 100]}
+              experimentalFeatures={{ newEditingApi: true }}
+              onSelectionModelChange={(id) => {
+                const selectedIDs = new Set([id]);
+                const selectedRowData = bookingData.filter((row) =>
+                  selectedIDs.has(row.id.toString())
+                );
+                setUserId(selectedIDs);
+              }}
+            />
+          </div>
+        </>
+      )}
     </Box>
   );
 };

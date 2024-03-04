@@ -2,103 +2,93 @@ import React, { useLayoutEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Box } from "@mui/material";
 import { Card } from "antd";
-import { Form, Input, Upload,message } from "antd";
+import { message } from "antd";
 import "./Product.css";
-import { Editor } from "@tinymce/tinymce-react";
 import { Button } from "primereact/button";
 import { BASE_URL_IMAGE } from "../../../services/Host";
-import { PlusOutlined } from "@ant-design/icons";
-import { Modal } from "antd";
+import Form from "react-bootstrap/Form";
+import { Row, Col } from "react-bootstrap";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   GetProductById,
   UpdateProduct,
 } from "../../../services/Api/ProductApi";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [productData, setProductData] = useState(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState("");
-  const [previewTitle, setPreviewTitle] = useState("");
-  const [fileList, setFileList] = useState([]);
-  const handleCancel = () => setPreviewOpen(false);
-  const handlePreview = async (file) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj);
-    }
-    setPreviewImage(file.url || file.preview);
-    setPreviewOpen(true);
-    setPreviewTitle(
-      file.name || file.url.substring(file.url.lastIndexOf("/") + 1)
-    );
-  };
-  const getBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-
-  const uploadButton = (
-    <button
-      style={{
-        border: 0,
-        background: "none",
-      }}
-      type="button"
-    >
-      <PlusOutlined />
-      <div
-        style={{
-          marginTop: 8,
-        }}
-      >
-        Upload
-      </div>
-    </button>
-  );
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [removeImageIds, setRemoveImageIds] = useState([]);
+  const [productData, setProductData] = useState({
+    name: "",
+    description: "",
+    product_attachments: [],
+    price: "",
+    weight: "",
+    stock: "",
+    size: "",
+  });
 
   useLayoutEffect(() => {
     GetProductById(id)
       .then((res) => {
         setProductData(res.data.data);
-        console.log("servicebyid=>", res.data.data);
 
-        // Update fileList with images from API
-        const apiImages = res.data.data.service_attachments.map(
-          (attachment) => ({
-            uid: attachment.id.toString(),
-            name: attachment.file_name,
-            status: "done",
-            url: `${BASE_URL_IMAGE}${attachment.file_name}`,
-          })
-        );
-
-        setFileList(apiImages);
+        if (
+          res.data.data.product_attachments &&
+          res.data.data.product_attachments.length > 0
+        ) {
+          const previews = res.data.data.product_attachments.map(
+            (attachment) => `${BASE_URL_IMAGE}${attachment.file_name}`
+          );
+          setImagePreviews(previews);
+        }
       })
       .catch((err) => {
         console.log(err, "error");
       });
   }, [id]);
 
+  const handleEditorChange = (event, editor) => {
+    const data = editor.getData();
+    setProductData((prevData) => ({
+      ...prevData,
+      description: data,
+    }));
+  };
+
   const handleImageChange = (e) => {
-    if (e.target.files.length) {
-      const newImage = {
-        uid: Date.now(),
-        name: e.target.files[0].name,
-        status: "done",
-        url: URL.createObjectURL(e.target.files[0]),
-      };
+    const selectedImages = Array.from(e.target.files);
 
-      setFileList([...fileList, newImage]);
+    // Update state for image previews
+    const newPreviews = selectedImages.map((image) =>
+      URL.createObjectURL(image)
+    );
+    setImagePreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
 
-      // Check if productData is not null or undefined before updating it
-      if (productData) {
-        setProductData({ ...productData, image: e.target.files[0] });
-      }
+    // Update state for images
+    setImages(selectedImages);
+  };
+  const handleRemoveImage = (index) => {
+    const removedImage = productData.product_attachments[index];
+    const updatedImages = [...images];
+    const updatedPreviews = [...imagePreviews];
+    const updatedRemoveImageIds = [...removeImageIds]; // Assuming you have a state for removeImageIds
+
+    updatedImages.splice(index, 1);
+    updatedPreviews.splice(index, 1);
+
+    // Add the ID to removeImageIds if available
+    if (removedImage && removedImage.id) {
+      updatedRemoveImageIds.push(removedImage.id);
     }
+
+    setImages(updatedImages);
+    setImagePreviews(updatedPreviews);
+    setRemoveImageIds(updatedRemoveImageIds); // Set the updated removeImageIds in your state
   };
 
   const onChange = (e) => {
@@ -113,13 +103,16 @@ const EditProduct = () => {
     formData.append("weight", productData?.weight ? productData?.weight : "");
     formData.append("stock", productData?.stock ? productData?.stock : "");
     formData.append("size", productData?.size ? productData?.size : "");
-    formData.append(
-      "description",
-      productData?.description ? productData?.description : ""
-    );
-    if (productData.image) {
-      formData.append("images", productData.image);
-    }
+    formData.append("description", productData.description || "");
+
+    images.forEach((image, index) => {
+      formData.append("images", image);
+    });
+
+    // Append removeImageIds to formData
+    removeImageIds.forEach((id) => {
+      formData.append("removeImageIds", id);
+    });
 
     UpdateProduct(id, formData)
       .then((res) => {
@@ -130,13 +123,13 @@ const EditProduct = () => {
       })
       .catch((err) => {
         if (err.response && err.response.status === 401) {
-          // toast.error("Token expired!");
+          message.error("Token expired!");
           localStorage.removeItem("adminToken");
           setTimeout(() => {
             navigate("/Login");
           }, 3000);
         } else {
-          // toast.error("Something went wrong");
+          message.error("Something went wrong");
         }
       });
   };
@@ -152,111 +145,113 @@ const EditProduct = () => {
         <p className="page-sub-title">Edit Details of Product</p>
       </Box>
       <Card style={{ width: "100%" }}>
-        <Form
-          labelCol={{ span: 4 }}
-          wrapperCol={{ span: 14 }}
-          style={{ width: "1745px" }}
-          layout="vertical"
-        >
-          <Form.Item label="Product Name:">
-            <Input
-              style={{ color: "black", height: "40px" }}
-              value={productData?.name}
-              onChange={(e) => onChange(e)}
+        <Form>
+          <Form.Group className="mb-3">
+            <Form.Label>Product Name::</Form.Label>
+            <Form.Control
               name="name"
+              defaultValue={productData?.name}
+              type="text"
+              onChange={(e) => onChange(e)}
             />
-          </Form.Item>
-          <Form.Item
-            label="Upload Image:"
-            name="images"
-            valuePropName="fileList"
-            getValueFromEvent={handleImageChange}
-          >
-            <Upload
-              action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
-              listType="picture-card"
-              fileList={fileList}
-              onPreview={handlePreview}
-              onChange={handleImageChange}
-            >
-              {fileList.length >= 8 ? null : uploadButton}
-            </Upload>
-            <Modal
-              open={previewOpen}
-              title={previewTitle}
-              footer={null}
-              onCancel={handleCancel}
-            >
-              <img
-                alt="example"
-                style={{
-                  width: "100%",
-                }}
-                src={previewImage}
-                crossOrigin="anonymous"
+          </Form.Group>
+          <Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Images:</Form.Label>
+              <Form.Control
+                type="file"
+                name="images"
+                onChange={handleImageChange}
+                multiple
               />
-            </Modal>
-          </Form.Item>
-          <Form.Item label="Product Summary:" name="description">
-            <Editor
-              apiKey="984sn99khgad1wgf4btfw7jil4n458arpqkfgqgxc550lb9m"
-              initialValue={productData?.description}
-              init={{
-                plugins:
-                  "ai tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss",
-                toolbar:
-                  "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat",
-                tinycomments_mode: "embedded",
-                tinycomments_author: "Author name",
-                mergetags_list: [
-                  { value: "First.Name", title: "First Name" },
-                  { value: "Email", title: "Email" },
-                ],
-                ai_request: (request, respondWith) =>
-                  respondWith.string(() =>
-                    Promise.reject("See docs to implement AI Assistant")
-                  ),
-              }}
-              onEditorChange={(newContent, editor) => {
-                setProductData({ ...productData, description: newContent });
-              }}
-              onChange={(e) => onChange(e)}
-            />
-          </Form.Item>
-          <Form.Item label="Price:">
-            <Input
-              style={{ color: "black", height: "40px" }}
-              value={productData?.price}
-              onChange={(e) => onChange(e)}
-              name="price"
-            />
-          </Form.Item>
-          <Form.Item label="Stock:">
-            <Input
-              style={{ color: "black", height: "40px" }}
-              value={productData?.stock}
-              onChange={(e) => onChange(e)}
-              name="stock"
-            />
-          </Form.Item>
-          <Form.Item label="Size:">
-            <Input
-              style={{ color: "black", height: "40px" }}
-              value={productData?.size}
-              onChange={(e) => onChange(e)}
-              name="size"
-            />
-          </Form.Item>
-          <Form.Item label="Weight:">
-            <Input
-              style={{ color: "black", height: "40px" }}
-              value={productData?.weight}
-              onChange={(e) => onChange(e)}
-              name="weight"
-            />
-          </Form.Item>
+              {imagePreviews.map((preview, index) => (
+                <div
+                  key={index}
+                  style={{
+                    border: "1px solid #ccc",
+                    borderRadius: "5px",
+                    padding: "10px",
+                    marginBottom: "10px",
+                    marginTop: "10px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <img
+                      src={preview}
+                      alt={`Preview ${index}`}
+                      crossOrigin="anonymous"
+                      style={{
+                        height: "80px",
+                        width: "80px",
+                        marginRight: "10px",
+                      }}
+                    />
+                    <span>{preview.name}</span>
+                    <DeleteIcon
+                      fontSize="large"
+                      color="warning"
+                      style={{ marginLeft: "auto", cursor: "pointer" }}
+                      onClick={() => handleRemoveImage(index)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </Form.Group>
+          </Row>
 
-          <Form.Item>
+          <Form.Group className="mb-3">
+            <Form.Label>Product Description:</Form.Label>
+            <CKEditor
+              data={productData?.description}
+              editor={ClassicEditor}
+              onChange={handleEditorChange}
+              config={{
+                height: "50%",
+              }}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Price:</Form.Label>
+            <Form.Control
+              name="price"
+              defaultValue={productData?.price}
+              type="price"
+              onChange={(e) => onChange(e)}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Quantity:</Form.Label>
+            <Form.Control
+              name="stock"
+              defaultValue={productData?.stock}
+              type="number"
+              onChange={(e) => onChange(e)}
+            />
+          </Form.Group>
+
+          {/* <Form.Group className="mb-3">
+            <Form.Label>Size:</Form.Label>
+            <Form.Control
+              name="size"
+              defaultValue={productData?.size}
+              type="size"
+              onChange={(e) => onChange(e)}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Weight:</Form.Label>
+            <Form.Control
+              name="weight"
+              defaultValue={productData?.weight}
+              type="text"
+              onChange={(e) => onChange(e)}
+            />
+          </Form.Group> */}
+
+          <div>
             <Button
               icon="pi pi-check"
               severity="success"
@@ -283,7 +278,7 @@ const EditProduct = () => {
             >
               Cancel
             </Button>
-          </Form.Item>
+          </div>
         </Form>
       </Card>
     </Box>

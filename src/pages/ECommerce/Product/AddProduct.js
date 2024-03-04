@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { Box } from "@mui/material";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { Editor } from "@tinymce/tinymce-react";
-import { Upload, Space, Form, Input, message, InputNumber } from "antd";
+import { message } from "antd";
 import { CreateProduct } from "../../../services/Api/ProductApi";
 import { useNavigate } from "react-router-dom";
 import imageCompression from "browser-image-compression";
 import "./Product.css";
-import { InboxOutlined } from "@ant-design/icons";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Form from "react-bootstrap/Form";
 
 const AddProduct = () => {
   const [name, setName] = useState("");
@@ -17,62 +19,84 @@ const AddProduct = () => {
   const [weight, setWeight] = useState("");
   const [size, setSize] = useState("");
   const [stock, setStock] = useState("");
-  const [images, setImages] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [disable, setDisable] = useState(false);
   const navigate = useNavigate();
 
   const handleImageChange = async (e) => {
-    const file = e.target.files[0];
+    const files = e.target.files;
 
-    if (file) {
+    if (files.length > 0) {
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
 
-      if (!allowedTypes.includes(file.type)) {
-        console.error("Error: Invalid file type. Images (JPEG, JPG,PNG) only!");
-        return;
-      }
+      const compressedImages = [];
+      const imagePreviews = [];
 
-      if (file.size <= 1024 * 1024) {
-        setImages(file);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        // Compress the image to 25% if its size is more than 1 MB
-        try {
-          const compressedFile = await imageCompression(file, {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1920,
-          });
-
-          // Check if compression actually reduced the size
-          if (compressedFile.size < file.size) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setImagePreview(reader.result);
-              setImages(new Blob([compressedFile], { type: "image/jpeg" }));
-            };
-            reader.readAsDataURL(compressedFile);
-          } else {
-            // If compression did not reduce the size, use the original image
-            setImages(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-          }
-        } catch (error) {
-          console.error("Error compressing image:", error);
+      for (const file of files) {
+        if (!allowedTypes.includes(file.type)) {
+          console.error(
+            "Error: Invalid file type. Images (JPEG, JPG, PNG) only!"
+          );
+          return;
         }
+
+        const compressedFile =
+          file.size <= 1024 * 1024
+            ? file
+            : await imageCompression(file, {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1920,
+              });
+
+        compressedImages.push(
+          new Blob([compressedFile], { type: "image/jpeg" })
+        );
+
+        // Create image preview URL
+        const previewUrl = URL.createObjectURL(compressedFile);
+        imagePreviews.push({ name: file.name, previewUrl });
       }
+
+      setImages(compressedImages);
+      setImagePreviews(imagePreviews);
     }
   };
 
+  const handleRemoveImage = (index) => {
+    const updatedImages = [...images];
+    const updatedPreviews = [...imagePreviews];
+
+    updatedImages.splice(index, 1);
+    updatedPreviews.splice(index, 1);
+
+    setImages(updatedImages);
+    setImagePreviews(updatedPreviews);
+  };
+
   const handleSubmit = async (event) => {
-    // event.preventDefault();
+    event.preventDefault();
+    setDisable(true);
+    if (!name) {
+      message.error("Please enter Product Name");
+      setDisable(false);
+      return;
+    }
+    if (!description) {
+      message.error("Please enter description");
+      setDisable(false);
+      return;
+    }
+    if (!price) {
+      message.error("Please enter Price");
+      setDisable(false);
+      return;
+    }
+    if (!stock) {
+      message.error("Please enter stock");
+      setDisable(false);
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append("name", name);
@@ -81,7 +105,11 @@ const AddProduct = () => {
       formData.append("weight", weight);
       formData.append("size", size);
       formData.append("stock", stock);
-      formData.append("images", images);
+      if (images.length > 0) {
+        images.forEach((image, index) => {
+          formData.append(`images`, image, `compressed_image_${index}.jpg`);
+        });
+      }
 
       const response = await CreateProduct(formData);
 
@@ -89,6 +117,7 @@ const AddProduct = () => {
         message.success("Product addedd successfully!");
       }
       navigate("/productList");
+      setDisable(false);
     } catch (error) {
       if (error.response.status === 401) {
         localStorage.removeItem("adminToken");
@@ -98,33 +127,17 @@ const AddProduct = () => {
       } else {
         message.error("Something went wrong");
       }
+      setDisable(false);
     }
+  };
+
+  const handleEditorChange = (event, editor) => {
+    const data = editor.getData();
+    setDescription(data);
   };
 
   const navigateToProduct = () => {
     navigate("/productList");
-  };
-
-  const { Dragger } = Upload;
-  const props = {
-    name: "file",
-    multiple: true,
-    listType: "picture",
-    action: "https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188",
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== "uploading") {
-        console.log(info.file, info.fileList);
-      }
-      if (status === "done") {
-        message.success(`${info.file.name} file uploaded successfully.`);
-      } else if (status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-    onDrop(e) {
-      console.log("Dropped files", e.dataTransfer.files);
-    },
   };
 
   return (
@@ -133,154 +146,131 @@ const AddProduct = () => {
         <h3 className="page-title">Create Product</h3>
         <p className="page-sub-title">Add new Product</p>
       </Box>
-      <Form style={{ width: "98%" }} onFinish={handleSubmit} layout="vertical">
+      <Form onSubmit={handleSubmit}>
         <div style={{ display: "flex", flexDirection: "row" }}>
           <Card
             className="service_card"
             style={{ width: "50%", marginRight: "20px", borderRadius: "0px" }}
           >
             <div>
-              <Form.Item
-                label="Product Name:"
-                name="name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your Product Name!",
-                  },
-                ]}
-              >
-                <Input
-                  style={{ height: "40px" }}
+              <Form.Group className="mb-3">
+                <Form.Label> Product Name:</Form.Label>
+                <Form.Control
+                  type="text"
+                  required
+                  placeholder="Please enter your Product Name!"
+                  value={name}
                   onChange={(e) => setName(e.target.value)}
+                  className="new_form_control"
                 />
-              </Form.Item>
+              </Form.Group>
 
-              <Form.Item
-                label=" Product Summary:"
-                name="description"
-                rules={[
-                  { required: true, message: "Please input the description!" },
-                ]}
-              >
-                <Editor
-                  apiKey="984sn99khgad1wgf4btfw7jil4n458arpqkfgqgxc550lb9m"
-                  value={description}
-                  init={{
-                    plugins:
-                      "ai tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss",
-                    toolbar:
-                      "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat",
-                    tinycomments_mode: "embedded",
-                    tinycomments_author: "Author name",
-                    mergetags_list: [
-                      { value: "First.Name", title: "First Name" },
-                      { value: "Email", title: "Email" },
-                    ],
-                    ai_request: (request, respondWith) =>
-                      respondWith.string(() =>
-                        Promise.reject("See docs to implement AI Assistant")
-                      ),
-                  }}
-                  onEditorChange={(newContent, editor) => {
-                    setDescription(newContent);
+              <Form.Group className="mb-3">
+                <Form.Label> Product Description:</Form.Label>
+
+                <CKEditor
+                  editor={ClassicEditor}
+                  onChange={handleEditorChange}
+                  config={{
+                    height: "1000px",
                   }}
                 />
-              </Form.Item>
+              </Form.Group>
 
-              <Form.Item
-                label="Price:"
-                name="price"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your Price!",
-                  },
-                ]}
-              >
-                <InputNumber
-                  style={{ height: "40px", width: "-webkit-fill-available" }}
-                  onChange={(value) => setPrice(value)}
+              <Form.Group className="mb-3">
+                <Form.Label> Price:</Form.Label>
+                <Form.Control
+                  type="number"
+                  required
+                  placeholder="Please enter your Price!"
+                  value={price}
+                  onChange={(event) => setPrice(event.target.value)}
+                  className="new_form_control"
                 />
-              </Form.Item>
+              </Form.Group>
 
-              <Form.Item
-                label="Stock:"
-                name="stock"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your Stock!",
-                  },
-                ]}
-              >
-                <InputNumber
-                  style={{ height: "40px", width: "-webkit-fill-available" }}
-                  onChange={(value) => setStock(value)}
+              <Form.Group className="mb-3">
+                <Form.Label> Quantity:</Form.Label>
+                <Form.Control
+                  type="number"
+                  required
+                  placeholder="Please enter your Stock!"
+                  value={stock}
+                  onChange={(event) => setStock(event.target.value)}
+                  className="new_form_control"
                 />
-              </Form.Item>
+              </Form.Group>
 
-              <Form.Item
-                label="Weight:"
-                name="weight"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your Weight!",
-                  },
-                ]}
-              >
-                <Input
-                  style={{ height: "40px" }}
+              {/* <Form.Group className="mb-3">
+                <Form.Label> Weight:</Form.Label>
+                <Form.Control
+                  type="text"
+                  required
+                  placeholder="Please enter your Weight!"
+                  value={weight}
                   onChange={(e) => setWeight(e.target.value)}
+                  className="new_form_control"
                 />
-              </Form.Item>
+              </Form.Group>
 
-              <Form.Item
-                label="Size:"
-                name="size"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your Size!",
-                  },
-                ]}
-              >
-                <Input
-                  style={{ height: "40px" }}
+              <Form.Group className="mb-3">
+                <Form.Label> Size:</Form.Label>
+                <Form.Control
+                  type="text"
+                  required
+                  placeholder="Please enter your Size!"
+                  value={size}
                   onChange={(e) => setSize(e.target.value)}
+                  className="new_form_control"
                 />
-              </Form.Item>
+              </Form.Group> */}
             </div>
           </Card>
           <Card
             style={{ position: "relative", width: "50%", borderRadius: "0px" }}
           >
-            <Form.Item
-              label="Upload Image"
-              name="images"
-              valuePropName="fileList"
-              getValueFromEvent={handleImageChange}
-              // rules={[
-              //   {
-              //     required: true,
-              //     message: "Please input Images!",
-              //   },
-              // ]}
-            >
-              <Dragger {...props}>
-                <p className="ant-upload-drag-icon">
-                  <InboxOutlined />
-                </p>
-                <p className="ant-upload-text">
-                  Click or drag file to this area to upload
-                </p>
-                <p className="ant-upload-hint">
-                  Support for a single or bulk upload. Strictly prohibited from
-                  uploading company data or other banned files.
-                </p>
-              </Dragger>
-            </Form.Item>
+            <Form.Group className="mb-3">
+              <Form.Label>Image:</Form.Label>
+              <Form.Control
+                type="file"
+                required
+                accept="image/*"
+                id="imageInput"
+                onChange={handleImageChange}
+                multiple
+              />
+            </Form.Group>
+
+            {imagePreviews.map((preview, index) => (
+              <div
+                key={index}
+                style={{
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  marginBottom: "10px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <img
+                    src={preview.previewUrl}
+                    alt={`Preview ${index}`}
+                    style={{
+                      height: "80px",
+                      width: "80px",
+                      marginRight: "10px",
+                    }}
+                  />
+                  <span>{preview.name}</span>
+                  <DeleteIcon
+                    fontSize="large"
+                    color="warning"
+                    style={{ marginLeft: "auto", cursor: "pointer" }}
+                    onClick={() => handleRemoveImage(index)}
+                  />
+                </div>
+              </div>
+            ))}
 
             <div
               style={{
@@ -295,13 +285,15 @@ const AddProduct = () => {
                 icon="pi pi-check"
                 severity="success"
                 htmlType="submit"
+                onClick={handleSubmit}
+                disabled={disable}
                 style={{
                   borderRadius: "5px",
                   margin: "0px 0px",
                   height: "40px",
                 }}
               >
-                Save
+                {disable ? "Saving...." : "Save"}
               </Button>
 
               <Button

@@ -16,9 +16,9 @@ import AdminUser from "./pages/AdminManagement/AdminUser";
 import ViewAdmin from "./pages/AdminManagement/ViewAdmin";
 import AddAdmin from "./pages/AdminManagement/AddAdmin";
 import EditAdmin from "./pages/AdminManagement/EditAdmin";
-import LoginLogs from "./pages/Sidebar/LoginActivity/LoginLogs"
+import LoginLogs from "./pages/Sidebar/LoginActivity/LoginLogs";
 import Settings from "./pages/Sidebar/Settings/Settings";
-import FirebaseNotification from "./pages/FirebaseNotification/FirebaseNotification";
+import Notification from "./pages/Notification/Notification";
 import FirebaseChat from "./pages/FirebaseChat/FirebaseChat";
 import Service from "./pages/Services/Service/Service";
 import AddService from "./pages/Services/Service/AddService";
@@ -46,19 +46,32 @@ import ViewOrder from "./pages/ECommerce/Orders/ViewOrder";
 import EditOrder from "./pages/ECommerce/Orders/EditOrder";
 import EditBookings from "./pages/Services/Bookings/EditBookings";
 import ViewBooking from "./pages/Services/Bookings/ViewBooking";
-
+import Test from "./pages/test";
+import Error401 from "./pages/ErrorPages/Error401";
+import RedirectionPage from "./pages/FirebaseChat/RedirectionPage";
+import SupportLogin from "./pages/FirebaseChat/SupportLogin";
+import Blogs from "./pages/Blogs/Blogs";
+import AddBlog from "./pages/Blogs/AddBlog";
+import EditBlog from "./pages/Blogs/EditBlog";
+import QuoteList from "./pages/Quote/QuoteList";
+import Chat from "./pages/FirebaseChat/Chat";
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/forgot-password" element={<Forgotpassword />} />
         <Route path="/Login" element={<Login />} />
+        <Route path="/error401" element={<Error401 />} />
+        <Route path="/redirection" element={<RedirectionPage />} />
+        <Route path="/supportLogin" element={<SupportLogin />} />
+        <Route path="/chats" element={<FirebaseChat />} />
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="/reset-password" element={<ChangePassword />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/addCustomer" element={<AddCustomer />} />
           <Route path="/viewCustomer/:id" element={<ViewCustomer />} />
+          <Route path="/test" element={<Test />} />
           <Route path="adminUser" element={<AdminList />} />
           <Route path="/role-list" element={<RoleList />} />
           <Route path="/addRole" element={<AddRole />} />
@@ -69,8 +82,7 @@ function App() {
           <Route path="/editAdmin/:id" element={<EditAdmin />} />
           <Route path="/loginLogs" element={<LoginLogs />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/notifications" element={<FirebaseNotification />} />
-          <Route path="/chats" element={<FirebaseChat />} />
+          <Route path="/notifications" element={<Notification />} />
           <Route path="/services" element={<Service />} />
           <Route path="/addService" element={<AddService />} />
           <Route path="/editService/:id" element={<EditService />} />
@@ -89,15 +101,25 @@ function App() {
           <Route path="/viewOrder/:id" element={<ViewOrder />} />
           <Route path="/editOrder/:id" element={<EditOrder />} />
           <Route path="/termsAndConditions" element={<TermsAndConditions />} />
-          <Route path="/addTermsAndConditions" element={<AddTermsAndConditions />} />
-          <Route path="/editTermsAndConditions/:id" element={<EditTermsAndConditions />} />
+          <Route
+            path="/addTermsAndConditions"
+            element={<AddTermsAndConditions />}
+          />
+          <Route
+            path="/editTermsAndConditions"
+            element={<EditTermsAndConditions />}
+          />
           <Route path="/support" element={<Support />} />
-          <Route path="/editSupport" element={<EditSupport />} />
+          <Route path="/editSupport/:id" element={<EditSupport />} />
           <Route path="/addSupport" element={<AddSupport />} />
           <Route path="/aboutUs" element={<AboutUs />} />
           <Route path="/addAboutUs" element={<AddAboutUs />} />
           <Route path="/editAboutUs" element={<EditAboutUs />} />
-
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/addBlog" element={<AddBlog />} />
+          <Route path="/editBlog/:id" element={<EditBlog />} />
+          <Route path="/quotes" element={<QuoteList />} />
+          <Route path="/Chattest" element={<Chat />} />
         </Route>
       </Routes>
     </Router>

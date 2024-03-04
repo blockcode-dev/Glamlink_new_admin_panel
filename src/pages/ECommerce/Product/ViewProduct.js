@@ -72,7 +72,7 @@ const ViewProduct = () => {
               
             />
           </Form.Item>
-          <Row>
+          {/* <Row>
             <Col>
               <Form.Item label="Product Size:">
                 <Input
@@ -91,7 +91,7 @@ const ViewProduct = () => {
                 />
               </Form.Item>
             </Col>
-          </Row>
+          </Row> */}
           <Form.Item label="Images:">
             <Row gutter={[16, 16]}>
               {productData?.product_attachments.map((attachment, index) => (

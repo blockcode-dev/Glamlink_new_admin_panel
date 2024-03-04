@@ -1,0 +1,25 @@
+/** @format */
+
+.dashboard_title {
+  margin-bottom: 0px !important;
+}
+
+.left_graph {
+  width: 70%;
+  margin-top: 10px;
+  padding: 1.5rem;
+  border: 1px solid #e7e7e7;
+  border-radius: 10px;
+  margin-right: 10px;
+
+}
+
+.right_graph {
+  width: 30%;
+  margin-top: 10px;
+  padding:1.5rem;
+  border: 1px solid #e7e7e7;
+  border-radius: 10px;
+  text-align: center;
+  /* margin-bottom: 20px; */
+}

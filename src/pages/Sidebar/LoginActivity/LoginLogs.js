@@ -1,217 +1,224 @@
-import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
-import { useNavigate } from "react-router-dom";
-import { GetLoginLogs } from "../../../services/Api/Api";
-import { InputText } from "primereact/inputtext";
-import moment from "moment";
+import {
+  Box,
+  Collapse,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import { Button } from "primereact/button";
+import { message } from "antd";
+import PropTypes from "prop-types";
+import CircularProgress from "@mui/material/CircularProgress";
+import {
+  getUserLoginTimings,
+  clearUserLoginTimings,
+} from "../../../services/Api/Api";
 
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+
+function Row(props) {
+  const { row } = props;
+  const [open, setOpen] = React.useState(false);
+  if (!row || !row[0] || !row[0]?.login_user) {
+    return null; // or handle the case where login_user is undefined
+  }
+
+ 
+
+  return (
+    <React.Fragment>
+      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+        <TableCell>
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+          </IconButton>
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {row[0].login_user?.user_profile?.name}
+        </TableCell>
+        <TableCell align="right">{row[0].login_user.email}</TableCell>
+        <TableCell align="right">
+          {row[0].role_id === 6 ? "User" : row[0].role_id === 7 ? "Driver" : ""}
+        </TableCell>
+        <TableCell align="right">{row[0].user_id}</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell
+          style={{ paddingBottom: 0, paddingTop: 0, paddingRight: 0 }}
+          colSpan={8}
+        >
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ margin: 1 }}>
+              <Typography variant="h6" gutterBottom component="div">
+               Login History
+              </Typography>
+              <Table size="small" aria-label="purchases">
+                <TableHead>
+                  <TableRow>
+                    {/* <TableCell>User user_id</TableCell> */}
+                    <TableCell >Ip address</TableCell>
+                    <TableCell align="right">Login Time</TableCell>
+                    <TableCell align="right">Logout Time</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {row.map((historyRow) => (
+                    <TableRow key={historyRow.id}>
+                      {/* <TableCell align="right">{row[0].user_id}</TableCell> */}
+                      <TableCell >
+                        {row[0].ip_address.split(":").pop()}
+                      </TableCell>
+
+                      <TableCell align="right" component="th" scope="row">
+                      {new Date(historyRow.login_time_utc).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+
+                      </TableCell>
+                      <TableCell align="right">
+  {historyRow.logout_time_utc
+    ? new Date(historyRow.logout_time_utc).toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      })
+    : "----"}
+</TableCell>
+
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </React.Fragment>
+  );
+}
+
+Row.propTypes = {
+  row: PropTypes.shape({
+    id: PropTypes.number, 
+    user_id: PropTypes.number.isRequired,
+    role_id: PropTypes.number.isRequired,
+    login_user: PropTypes.object.isRequired,
+    ip_address: PropTypes.string.isRequired,
+    time_zone: PropTypes.number.isRequired,
+    login_user_timezone: PropTypes.object.isRequired,
+  }).isRequired,
+};
+
 const LoginLogs = () => {
-  const [pageSize, setPageSize] = useState(50);
-  const [dataGridHeight, setDataGridHeight] = useState("550px");
-  const [userData, setUserData] = useState([]);
-  const [menteeDataBackup, setMenteeDataBackup] = useState([]);
-  const [anchorEl, setAnchorEl] = React.useState();
-  const [userId, setUserId] = useState();
-  const [userIdToNavigate, setUserIdToNavigate] = useState();
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-
-  const handleMonthChange = (event) => {
-    setSelectedMonth(event.target.value);
-  };
-
-  const handleYearChange = (event) => {
-    setSelectedYear(event.target.value);
-  };
-
-  const handleClick = (event, value) => {
-    setUserIdToNavigate(value);
-    setAnchorEl(event.currentTarget);
-  };
-
-  //get all user
-  const getData = async () => {
-    try {
-      let result = await GetLoginLogs({
-        month: selectedMonth,
-        year: selectedYear,
-      });
-      const loginCountData = result?.data?.data;
-
-      setUserData(loginCountData || []);
-      setMenteeDataBackup(result?.data?.data)
-      console.log("loginCountData", loginCountData);
-    } catch (e) {
-      console.log(e);
-      setUserData([]);
-    }
-  };
+  const [userLoginTimingData, setUserLoginTimingData] = useState([]);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [clearLoading, setClearLoading] = useState(false);
 
   useEffect(() => {
-    getData();
-  }, [selectedMonth, selectedYear]);
-
-  const onSearch = (e) => {
-    const backupData = [...menteeDataBackup];
-    const finalData = [];
-    for (let item in backupData) {
-      if (
-        // backupData[item].email_id?.includes(search) ||
-        backupData[item].userName?.toLowerCase()?.includes(e?.toLowerCase()) ||
-        backupData[item].userEmail?.toLowerCase()?.includes(e?.toLowerCase()) ||
-        backupData[item].id
-          .toString()
-          ?.toLowerCase()
-          ?.includes(e?.toLowerCase())
-      ) {
-        finalData.push(backupData[item]);
+    const loginTimingsFunc = async () => {
+      try {
+        let data = await getUserLoginTimings();
+        setUserLoginTimingData(data.data.data);
+        console.log("logs", data.data);
+      } catch (error) {
+        setError(error.message)
       }
+      finally {
+        setLoading(false)
+      }
+    };
+
+    loginTimingsFunc();
+  }, []);
+
+  const handleClearButtonClick = async () => {
+    setClearLoading(true);
+    try {
+      await clearUserLoginTimings();
+      setUserLoginTimingData([]);
+      message.success("Login Record Cleared Successfully");
+    } catch (error) {
+      message.error("Failed to Clear Login Record");
+    } finally {
+      setClearLoading(false);
     }
-    setUserData(finalData);
   };
-
-  const columns = [
-    {
-      field: "id",
-      headerName: "ID",
-      width: 150,
-      headerClassName: "custom-header",
-      cellClassName: "custom-cell",
-    },
-    {
-      field: "userName",
-      headerName: " User's Name",
-      width: 150,
-      flex: 1,
-      headerClassName: "custom-header",
-      cellClassName: "custom-cell",
-    },
-    {
-      field: "userEmail",
-      headerName: "Email Address",
-      width: 150,
-      flex: 1,
-      headerClassName: "custom-header",
-      cellClassName: "custom-cell",
-    },
-    {
-      field: "logincount",
-      headerName: "Login Count",
-      width: 150,
-      flex: 1,
-      headerClassName: "custom-header",
-      cellClassName: "custom-cell",
-    },
-
-    // {
-    //   field: "created_at",
-    //   headerName: "Login Timing",
-    //   width: 450,
-    //   headerClassName: "custom-header",
-    //   cellClassName: "custom-cell",
-    //   flex: 1,
-    //   valueFormatter: (params) =>
-    //     moment(params?.value).format("DD/MM/YYYY hh:mm A"),
-    // },
-    // {
-    //     field: "updated_at",
-    //     headerName: "Logout Timing",
-    //     width: 450,
-    //     headerClassName: "custom-header",
-    //     cellClassName: "custom-cell",
-    //     flex: 1,
-    //     valueFormatter: params =>
-    //     moment(params?.value).format("DD/MM/YYYY hh:mm A"),
-    //   },
-  ];
 
   return (
     <Box m="20px">
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        {/* <Header title="USER MANAGEMENT" subtitle="Create Category" /> */}
-        <h3> User Login Activity:</h3>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          flexDirection="column"
+        >
+          <h3 className="dashboard_title"> User Login Activity:</h3>
+          <p className="page-sub-title" style={{ color: "green" }}>
+            Login track record of all users
+          </p>
+        </Box>
         <Box>
-          <span className="p-input-icon-left" style={{ marginRight: "20px" }}>
-            <i className="pi pi-search" />
-            <InputText
-              type="search"
-              // onInput={(e) => setGlobalFilter(e.target.value)}
-              onChange={(e) => {
-                onSearch(e.target.value);
-              }}
-              placeholder="Search..."
-            />
-          </span>
-
-          <FormControl>
-            <InputLabel style={{ marginTop: "-10px" }}>Month</InputLabel>
-            <Select value={selectedMonth} onChange={handleMonthChange}>
-              {/* Populate dropdown with month numbers */}
-              {Array.from({ length: 12 }, (_, index) => (
-                <MenuItem key={index + 1} value={index + 1}>
-                  {MONTHS[index]}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl style={{ marginLeft: "20px" }}>
-            <InputLabel style={{ marginTop: "-10px" }}>Year</InputLabel>
-            <Select value={selectedYear} onChange={handleYearChange}>
-              {/* Populate dropdown with years, you can adjust the range as needed */}
-              {Array.from(
-                { length: 10 },
-                (_, index) => new Date().getFullYear() - index
-              ).map((year) => (
-                <MenuItem key={year} value={year}>
-                  {year}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Button
+            label="Clear Logs"
+            severity="danger"
+            onClick={handleClearButtonClick}
+            disabled={clearLoading}
+            style={{
+              margin: "0px 0px",
+              borderRadius: "5px",
+              height: "40px",
+            }}
+          />
         </Box>
       </Box>
-      <div
-        style={{
-          height: dataGridHeight,
-          width: "100%",
-          // marginLeft: "10%",
-          marginTop: "20px",
-        }}
-      >
-        <DataGrid
-          rows={userData}
-          columns={columns}
-          pageSize={pageSize}
-          rowHeight={80}
-          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-          rowsPerPageOptions={[50, 75, 100]}
-          experimentalFeatures={{ newEditingApi: true }}
-          onSelectionModelChange={(id) => {
-            const selectedIDs = new Set([id]);
-            const selectedRowData = userData.filter((row) =>
-              selectedIDs.has(row.id.toString())
-            );
-            setUserId(selectedIDs);
-          }}
-        />
-      </div>
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        userLoginTimingData &&
+        userLoginTimingData.length !== 0 && (
+          <Box m="40px 0 0 0" height="64.5vh" overflow="auto">
+            <TableContainer component={Paper}>
+              <Table aria-label="collapsible table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell />
+                    <TableCell>Name</TableCell>
+                    <TableCell align="right">Email</TableCell>
+                    <TableCell align="right">Role</TableCell>
+                    <TableCell align="right">User Id</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {Object.keys(userLoginTimingData).map((userId) => (
+                    <Row key={userId} row={userLoginTimingData[userId]} />
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        )
+      )}
     </Box>
   );
 };
 
 export default LoginLogs;
+
+
+
+

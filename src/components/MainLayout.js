@@ -7,9 +7,10 @@ import { Link } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 import { FaUsers } from "react-icons/fa";
 import { MdOutlineManageAccounts } from "react-icons/md";
+import { FaRegBell } from "react-icons/fa6";
 import { FiUser } from "react-icons/fi";
 import { VscBellDot } from "react-icons/vsc";
-import { PiChatTextBold } from "react-icons/pi";
+import { MdContactPhone } from "react-icons/md";
 import { FiMail } from "react-icons/fi";
 import { LuSettings } from "react-icons/lu";
 import { FaRegCircleUser } from "react-icons/fa6";
@@ -24,15 +25,22 @@ import { useNavigate } from "react-router-dom";
 import { BiCategoryAlt } from "react-icons/bi";
 import { BiSolidCategoryAlt } from "react-icons/bi";
 import { MdManageAccounts } from "react-icons/md";
+import { FiTruck } from "react-icons/fi";
+import { MdOutlineMarkUnreadChatAlt } from "react-icons/md";
+import { IoMdChatboxes } from "react-icons/io";
+import { SiStoryblok } from "react-icons/si";
 import "./MainLayout.scss";
 import { message } from "antd";
 import Login from "../pages/Login/Login";
 import { GetAdminProfile } from "../services/Api/Api";
+import { GetNotifications } from "../services/Api/NotificationApi";
+import { Button } from "primereact/button";
 const { Header, Sider, Content } = Layout;
 
 const MainLayout = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [idData, setIdData] = React.useState({});
+  const [notificationData, setNotification] = React.useState([]);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -52,8 +60,46 @@ const MainLayout = () => {
   useEffect(() => {
     getData();
   }, []);
+
+  // const getNotifications = async () => {
+  //   try {
+  //     let result = await GetNotifications(localStorage.getItem("adminToken"));
+  //     const notificationsArray = result?.data?.data || []; // Ensure it's an array or set to an empty array if undefined
+  //     setNotification(notificationsArray);
+  //     console.log("notificationsArray", notificationsArray);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   getNotifications();
+  // }, []);
+
+  useEffect(() => {
+    // Function to fetch notifications
+    const fetchNotifications = async () => {
+      try {
+        let result = await GetNotifications(localStorage.getItem("adminToken"));
+        const notificationsArray = result?.data?.data || [];
+        setNotification(notificationsArray);
+        console.log("notificationsArray", notificationsArray);
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    // Fetch notifications initially
+    fetchNotifications();
+
+    // Set up interval to fetch notifications every 10 seconds
+    const intervalId = setInterval(fetchNotifications, 10000);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
   const handleMailClick = () => {
-    // Redirect to the specified URL
     window.location.href =
       "https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox";
   };
@@ -67,15 +113,11 @@ const MainLayout = () => {
     navigate("/notifications");
   };
   const navigateToChats = () => {
-    navigate("/chats");
+    navigate("/redirection");
   };
 
-  const ref = useRef(null);
-
-  // const notify = () =>{ }
   function logout() {
     localStorage.removeItem("adminToken");
-    // notify()
     message.success(" Logged Out Successfully");
     setTimeout(() => {
       navigate("/Login");
@@ -87,7 +129,7 @@ const MainLayout = () => {
   return (
     <>
       {token ? (
-        <Layout /* onContextMenu={(e) => e.preventDefault()} */>
+        <Layout>
           <Sider
             trigger={null}
             collapsible
@@ -154,17 +196,27 @@ const MainLayout = () => {
                       icon: <PiShoppingCartBold className="fs-4" />,
                       label: "Product List",
                     },
-                    // {
-                    //   key: "addProduct",
-                    //   icon: <PiShoppingCartBold className="fs-4" />,
-                    //   label: "Add Product",
-                    // },
                     {
                       key: "orders",
-                      icon: <PiShoppingCartBold className="fs-4" />,
+                      icon: <FiTruck className="fs-4" />,
                       label: "Orders",
                     },
                   ],
+                },
+                {
+                  key: "/redirection",
+                  icon: <IoMdChatboxes className="fs-4" />,
+                  label: "Chat",
+                },
+                {
+                  key: "/blogs",
+                  icon: <SiStoryblok className="fs-4" />,
+                  label: "Blogs",
+                },
+                {
+                  key: "/quotes",
+                  icon: <MdContactPhone className="fs-4" />,
+                  label: "Quote Request",
                 },
                 {
                   key: "/t&c1",
@@ -188,27 +240,11 @@ const MainLayout = () => {
                     },
                   ],
                 },
+
                 {
-                  key: "/admin1",
+                  key: "/adminList",
                   icon: <MdManageAccounts className="fs-4" />,
-                  label: "Admin Management",
-                  children: [
-                    {
-                      key: "adminList",
-                      icon: <MdOutlineManageAccounts className="fs-4" />,
-                      label: "Admin's List",
-                    },
-                    {
-                      key: "stories3",
-                      icon: <MdOutlineManageAccounts className="fs-4" />,
-                      label: "Departmemt",
-                    },
-                    {
-                      key: "role-list",
-                      icon: <MdOutlineManageAccounts className="fs-4" />,
-                      label: "Role",
-                    },
-                  ],
+                  label: "Access Management",
                 },
               ]}
             />
@@ -231,9 +267,6 @@ const MainLayout = () => {
               <div className="d-flex gap-4 align-items-center">
                 <div className="position-relative clicked">
                   <FiMail className="fs-3" onClick={handleMailClick} />
-                  {/* <span className="badge bg-warning rounded-circle p-1 position-absolute">
-                    3
-                  </span> */}
                 </div>
                 <div
                   role="button"
@@ -243,53 +276,81 @@ const MainLayout = () => {
                   className="d-flex align-items-center"
                 >
                   <div className="position-relative clicked">
-                    <VscBellDot
+                    <FaRegBell
                       className="fs-3"
                       onClick={(event) => handleClick(event)}
                     />
 
-                    {/* <span className="badge bg-warning rounded-circle p-1 position-absolute">
-                    3
-                  </span> */}
+                    <span className="badge bg-warning rounded-circle p-1 position-absolute">
+                      {notificationData.activeNotificationCount}
+                    </span>
                   </div>
                 </div>
+
                 <div
-                  className="dropdown-menu"
+                  className="dropdown-menu notification"
                   aria-labelledby="dropdownMenuLink"
                   style={{
-                    // margin: "10px !important",
-                    borderTopColor: "blue",
+                    borderTopColor: "purple",
                     borderTopWidth: "4px",
                     maxWidth: "300px",
                   }}
                 >
-                  <div
+                  <h4
                     style={{
-                      display: "flex",
-                      justifyContent: "space-around",
-                      alignItems: "center",
+                      fontSize: "17px",
+                      marginLeft: "5px",
+                      marginTop: "5px",
                     }}
                   >
-                    <p>Notifications</p>
-                    <p style={{ color: "blue" }}>Mark All as Read</p>
+                    Notifications
+                  </h4>
+
+                  <hr style={{ margin: "5px 0" }} />
+
+                  <div style={{ overflow: "auto" }}>
+                    {notificationData &&
+                    notificationData.notifications &&
+                    notificationData.notifications.length > 0 ? (
+                      notificationData.notifications
+                        .slice(0, 5)
+                        .map((item, index) => (
+                          <div key={index}>
+                            {/* Render your notification item here */}
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                padding: "10px",
+                              }}
+                            >
+                              <h5>{item.title}</h5>
+                              {item.notification_user &&
+                                item.notification_user.user_profile && (
+                                  <p>
+                                    {item.notification_user.user_profile.name}
+                                  </p>
+                                )}
+                            </div>
+
+                            <p>{item.notification}</p>
+
+                            {index < 4 && <hr />}
+                          </div>
+                        ))
+                    ) : (
+                      <p>No active notifications found</p>
+                    )}
                   </div>
-                  <hr></hr>
-                  <div style={{ height: "250px", overflow: "auto" }}></div>
-                  <button
-                    style={{
-                      color: "blue",
-                      display: "block",
-                      width: "100%",
-                      backgroundColor: "white",
-                      border: "none",
-                    }}
-                  >
-                    View All
-                  </button>
+
+                  <div style={{ lineHeight: "0px !important" }}>
+                    <a href="/notifications">View All</a>
+                  </div>
                 </div>
 
                 <div className="position-relative clicked">
-                  <PiChatTextBold
+                  <MdOutlineMarkUnreadChatAlt
                     onClick={() => navigateToChats()}
                     className="fs-3"
                   />
@@ -314,7 +375,7 @@ const MainLayout = () => {
                       </div>
                     </div>
                     <div
-                      className="dropdown-menu"
+                      className="dropdown-menu admin"
                       aria-labelledby="dropdownMenuLink"
                       style={{
                         // margin: "10px !important",

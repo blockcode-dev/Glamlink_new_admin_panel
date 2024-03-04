@@ -160,26 +160,35 @@ const EditOrder = () => {
             <Steps
               direction="vertical"
               size="small"
-              current={stepCurrent} 
+              current={stepCurrent}
               items={[
                 {
                   title: "Booked",
                   description: "Booked by User",
+                  status:
+                    orderData?.order_status === "BOOKED" ? "finish" : "wait",
                 },
                 {
                   title: "Accepted",
-                  description: "Order Accepted ",
+                  description: "Order Accepted",
+                  status:
+                    orderData?.order_status === "ACCEPTED" ? "finish" : "wait",
                 },
                 {
                   title: "Shipped",
                   description: "Out for delivery",
+                  status:
+                    orderData?.order_status === "SHIPPED" ? "finish" : "wait",
                 },
                 {
                   title: "Delivered",
                   description: "Items Delivered",
+                  status:
+                    orderData?.order_status === "DELIVERED" ? "finish" : "wait",
                 },
               ]}
             />
+
             <Col>
               <h4
                 style={{
@@ -332,7 +341,7 @@ const EditOrder = () => {
               >
                 Shipping Information :
               </h4>
-              <Row >
+              <Row>
                 <Col style={{ marginRight: "100px" }}>
                   <h5
                     style={{
@@ -341,7 +350,7 @@ const EditOrder = () => {
                       fontWeight: "700",
                       marginTop: "14px",
                       color: "darkgray",
-                    }} 
+                    }}
                   >
                     Name:
                   </h5>
@@ -365,7 +374,7 @@ const EditOrder = () => {
                     {orderData?.order_user?.email}
                   </p>
                 </Col>
-                <Col >
+                <Col>
                   <h5
                     style={{
                       fontSize: "0.9rem",

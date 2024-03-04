@@ -1,10 +1,22 @@
 import axios from "axios";
 import { BASE_URL } from "../Host";
 
-export const GetServices = async () => {
-  const res = await axios.get(BASE_URL + "service/getAllServices");
 
-  return res;
+export const GetServices = async (adminToken, role_id) => {
+  try {
+    const res = await axios.get(BASE_URL + "service/getAllServicesByAdmin", {
+      headers: {
+        "x-access-token": `${adminToken}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return res;
+  } catch (error) {
+    // Handle error if needed
+    console.error("Error fetching users:", error);
+    throw error;
+  }
 };
 
 //get products byid

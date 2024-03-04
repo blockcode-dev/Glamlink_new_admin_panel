@@ -2,7 +2,7 @@ import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
-import { GetLoginLogs } from "../../../../services/Api/Api";
+import { getUserLoginTimings } from "../../../../services/Api/Api";
 import { InputText } from "primereact/inputtext";
 import moment from "moment";
 
@@ -47,7 +47,7 @@ const AdminActivity = () => {
   //get all user
   const getData = async () => {
     try {
-      let result = await GetLoginLogs({
+      let result = await getUserLoginTimings({
         month: selectedMonth,
         year: selectedYear,
       });

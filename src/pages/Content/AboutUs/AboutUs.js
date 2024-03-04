@@ -1,29 +1,89 @@
-import React from 'react'
-import './AboutUs.scss'
+import React, { useEffect, useState } from "react";
+import "./AddAboutUs";
+import { Button } from "primereact/button";
+import { useNavigate } from "react-router-dom";
+import { GetAboutUs } from "../../../services/Api/ContentApi";
 
 const AboutUs = () => {
-  return (
-    <div className="about-us-container">
-      <h1>About Us</h1>
-      <p>
-        Welcome to our website! We are a passionate team dedicated to providing
-        high-quality products/services and making a positive impact in the
-        world.
-      </p>
-      <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus
-        lobortis, dui eget lacinia malesuada, purus sapien tincidunt nulla, vel
-        mattis felis nulla vitae turpis. Fusce nec leo vel arcu commodo
-        dignissim vel at ligula.
-      </p>
-      <p>
-        Nullam facilisis felis a arcu lobortis ultricies. Suspendisse potenti.
-        Proin euismod ligula eu velit fermentum, sit amet vulputate elit
-        lacinia. In hac habitasse platea dictumst. Mauris in purus vel erat
-        tincidunt congue.
-      </p>
-    </div>
-  )
-}
+  const navigate = useNavigate();
+  const [contentData, setContentData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-export default AboutUs
+  const getData = async () => {
+    try {
+      setLoading(true);
+      let result = await GetAboutUs(localStorage.getItem("adminToken"));
+      setContentData(result.data.data);
+      console.log("GetAboutUs==>", result.data.data);
+    } catch (e) {
+      console.log(e);
+      if (e.response && e.response.status === 401) {
+        navigate("/error401");
+
+        console.log("You do not have access to this page as a sub-admin.");
+      } else {
+        console.log("Error loading data. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    getData();
+  }, []);
+
+  return (
+    <div className="main_tc_container">
+      <>
+        {contentData.length > 0 && (
+          <div className="upper_tc_container">
+            <h1 style={{ color: "lightblue" }}>ABOUT US</h1>
+
+            <p style={{ color: "#888" }}>
+              Last update :{" "}
+              {new Date(contentData[0].updated_at).toLocaleString()}
+            </p>
+          </div>
+        )}
+        {contentData.map((content) => (
+          <div
+            className="lower_tc_container"
+            style={{ position: "relative", padding: "12px 0px 12px 12px " }}
+          >
+            <div>
+              {/* <h2>{contentData[0]?.heading}</h2> */}
+              {/* <p>{contentData[0]?.description}</p> */}
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: contentData[0]?.description,
+                }}
+              ></p>
+            </div>
+            <div>
+              <Button
+                label=" Edit About Us"
+                icon="pi pi-pencil"
+                severity="info"
+                // onClick={navigateToEditTAndC}
+                onClick={() => {
+                  navigate("/editAboutUs", {
+                    state: { data: content },
+                  });
+                }}
+                style={{
+                  position: "absolute",
+                  top: "0",
+                  right: "0",
+                  marginTop: "12px",
+                  marginRight: "12px",
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </>
+    </div>
+  );
+};
+
+export default AboutUs;

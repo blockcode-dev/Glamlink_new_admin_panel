@@ -9,6 +9,7 @@ import "./Customers.css";
 import PersonPinIcon from "@mui/icons-material/PersonPin";
 import { message } from "antd";
 import Alert from "./Alert";
+import { CoPresentOutlined } from "@mui/icons-material";
 
 const Customers = () => {
   const [pageSize, setPageSize] = useState(50);
@@ -23,6 +24,8 @@ const Customers = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [combinedData, setCombinedData] = useState([]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -36,13 +39,22 @@ const Customers = () => {
   //get all user
   const getData = async () => {
     try {
-      // Fetch user data from your API with role_id 6 for customers
+      setLoading(true);
       let result = await GetUsers(localStorage.getItem("adminToken"), 6);
       setUserData(result.data.data);
       console.log("user", result.data.data);
       setMenteeDataBackup(result.data.data);
     } catch (e) {
       console.log(e);
+      if (e.response && e.response.status === 401) {
+        navigate("/error401");
+
+        console.log("You do not have access to this page as a sub-admin.");
+      } else {
+        console.log("Error loading data. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,6 +63,7 @@ const Customers = () => {
       // Fetch driver data from your API with role_id 7 for drivers
       let result = await GetUsers(localStorage.getItem("adminToken"), 7);
       setDriverData(result.data.data);
+      setMenteeDataBackup(result.data.data);
     } catch (e) {
       console.log(e);
     }
@@ -89,21 +102,25 @@ const Customers = () => {
 
   const onSearch = (e) => {
     const backupData = [...menteeDataBackup];
-    const finalData = [];
-    for (let item in backupData) {
-      if (
-        // backupData[item].email_id?.includes(search) ||
-        backupData[item].name?.toLowerCase()?.includes(e?.toLowerCase()) ||
-        backupData[item].id
-          .toString()
-          ?.toLowerCase()
-          ?.includes(e?.toLowerCase())
-      ) {
-        finalData.push(backupData[item]);
-      }
-    }
-    setUserData(finalData);
+    const finalData = backupData.filter((item) => {
+      const lowerCaseName = item.name?.toLowerCase() || "";
+      const lowerCaseId = item.id?.toString().toLowerCase() || "";
+      const lowerCaseEmail = item.email?.toLowerCase() || "";
+
+      return (
+        lowerCaseName.includes(e.toLowerCase()) ||
+        lowerCaseId.includes(e.toLowerCase()) ||
+        lowerCaseEmail.includes(e.toLowerCase())
+      );
+    });
+
+    setUserData(finalData.filter((item) => item.role_id === 6)); // Filter customers
+    setDriverData(finalData.filter((item) => item.role_id === 7)); // Filter drivers
   };
+
+  useEffect(() => {
+    setCombinedData([...userData, ...driverData]);
+  }, [userData, driverData]);
 
   const columns = [
     {
@@ -163,70 +180,80 @@ const Customers = () => {
 
   return (
     <Box m="20px">
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        marginTop="20px"
-      >
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          style={{ marginBottom: "10px" }}
-        >
-          <Tab
-            icon={<PersonPinIcon />}
-            iconPosition="start"
-            label="Customers"
-          />
-          <Tab icon={<PersonPinIcon />} iconPosition="end" label="Drivers" />
-        </Tabs>
+      {loading ? (
+        <p style={{ fontSize: "16px" }}>Loading...</p>
+      ) : (
+        <>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            marginTop="20px"
+          >
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              style={{ marginBottom: "10px" }}
+            >
+              <Tab
+                icon={<PersonPinIcon />}
+                iconPosition="start"
+                label="Customers"
+              />
+              <Tab
+                icon={<PersonPinIcon />}
+                iconPosition="end"
+                label="Drivers"
+              />
+            </Tabs>
 
-        <Box>
-          <span className="p-input-icon-left">
-            <i className="pi pi-search" />
-            <InputText
-              type="search"
-              // onInput={(e) => setGlobalFilter(e.target.value)}
-              onChange={(e) => {
-                onSearch(e.target.value);
+            <Box>
+              <span className="p-input-icon-left">
+                <i className="pi pi-search" />
+                <InputText
+                  type="search"
+                  // onInput={(e) => setGlobalFilter(e.target.value)}
+                  onChange={(e) => {
+                    onSearch(e.target.value);
+                  }}
+                  placeholder="Search..."
+                />
+              </span>
+              <Button
+                label=" Add New User"
+                icon="pi pi-plus"
+                severity="info"
+                style={{ margin: "0px 10px", borderRadius: "5px" }}
+                onClick={navigateToAddUser}
+              />
+            </Box>
+          </Box>
+          <div
+            style={{
+              height: dataGridHeight,
+              width: "100%",
+              marginTop: "20px",
+            }}
+          >
+            <DataGrid
+              rows={tabValue === 0 ? userData : driverData} // Use userData for Customers, driverData for Drivers
+              columns={columns}
+              pageSize={pageSize}
+              rowHeight={80}
+              onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+              rowsPerPageOptions={[50, 75, 100]}
+              experimentalFeatures={{ newEditingApi: true }}
+              onSelectionModelChange={(id) => {
+                const selectedIDs = new Set([id]);
+                const selectedRowData = userData.filter((row) =>
+                  selectedIDs.has(row.id.toString())
+                );
+                setUserId(selectedIDs);
               }}
-              placeholder="Search..."
             />
-          </span>
-          <Button
-            label=" Add New User"
-            icon="pi pi-plus"
-            severity="info"
-            style={{ margin: "0px 10px", borderRadius: "5px" }}
-            onClick={navigateToAddUser}
-          />
-        </Box>
-      </Box>
-      <div
-        style={{
-          height: dataGridHeight,
-          width: "100%",
-          marginTop: "20px",
-        }}
-      >
-        <DataGrid
-          rows={tabValue === 0 ? userData : driverData} // Use userData for Customers, driverData for Drivers
-          columns={columns}
-          pageSize={pageSize}
-          rowHeight={80}
-          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-          rowsPerPageOptions={[50, 75, 100]}
-          experimentalFeatures={{ newEditingApi: true }}
-          onSelectionModelChange={(id) => {
-            const selectedIDs = new Set([id]);
-            const selectedRowData = userData.filter((row) =>
-              selectedIDs.has(row.id.toString())
-            );
-            setUserId(selectedIDs);
-          }}
-        />
-      </div>
+          </div>
+        </>
+      )}
     </Box>
   );
 };

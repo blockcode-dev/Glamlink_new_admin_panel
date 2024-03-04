@@ -311,10 +311,10 @@ const EditBookings = () => {
                     value: "REJECTED",
                     label: "REJECTED",
                   },
-                  {
-                    value: "SUCCESS",
-                    label: "SUCCESS",
-                  },
+                  // {
+                  //   value: "SUCCESS",
+                  //   label: "SUCCESS",
+                  // },
                 ]}
               />
             </Form.Item>
@@ -323,7 +323,7 @@ const EditBookings = () => {
           <Col>
             <Form.Item label="Choose Driver:">
               <Select
-                value={bookingData?.guest_booking_user?.user_profile?.name}
+                value={bookingData?.booking_driver_details?.user_profile?.name}
                 placeholder="Select a driver"
                 onChange={handleDriverChange}
                 style={{

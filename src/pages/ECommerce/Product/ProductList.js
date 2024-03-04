@@ -85,6 +85,25 @@ const ProductList = () => {
         return <div style={{ color: stockColor }}>{stockStatus}</div>;
       },
     },
+    // {
+    //   field: "Quantity",
+    //   headerName: "Stock",
+    //   width: 350,
+    //   headerClassName: "custom-header",
+    //   cellClassName: "custom-cell",
+    //   flex: 1,
+    
+    // },
+    // {
+    //   field: "price",
+    //   headerName: "Price per unit",
+    //   width: 350,
+    //   headerClassName: "custom-header",
+    //   cellClassName: "custom-cell",
+    //   flex: 1,
+    
+    // },
+  
 
     {
       field: "action",

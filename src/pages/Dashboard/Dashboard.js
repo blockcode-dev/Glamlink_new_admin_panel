@@ -1,21 +1,28 @@
+/** @format */
+
 import React, { useEffect, useState } from "react";
 import { Column } from "@ant-design/plots";
-import { AiTwotoneLike } from "react-icons/ai";
-import { FcReading } from "react-icons/fc";
-import { Button } from "primereact/button";
+import { PiShoppingCartDuotone } from "react-icons/pi";
+import { FcServices } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import {
-  GetUserCountByMonth,
+  GetSalesCountByMonth,
   GetBlogCount,
-  GetCategoryCount,
+  GetProductCount,
   GetUserCount,
-  GetMostLiked,
-  GetMostViewed,
+  GetServiceCount,
+  GetDriverCount,
+  GetBookingCount,
+  GetOrderCount,
+  GetMostBookedService,
 } from "../../services/Api/Api";
+import "./Dashboard.css";
+import { Doughnut } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 const getAllMonths = () => {
   const months = [
-    "January",
+    "Jan",
     "February",
     "March",
     "April",
@@ -33,18 +40,70 @@ const getAllMonths = () => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState([]);
+  const [salesCount, setSalesCount] = useState([]);
+  const [driverData, setDriverData] = useState([]);
   const [blogData, setBlogData] = useState([]);
-  const [categoryData, setCategoryData] = useState([]);
+  const [productData, setProductData] = useState([]);
+  const [bookingData, setBookingData] = useState([]);
+  const [orderData, setOrderData] = useState([]);
   const [customerData, setCustomerData] = useState([]);
-  const [mostLikedData, setMostLikedData] = useState([]);
-  const [mostViewedData, setMostViewedData] = useState([]);
+  const [serviceData, setServiceData] = useState([]);
+  const [mostBookedService, setMostBookedService] = useState([]);
+  
+
+  ChartJS.register(ArcElement, Tooltip, Legend);
+  const data = {
+    labels: mostBookedService.map((item) => item.service_name || ""),
+  
+    datasets: [
+      {
+        data: mostBookedService.map((item) => item.booking_count || 0),
+        backgroundColor: ["#798BFF", "#B8ACFF", "#FFA9CE", "#F9DB7C"],
+        borderColor: ["#798BFF", "#B8ACFF", "#FFA9CE", "#F9DB7C"],
+        borderWidth: 1,
+      },
+    ],
+  };
+  // console.log('lables', data.labels);
+  // console.log('Service Booking Names:', mostBookedService.map((item) => item.service_booking?.name || ""));
+  // mostBookedService.forEach((item) => {
+  //   console.log('Service Booking Name:', item.service_booking?.name || "N/A");
+  // });
+
+  // console.log('Service Booking Name:', item);
+  
+  mostBookedService.forEach((item) => {
+    // console.log('Service Booking Name:', item.service_booking?.name || "N/A");
+    console.log('Service Booking Name:', item.service_id
+    );
+  });
+  
+  
+
+
+  //get customer count
+  const getMostBookedService = async () => {
+    try {
+      const result = await GetMostBookedService(
+        localStorage.getItem("adminToken")
+      );
+      setMostBookedService(result.data.data);
+      console.log("customerdata====>", customerData);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    getMostBookedService();
+  }, []);
 
   //get customer count
   const getCustomerData = async () => {
     try {
       const result = await GetUserCount(localStorage.getItem("adminToken"));
       setCustomerData(result.data.data);
+      console.log("customerdata====>", customerData);
     } catch (e) {
       console.log(e);
     }
@@ -54,18 +113,60 @@ const Dashboard = () => {
     getCustomerData();
   }, []);
 
-  //get categroy count
-  const getCategoryData = async () => {
+  //get customer count
+  const getDriverData = async () => {
     try {
-      const result = await GetCategoryCount(localStorage.getItem("adminToken"));
-      setCategoryData(result.data.data);
+      const result = await GetDriverCount(localStorage.getItem("adminToken"));
+      setDriverData(result.data.data);
     } catch (e) {
       console.log(e);
     }
   };
 
   useEffect(() => {
-    getCategoryData();
+    getDriverData();
+  }, []);
+
+  // get booking count
+  const getBookingCount = async () => {
+    try {
+      const result = await GetBookingCount(localStorage.getItem("adminToken"));
+      setBookingData(result.data.data);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    getBookingCount();
+  }, []);
+
+  // get order count
+  const getOrderCount = async () => {
+    try {
+      const result = await GetOrderCount(localStorage.getItem("adminToken"));
+      setOrderData(result.data.data);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    getOrderCount();
+  }, []);
+
+  //get categroy count
+  const getProductData = async () => {
+    try {
+      const result = await GetProductCount(localStorage.getItem("adminToken"));
+      setProductData(result.data.data);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    getProductData();
   }, []);
 
   //get blog count
@@ -83,40 +184,26 @@ const Dashboard = () => {
   }, []);
 
   //get likes count
-  const getMostLikedData = async () => {
+  const getServiceCount = async () => {
     try {
-      const result = await GetMostLiked(localStorage.getItem("adminToken"));
-      setMostLikedData(result.data.data);
+      const result = await GetServiceCount(localStorage.getItem("adminToken"));
+      setServiceData(result.data.data);
     } catch (e) {
       console.log(e);
     }
   };
 
   useEffect(() => {
-    getMostLikedData();
-  }, []);
-
-  //get views count
-  const getMostViewedData = async () => {
-    try {
-      const result = await GetMostViewed(localStorage.getItem("adminToken"));
-      setMostViewedData(result.data.data);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  useEffect(() => {
-    getMostViewedData();
+    getServiceCount();
   }, []);
 
   //get usercount by month api
   const getData = async () => {
     try {
-      const result = await GetUserCountByMonth(
+      const result = await GetSalesCountByMonth(
         localStorage.getItem("adminToken")
       );
-      setUserData(result.data.data);
+      setSalesCount(result.data.data);
     } catch (e) {
       console.log(e);
     }
@@ -127,8 +214,8 @@ const Dashboard = () => {
   }, []);
 
   const formattedData =
-    userData.length > 0
-      ? userData.map(({ month, userCount }) => ({
+    salesCount.length > 0
+      ? salesCount.map(({ month, userCount }) => ({
           type: month,
           sales: userCount,
         }))
@@ -138,7 +225,7 @@ const Dashboard = () => {
     data: formattedData,
     xField: "type",
     yField: "sales",
-    color: ({ type }) => "#ffd333",
+    color: ({ type }) => "#C5ABFF",
     label: {
       position: "middle",
       style: {
@@ -162,97 +249,110 @@ const Dashboard = () => {
     },
   };
 
-  const navigateToViewLoginLogs = () => {
-    navigate("/loginLogs");
-  };
-
   return (
     <div>
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          flexDirection: "column",
+
           marginBottom: "20PX",
         }}
       >
-        <h3 className="title">Dashboard</h3>
-
-       
+        <h3 className="dashboard_title">Dashboard</h3>
+        <p className="page-sub-title" style={{ color: "green" }}>
+          Welcome to Web Admin Panel!
+        </p>
       </div>
 
       <div className="d-flex justify-content-between align-items-center gap-3 mb-3 ">
         <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
           <div>
-            <p className="desc">Most Liked Story</p>
-            <h4 className="mb-0 sub-title">{mostLikedData.likes_count}</h4>
+            <p className="desc">Total Bookings:</p>
+            <h4 className="mb-0 sub-title">{bookingData}</h4>
           </div>
           <div className="d-flex flex-column align-items-end">
             <h6 className="red">
-              <AiTwotoneLike style={{ fontSize: "30px" }} />
+              <FcServices style={{ fontSize: "40px" }} />
             </h6>
-            <p className="mb-0  desc">{mostLikedData.heading}</p>
+            <p className="mb-0  desc"></p>
           </div>
         </div>
         <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
           <div>
-            <p className="desc">Most Viewed Story</p>
-            <h4 className="mb-0 sub-title">{mostViewedData.views_count}</h4>
+            <p className="desc">New Orders:</p>
+            <h4 className="mb-0 sub-title">{orderData}</h4>
           </div>
           <div className="d-flex flex-column align-items-end">
             <h6 className="red">
-              <FcReading style={{ fontSize: "30px" }} />
+              <PiShoppingCartDuotone style={{ fontSize: "40px" }} />
             </h6>
-            <p className="mb-0  desc">{mostViewedData.heading}</p>
           </div>
         </div>
-        <div>
-          {/* <div>
-            <Button
-              label="Click To View Login Logs"
-              icon="pi pi-arrow-up-right"
-              iconPos="right"
-              rounded outlined aria-label="Filter"
-              style={{
-                borderRadius: "10px",
-                marginLeft: "10px",
-                marginTop: "10px",
-              }}
-            />
-
-          
-          </div> */}
-        </div>
+        <div></div>
       </div>
 
       <div className="d-flex justify-content-between align-items-center gap-3 mb-3">
-        <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
+        <div
+          className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3"
+          style={{ borderRight: "5px solid pink" }}
+        >
           <div>
             <p className="desc">Total Users</p>
             <h4 className="mb-0 sub-title">{customerData}</h4>
           </div>
         </div>
-        <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
+        <div
+          className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3"
+          style={{ borderRight: "5px solid pink" }}
+        >
           <div>
-            <p className="desc">Total Stories</p>
-            <h4 className="mb-0 sub-title">{blogData}</h4>
+            <p className="desc">Total Drivers</p>
+            <h4 className="mb-0 sub-title">{driverData}</h4>
           </div>
         </div>
-        <div className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3">
+        <div
+          className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3"
+          style={{ borderRight: "5px solid pink" }}
+        >
           <div>
-            <p className="desc">Total Categories</p>
-            <h4 className="mb-0 sub-title">{categoryData}</h4>
+            <p className="desc">Total Products</p>
+            <h4 className="mb-0 sub-title">{productData}</h4>
+          </div>
+        </div>
+        <div
+          className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3"
+          style={{ borderRight: "5px solid pink" }}
+        >
+          <div>
+            <p className="desc">Total Services</p>
+            <h4 className="mb-0 sub-title">{serviceData}</h4>
+          </div>
+        </div>
+        <div
+          className="d-flex justify-content-between align-items-end flex-grow-1 bg-white p-3 roudned-3"
+          style={{ borderRight: "5px solid pink" }}
+        >
+          <div>
+            <p className="desc">Total Blogs</p>
+            <h4 className="mb-0 sub-title">{blogData}</h4>
           </div>
         </div>
       </div>
 
-      <div className="mt-4">
-        <h3 className="mb-5 title">User Registration Statistics by Month</h3>
-        <div>
-          <Column {...config} />
+      <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
+        <div className="left_graph">
+          <h3 className="mb-5 title">Sales Count(2023-2024)</h3>
+          <div>
+            <Column {...config} />
+          </div>
+        </div>
+        <div className="right_graph">
+        <h3 className="mb-5 title" style={{marginBottom:"20px"}}>Booking Overview</h3>
+          <Doughnut data={data} />
         </div>
       </div>
-      
     </div>
   );
 };

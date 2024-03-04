@@ -108,42 +108,42 @@ const RoleList = () => {
       flex: 1,
     },
 
-    {
-      field: "action",
-      headerName: "Actions",
-      headerClassName: "custom-header",
-      cellClassName: "custom-cell",
-      width: "350",
-      flex: 1,
-      renderCell: (cellValues) => {
-        return (
-          <div>
-            <Button
-              icon="pi pi-pencil"
-              rounded
-              outlined
-              className="mr-2"
-              style={{ margin: "0px 10px" }}
-              onClick={(event) => navigateToEditRole(event, cellValues.id)}
-            />
-            <Button
-              icon="pi pi-trash"
-              rounded
-              outlined
-              severity="danger"
-              onClick={(e) => removeRole(e, cellValues.id)}
-            />
-          </div>
-        );
-      },
-    },
+    // {
+    //   field: "action",
+    //   headerName: "Actions",
+    //   headerClassName: "custom-header",
+    //   cellClassName: "custom-cell",
+    //   width: "350",
+    //   flex: 1,
+    //   renderCell: (cellValues) => {
+    //     return (
+    //       <div>
+    //         <Button
+    //           icon="pi pi-pencil"
+    //           rounded
+    //           outlined
+    //           className="mr-2"
+    //           style={{ margin: "0px 10px" }}
+    //           onClick={(event) => navigateToEditRole(event, cellValues.id)}
+    //         />
+    //         <Button
+    //           icon="pi pi-trash"
+    //           rounded
+    //           outlined
+    //           severity="danger"
+    //           onClick={(e) => removeRole(e, cellValues.id)}
+    //         />
+    //       </div>
+    //     );
+    //   },
+    // },
   ];
 
   return (
     <Box m="20px">
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <h3>Role List</h3>
-        <Box>
+        {/* <Box>
           <Button
             label=" Add New Role"
             icon="pi pi-plus"
@@ -151,7 +151,7 @@ const RoleList = () => {
             onClick={navigateToAddRole}
             style={{ margin: "0px 10px" }}
           />
-        </Box>
+        </Box> */}
       </Box>
       <div
         style={{
