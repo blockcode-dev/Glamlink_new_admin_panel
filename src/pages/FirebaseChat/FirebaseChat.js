@@ -1,3 +1,5 @@
+/** @format */
+
 import * as React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
@@ -33,9 +35,7 @@ import { BsBoxArrowInLeft } from "react-icons/bs";
 
 import firebaseConfig from "../../firebaseConfig";
 import { GetAdminProfile } from "../../services/Api/Api";
-
-
-
+import Support from "./Chat";
 
 const useStyles = makeStyles({
   table: {
@@ -98,11 +98,11 @@ const ChatUI = () => {
 
   const handleUserClick = async (data) => {
     setSelectedUser(data);
-  
+
     try {
       const chattoken = localStorage.getItem("chatToken");
       await SendMessage(chattoken, data.id); // Assume there's a function to mark messages as seen
-  
+
       // Refresh the chat list and data after marking messages as seen
       getUserChatList();
       getUserChatData();
@@ -110,8 +110,6 @@ const ChatUI = () => {
       console.error("Error marking messages as seen:", error);
     }
   };
-  
-  
 
   // get customer count
   const getUserChatData = async () => {
@@ -120,7 +118,7 @@ const ChatUI = () => {
       if (selectedUser) {
         const result = await GetAllUserMessages(chattoken, selectedUser.id);
         setChatData(result.data.data);
-        console.log("chatsss==>", result);
+
       }
     } catch (e) {
       console.log(e);
@@ -140,7 +138,6 @@ const ChatUI = () => {
   }, [selectedUser]);
 
   const chatWindowRef = React.useRef(null);
-
 
   const scrollToBottom = () => {
     if (chatWindowRef.current) {
@@ -169,7 +166,7 @@ const ChatUI = () => {
     // Set up an interval to call the function every minute
     const chatListInterval = setInterval(() => {
       getUserChatList();
-    }, 10000); 
+    }, 10000);
 
     // Clean up the interval on component unmount
     return () => clearInterval(chatListInterval);
@@ -264,7 +261,8 @@ const ChatUI = () => {
     >
       {selectedUser && (
         <>
-          {selectedUser.user_attachments && selectedUser.user_attachments.length > 0 ? (
+          {selectedUser.user_attachments &&
+          selectedUser.user_attachments.length > 0 ? (
             <img
               style={{
                 height: "40px",
@@ -287,10 +285,6 @@ const ChatUI = () => {
       )}
     </Box>
   );
-  
-
-
-  console.log("userprofie", selectedUser);
 
   return (
     <Grid container style={{ height: "100%" }}>
@@ -395,96 +389,37 @@ const ChatUI = () => {
                 </ListItem>
               ))}
             </List>
-          
-
           </Grid>
           <Button
-              variant="contained"
-              color="secondary"
-              icon="pi pi-arrow-right"
-              // color="primary"
-              onClick={navigateToDashboard}
-              style={{ marginTop: "50px",marginLeft:"35px" }}
-              startIcon={<BsBoxArrowInLeft />}
-            >
-              Go Back to Dashboard
-            </Button>
+            variant="contained"
+            color="secondary"
+            icon="pi pi-arrow-right"
+            // color="primary"
+            onClick={navigateToDashboard}
+            style={{ marginTop: "50px", marginLeft: "35px" }}
+            startIcon={<BsBoxArrowInLeft />}
+          >
+            Go Back to Dashboard
+          </Button>
         </Box>
       </Grid>
 
       {/* Middle section with an image */}
-      <Grid item xs={9} style={{ display: "flex", flexDirection: "column" }}>
+      <Grid item xs={9} 
+      // style={{ display: "flex", flexDirection: "column" }}
+      >
         {selectedUser ? (
-          <Box
-            sx={{
-              flex: 1,
-              overflowY: "auto",
-              p: 2,
-              position: "relative", // Add relative positioning
-            }}
+            <div
+            // sx={{
+            //   flex: 1,
+            //   overflowY: "auto",
+            //   p: 2,
+            //   position: "relative", 
+            // }}
           >
             <Navbar selectedUser={selectedUser} />
-            <div style={{ height: "670px", overflow: "scroll" }} ref={chatWindowRef}>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column-reverse",
-                  flex: 1,
-                  overflowY: "auto",
-                  minHeight: 0,
-                }}
-              >
-                
-                {renderChatMessages()}
-              </Box>
-              <Box
-                sx={{
-                  padding: "4px 20px",
-                  backgroundColor: "background.default",
-                  position: "absolute",
-                  bottom: 0,
-                  width: "100%",
-                }}
-              >
-                <Grid container spacing={2}>
-                  {showEmojiPicker && (
-                    <EmojiPicker
-                      onEmojiClick={(event, emojiObject) => {
-                        setInput((prevInput) => prevInput + emojiObject.emoji);
-                      }}
-                    />
-                  )}
-                  <Grid item xs={10}>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      placeholder="Type a message"
-                      variant="outlined"
-                      value={input}
-                      onChange={handleInputChange}
-                      onKeyPress={(event) => {
-                        if (event.key === "Enter") {
-                          handleSubmit();
-                        }
-                      }}
-                    />
-                  </Grid>
-                 
-                  <Grid item xs={2} style={{ marginTop: "8px" }}>
-                    <Button
-                      fullWidth
-                      color="primary"
-                      variant="contained"
-                      endIcon={<SendIcon />}
-                      onClick={handleSubmit}
-                    >
-                      Send
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Box>
-            </div>
-          </Box>
+          <Support id={selectedUser?.id} chatType={chatType} />
+          </div>
         ) : (
           <img
             src={Image}
@@ -493,7 +428,6 @@ const ChatUI = () => {
           />
         )}
       </Grid>
-      
     </Grid>
   );
 };
@@ -541,7 +475,5 @@ const Message = ({ message, isSender }) => {
     </Box>
   );
 };
-
-
 
 export default ChatUI;

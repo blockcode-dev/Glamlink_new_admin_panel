@@ -1,5 +1,5 @@
 import React from "react";
-import "./Chat.css";
+import "./Chat.scss";
 import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import AccessImage from "../../assets/not-selected-chat.png";
