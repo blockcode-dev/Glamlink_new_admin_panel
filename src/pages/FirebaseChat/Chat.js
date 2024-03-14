@@ -1,4 +1,3 @@
-/** @format */
 
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
@@ -37,7 +36,6 @@ function ChatMessage({ message, source, timestamp }) {
     </div>
   );
 }
-
 
 const Support = ({ id, chatType }) => {
   console.log("chatType", chatType);
@@ -114,35 +112,69 @@ const Support = ({ id, chatType }) => {
     scrollToBottom();
   }, [chatMessages]);
 
+  // const groupMessagesByDate = (messages) => {
+  //   const groupedMessages = [];
+  //   let currentDate = null;
+
+  //   messages.forEach((msg) => {
+  //     const msgDate = new Date(msg.timestamp).toLocaleDateString();
+
+  //     if (msgDate !== currentDate) {
+  //       currentDate = msgDate;
+  //       groupedMessages.push({
+  //         date: currentDate,
+  //         messages: [msg],
+  //       });
+  //     } else {
+  //       const lastIndex = groupedMessages.length - 1;
+  //       groupedMessages[lastIndex].messages.push(msg);
+  //     }
+  //   });
+
+  //   return groupedMessages;
+  // };
+
   const groupMessagesByDate = (messages) => {
     const groupedMessages = [];
     let currentDate = null;
-
+  
     messages.forEach((msg) => {
-      const msgDate = new Date(msg.timestamp).toLocaleDateString();
-
-      if (msgDate !== currentDate) {
-        currentDate = msgDate;
-        groupedMessages.push({
-          date: currentDate,
-          messages: [msg],
+      const timestamp = msg.timestamp;
+      const msgDate = new Date(timestamp);
+  
+      // Check if the date is valid
+      if (!isNaN(msgDate.getTime())) {
+        const formattedDate = msgDate.toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "numeric",
+          year: "numeric",
         });
+  
+        if (formattedDate !== currentDate) {
+          currentDate = formattedDate;
+          groupedMessages.push({
+            date: currentDate,
+            messages: [msg],
+          });
+        } else {
+          const lastIndex = groupedMessages.length - 1;
+          groupedMessages[lastIndex].messages.push(msg);
+        }
       } else {
-        const lastIndex = groupedMessages.length - 1;
-        groupedMessages[lastIndex].messages.push(msg);
+        console.error("Invalid date encountered:", msgDate, "in message:", msg);
       }
     });
-
+  
     return groupedMessages;
   };
-
+  
   const formattedMessages = groupMessagesByDate(chatMessages);
 
   return (
     <div>
       <div className="messageContainer" ref={chatWindowRef}>
         {/* <div> */}
-          {/* {chatMessages.map((msg, index) => (
+        {/* {chatMessages.map((msg, index) => (
             <ChatMessage
               key={index}
               message={msg.message}
@@ -151,8 +183,8 @@ const Support = ({ id, chatType }) => {
             />
           ))} */}
         {/* </div> */}
-    
-         {/* {formattedMessages.map((group) => (
+
+        {/* {formattedMessages.map((group) => (
         <React.Fragment key={group.date}>
           <div className="date-header">{group.date}</div>
           {group.messages.map((msg, index) => (
@@ -165,66 +197,66 @@ const Support = ({ id, chatType }) => {
           ))}
         </React.Fragment>
       ))} */}
-      {formattedMessages.map((group) => (
-        <React.Fragment key={group.date}>
-          <div className="date-header">
-            {new Date(group.date).toLocaleDateString("en-US", {
-              day: "2-digit",
-              month: "numeric", // Change "long" to "numeric"
-              year: "numeric",
-            })}
-          </div>
-          {group.messages.map((msg, index) => (
-            <ChatMessage
-              key={index}
-              message={msg.message}
-              source={msg.source}
-              timestamp={msg.timestamp}
-            />
-          ))}
-        </React.Fragment>
-      ))}
-        
+        {formattedMessages.map((group) => (
+          <React.Fragment key={group.date}>
+            <div className="date-header">
+              {new Date(group.date).toLocaleDateString("en-US", {
+                day: "2-digit",
+                month: "numeric", // Change "long" to "numeric"
+                year: "numeric",
+              })}
+            </div>
+
+            {group.messages.map((msg, index) => (
+              <ChatMessage
+                key={index}
+                message={msg.message}
+                source={msg.source}
+                timestamp={msg.timestamp}
+              />
+            ))}
+          </React.Fragment>
+        ))}
       </div>
       <Box
-          sx={{
-            padding: "4px 20px",
-            // backgroundColor: "background.default",
-            // position: "absolute",
-            // bottom: 0,
-            // width: "auto",
-          }}
-        >
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={10}>
-              <TextField
-                size="small"
-                fullWidth
-                placeholder="Type a message"
-                variant="outlined"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(event) => {
-                  if (event.key === "Enter" && message.trim() !== "") {
-                    sendMessage();
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={2}>
-              <Button
+        sx={{
+          padding: "4px 20px",
+          // backgroundColor: "background.default",
+          // position: "absolute",
+          // bottom: 0,
+          // width: "auto",
+        }}
+      >
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={10}>
+            <TextField
+              size="small"
               fullWidth
-                color="primary"
-                variant="contained"
-                endIcon={<SendIcon />}
-                onClick={sendMessage}
-                disabled={message.trim() === ""}
-              >
-                Send
-              </Button>
-            </Grid>
+              placeholder="Type a message"
+              variant="outlined"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={(event) => {
+                if (event.key === "Enter" && message.trim() !== "") {
+                  sendMessage();
+                }
+              }}
+            />
           </Grid>
-        </Box>
+          <Grid item xs={2}>
+            <Button
+              fullWidth
+              color="primary"
+              variant="contained"
+              endIcon={<SendIcon />}
+              onClick={sendMessage}
+              disabled={message.trim() === ""}
+            >
+              Send
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
     </div>
   );
 };
