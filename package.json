@@ -24,6 +24,7 @@
     "emoji-picker-react": "^4.7.18",
     "firebase": "^10.8.1",
     "formik": "^2.2.9",
+    "material-table": "^2.0.5",
     "mdb-react-ui-kit": "^7.0.0",
     "mdbreact": "^5.2.0",
     "moment": "^2.29.4",

@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
-import { GetAllProducts, DeleteProduct } from "../../../services/Api/ProductApi";
+import { GetAllProducts, DeleteProduct, UpdateProduct } from "../../../services/Api/ProductApi";
 import { Button } from "primereact/button";
 import Alert from "../../Customer/Alert";
 import { message } from "antd";
@@ -47,7 +47,34 @@ const ProductList = () => {
         console.log(error, "error");
       });
   };
-
+ 
+  const handleSubmit = async (id, updatedFields) => {
+    try {
+      const formData = new FormData();
+      Object.entries(updatedFields).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      formData.append("price", productData?.price ? productData?.price : "");
+      formData.append("stock", productData?.stock ? productData?.stock : "");
+  
+      const res = await UpdateProduct(id, formData);
+      if (res.status === 200) {
+        message.success("Product updated successfully!");
+        navigate("/productList");
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        message.error("Token expired!");
+        localStorage.removeItem("adminToken");
+        setTimeout(() => {
+          navigate("/Login");
+        }, 3000);
+      } else {
+        message.error("Something went wrong");
+      }
+    }
+  };
+  
 
   const navigateToAddProduct = () => {
     navigate("/addProduct");
@@ -71,7 +98,7 @@ const ProductList = () => {
       flex: 1,
     },
     {
-      field: "stock",
+      field: "stock1",
       headerName: "Stock",
       width: 350,
       headerClassName: "custom-header",
@@ -85,25 +112,25 @@ const ProductList = () => {
         return <div style={{ color: stockColor }}>{stockStatus}</div>;
       },
     },
-    // {
-    //   field: "Quantity",
-    //   headerName: "Stock",
-    //   width: 350,
-    //   headerClassName: "custom-header",
-    //   cellClassName: "custom-cell",
-    //   flex: 1,
+    {
+      field: "stock",
+      headerName: "Stock",
+      width: 350,
+      headerClassName: "custom-header",
+      cellClassName: "custom-cell",
+      flex: 1,
     
-    // },
-    // {
-    //   field: "price",
-    //   headerName: "Price per unit",
-    //   width: 350,
-    //   headerClassName: "custom-header",
-    //   cellClassName: "custom-cell",
-    //   flex: 1,
-    
-    // },
-  
+    },
+    {
+      field: "price",
+      headerName: "Price per unit",
+      width: 350,
+      headerClassName: "custom-header",
+      cellClassName: "custom-cell",
+      flex: 1,
+      // Custom editable price field
+     
+    },
 
     {
       field: "action",
@@ -185,3 +212,141 @@ const ProductList = () => {
 };
 
 export default ProductList;
+// import React, { useEffect, useState } from "react";
+// import MaterialTable from "material-table";
+// import { useNavigate } from "react-router-dom";
+// import { GetAllProducts, DeleteProduct, UpdateProduct } from "../../../services/Api/ProductApi";
+// import { Button } from "primereact/button";
+// import Alert from "../../Customer/Alert";
+// import { message } from "antd";
+
+// const ProductList = () => {
+//   const navigate = useNavigate();
+//   const [productData, setProductData] = useState([]);
+//   const [userId, setUserId] = useState();
+//   const [isModalVisible, setIsModalVisible] = useState(false);
+
+//   //get all products
+//   const getData = async () => {
+//     try {
+//       let result = await GetAllProducts(localStorage.getItem("adminToken"));
+//       setProductData(result.data.data);
+//       console.log("product==>", result.data.data);
+//     } catch (e) {
+//       console.log(e);
+//     }
+//   };
+
+//   useEffect(() => {
+//     getData();
+//   }, []);
+
+//   const handleDelete = (id) => {
+//     setIsModalVisible(false);
+//     DeleteProduct(id)
+//       .then((res) => {
+//         console.log(res, "res");
+//         message.success(res?.data?.message);
+//         getData();
+//       })
+//       .catch((error) => {
+//         console.log(error, "error");
+//       });
+//   };
+
+//   const handleEdit = (id, updatedFields) => {
+//     try {
+//       const formData = new FormData();
+//       Object.entries(updatedFields).forEach(([key, value]) => {
+//         formData.append(key, value);
+//       });
+//       formData.append("price", productData?.price ? productData?.price : "");
+//       formData.append("stock", productData?.stock ? productData?.stock : "");
+  
+//       UpdateProduct(id, formData).then((res) => {
+//         if (res.status === 200) {
+//           message.success("Product updated successfully!");
+//           getData();
+//         }
+//       }).catch((error) => {
+//         if (error.response && error.response.status === 401) {
+//           message.error("Token expired!");
+//           localStorage.removeItem("adminToken");
+//           setTimeout(() => {
+//             navigate("/Login");
+//           }, 3000);
+//         } else {
+//           message.error("Something went wrong");
+//         }
+//       });
+//     } catch (error) {
+//       console.log(error);
+//     }
+//   };
+
+//   const navigateToAddProduct = () => {
+//     navigate("/addProduct");
+//   };
+
+//   const navigateToViewProduct = (id) => {
+//     navigate(`/viewProduct/${id}`);
+//   };
+
+//   const navigateToEditProduct = (id) => {
+//     navigate(`/editProduct/${id}`);
+//   };
+
+//   return (
+//     <MaterialTable
+//       title="Products"
+//       columns={[
+//         { title: "ID", field: "id", width: 150 },
+//         { title: "Product Name", field: "name", width: 350 },
+//         {
+//           title: "Stock",
+//           field: "stock",
+//           width: 350,
+//           render: rowData => {
+//             const stockStatus = rowData.stock > 0 ? "In Stock" : "Out of Stock";
+//             const stockColor = rowData.stock > 0 ? "green" : "red";
+//             return <div style={{ color: stockColor }}>{stockStatus}</div>;
+//           }
+//         },
+//         { title: "Price per unit", field: "price", width: 350 },
+//       ]}
+//       data={productData}
+//       actions={[
+//         {
+//           icon: 'visibility',
+//           tooltip: 'View Product',
+//           onClick: (event, rowData) => navigateToViewProduct(rowData.id)
+//         },
+//         {
+//           icon: 'edit',
+//           tooltip: 'Edit Product',
+//           onClick: (event, rowData) => navigateToEditProduct(rowData.id)
+//         },
+//         {
+//           icon: 'delete',
+//           tooltip: 'Delete Product',
+//           onClick: (event, rowData) => handleDelete(rowData.id)
+//         }
+//       ]}
+//       options={{
+//         actionsColumnIndex: -1,
+//         pageSize: 50,
+//         pageSizeOptions: [50, 75, 100]
+//       }}
+//       editable={{
+//         onRowUpdate: (newData, oldData) =>
+//           new Promise((resolve, reject) => {
+//             const id = oldData.id;
+//             handleEdit(id, newData);
+//             resolve();
+//           })
+//       }}
+//     />
+//   );
+// };
+
+// export default ProductList;

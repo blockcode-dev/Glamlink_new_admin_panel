@@ -7,6 +7,7 @@ import { GetAllQuote, DeleteQuote } from "../../services/Api/QuoteApi";
 import { Button } from "primereact/button";
 import { message } from "antd";
 import Alert from "../../pages/Customer/Alert";
+import moment from "moment";
 
 const QuoteList = () => {
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ const QuoteList = () => {
   };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 50 },
+    // { field: "id", headerName: "ID", width: 50 },
     {
       field: "name",
       headerName: "Name",
@@ -112,7 +113,7 @@ const QuoteList = () => {
     {
       field: "subject",
       headerName: "Subject",
-      width: 200,
+      width: 150,
       headerClassName: "custom-header",
       cellClassName: "custom-cell",
       // flex: 1,
@@ -124,6 +125,16 @@ const QuoteList = () => {
       headerClassName: "custom-header",
       cellClassName: "custom-cell",
       // flex: 1,
+    },
+    {
+      field: "created_at",
+      headerName: "Raised At",
+      width: 150,
+      headerClassName: "custom-header",
+      cellClassName: "custom-cell",
+      flex: 1,
+      valueFormatter: (params) =>
+        moment(params?.value).format("DD/MM/YYYY"),
     },
 
     // {

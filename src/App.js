@@ -55,6 +55,7 @@ import AddBlog from "./pages/Blogs/AddBlog";
 import EditBlog from "./pages/Blogs/EditBlog";
 import QuoteList from "./pages/Quote/QuoteList";
 import Chat from "./pages/FirebaseChat/Chat";
+import Product from "./pages/ECommerce/Product/Product";
 function App() {
   return (
     <Router>
@@ -69,6 +70,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="/reset-password" element={<ChangePassword />} />
           <Route path="/customers" element={<Customers />} />
+          <Route path="/productList" element={<Product />} />
           <Route path="/addCustomer" element={<AddCustomer />} />
           <Route path="/viewCustomer/:id" element={<ViewCustomer />} />
           <Route path="/test" element={<Test />} />
