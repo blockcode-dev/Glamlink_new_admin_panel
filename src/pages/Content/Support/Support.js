@@ -111,7 +111,7 @@ const Support = () => {
               rounded
               outlined
               className="mr-2"
-              style={{ margin: "0px", borderRadius: "25px" }}
+              style={{ marginRight: "10px", borderRadius: "25px" }}
               onClick={(event) => navigateToEditAdmin(event, cellValues.id)}
             />
             <Alert

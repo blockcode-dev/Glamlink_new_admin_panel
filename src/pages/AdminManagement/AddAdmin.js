@@ -63,7 +63,7 @@ const AddAdmin = () => {
         message.error("Token expired");
         localStorage.removeItem("adminToken");
         setTimeout(() => {
-          navigate("/Login");
+          navigate("/login");
         }, 1000);
       } else {
         message.error("Something went wrong");
@@ -79,7 +79,10 @@ const AddAdmin = () => {
   return (
     <Box m="20px">
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <h3 style={{ marginBottom: "50px" }}>Create New Admin</h3>
+       <div style={{ marginBottom: "50px" }}>
+       <h3 className="page-title">Create New Admin</h3>
+        <p className="page-sub-title">Create New Admin</p>
+       </div>
       </Box>
       <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
         <Card style={{ width: "70%" }}>
@@ -120,8 +123,8 @@ const AddAdmin = () => {
                 >
                   <option>Select Role</option>
                   <option value="1">ADMIN</option>
-                  <option value="2">ADMIN LEVEL 2</option>
-                  <option value="3">ADMIN LEVEL 1</option>
+                  <option value="2">ADMIN LEVEL 1</option>
+                  <option value="3">ADMIN LEVEL 2</option>
                 </Form.Select>
               </Form.Group>
 
@@ -175,18 +178,18 @@ const AddAdmin = () => {
                   "This role grants extensive access and permissions across all features and pages of the admin panel",
               },
               {
-                title: "ADMI LEVEL 1",
+                title: "ADMIN LEVEL 1",
                 status: "finish",
                 icon: <SolutionOutlined />,
                 description:
-                  "This role is more focused, allowing admins to view, edit, and delete content specifically in the Services,E-commerce,Blogs and Chat.",
+                  "This role is more focused, allowing admins to view, edit, and delete content specifically in the Services,Bookings and Content.",
               },
               {
-                title: "ADMI LEVEL 2",
+                title: "ADMIN LEVEL 2",
                 status: "finish",
                 icon: <SolutionOutlined />,
                 description:
-                  "This role is more focused, allowing admins to view, edit, and delete content specifically in the E-commerce,Blogs and Chat.",
+                  "This role is more focused, allowing admins to view, edit, and delete content specifically only in Booking.",
               },
             ]}
           />

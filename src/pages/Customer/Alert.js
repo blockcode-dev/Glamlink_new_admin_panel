@@ -29,7 +29,7 @@ const Alert = ({ handleDelete, title }) => {
         rounded
         outlined
         severity="danger"
-        style={{ margin: "0px 10px", borderRadius: "25px" }}
+        style={{  borderRadius: "25px" }}
         onClick={showDeleteConfirm}
       ></Button>
     </Space>

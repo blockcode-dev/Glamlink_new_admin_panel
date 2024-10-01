@@ -97,3 +97,53 @@ export const UpdateContactUs = async (id, formData) => {
 export const DeleteContactUs = async (id) => {
   return axios.delete(BASE_URL + `contactUs/deleteContactUs/${id}`);
 };
+
+
+
+export const GetBanner = async (adminToken, role_id) => {
+  try {
+    const res = await axios.get(BASE_URL + "content/getAllBannerImgaeByAdmin", {
+      headers: {
+        "x-access-token": `${adminToken}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return res;
+  } catch (error) {
+    // Handle error if needed
+    console.error("Error fetching users:", error);
+    throw error;
+  }
+};
+
+export const GetBannerById = async (id) => {
+  return await axios.get(BASE_URL + `content/findBannerImgaeById/${id}`);
+};
+
+export const UpdateBanner  = async (id, formData) => {
+  return await axios.put(
+    BASE_URL + `content/updateBannerImgaeById/${id}`,
+    formData,
+    {
+      headers: {
+        "x-access-token": `${localStorage.getItem("adminToken")}`,
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+
+export const DeleteBanner = async (id) => {
+  return axios.delete(BASE_URL + `content/deleteBannerImgaeById/${id}`);
+};
+
+export const CreateBanner = async (formData) => {
+  return await axios.post(BASE_URL + "content/createBanner", formData, {
+    headers: {
+      "x-access-token": `${localStorage.getItem("adminToken")}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};

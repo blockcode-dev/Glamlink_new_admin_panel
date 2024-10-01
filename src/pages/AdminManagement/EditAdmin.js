@@ -50,7 +50,7 @@ const EditAdmin = () => {
           message.error("Token expired!");
           localStorage.removeItem("adminToken");
           setTimeout(() => {
-            navigate("/Login");
+            navigate("/login");
           }, 3000);
         } else {
           message.error("Something went wrong");
@@ -65,7 +65,10 @@ const EditAdmin = () => {
   return (
     <Box m="20px">
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <h3 style={{ marginBottom: "60px" }}>Edit Admin</h3>
+     <div style={{ marginBottom: "60px" }}>
+     <h3 className="page-title" >Edit Admin</h3>
+        <p className="page-sub-title">Update Admin</p>
+     </div>
       </Box>
       <Card>
         <div>
@@ -108,13 +111,14 @@ const EditAdmin = () => {
                       value: "1",
                       label: "ADMIN",
                     },
+                    
                     {
                       value: "2",
-                      label: "ADMIN LEVEL 2",
+                      label: "ADMIN LEVEL 1",
                     },
                     {
                       value: "3",
-                      label: "ADMIN LEVEL 1",
+                      label: "ADMIN LEVEL 2",
                     },
                   ]}
                 />

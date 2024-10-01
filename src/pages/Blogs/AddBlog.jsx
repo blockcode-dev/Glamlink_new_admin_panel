@@ -1,242 +1,228 @@
-import React, { useState } from "react";
+/** @format */
+
+import React, { useLayoutEffect, useState } from "react";
+import { Box } from "@mui/material";
+// import { Button } from "primereact/button";
+import { Card } from "primereact/card";
+import { useNavigate } from "react-router-dom";
+import imageCompression from "browser-image-compression";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import { Card } from "primereact/card";
-import { Button } from "primereact/button";
-import Form from "react-bootstrap/Form";
-import { CreateBlog } from "../../services/Api/BlogsApi";
-import { useNavigate } from "react-router";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import imageCompression from "browser-image-compression";
-import { message } from "antd";
-import DeleteIcon from '@mui/icons-material/Delete';
+import { message, Form, Input, Select, Upload, Button } from "antd";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { CreateBlog, GetBlogCategoryName } from "../../services/Api/BlogsApi";
+import {
+	PlusOutlined,
+	UploadOutlined,
+	CheckOutlined,
+	ArrowLeftOutlined,
+} from "@ant-design/icons";
+import { RxCross2 } from "react-icons/rx";
 
+const { Option } = Select;
 
 const AddBlog = () => {
-  const navigate = useNavigate();
-  const [heading, setHeading] = useState("");
-  const [description, setDescription] = useState("");
-  const [images, setImages] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
-  const [disable, setDisable] = useState(false);
+	const [form] = Form.useForm();
+	const [title, setTitle] = useState("");
+	const [description, setDescription] = useState("");
+	const [blogCategoryId, setBlogCategoryId] = useState("");
+	const [images, setImages] = useState([]);
+	const [blogData, setBlogData] = useState([]);
+	const [disable, setDisable] = useState(false);
+	const [fileList, setFileList] = useState([]);
+	const navigate = useNavigate();
 
-  const handleImageChange = async (e) => {
-    const files = e.target.files;
+	useLayoutEffect(() => {
+		GetBlogCategoryName()
+			.then((res) => {
+				setBlogData(res.data);
+				console.log(res, "ddd");
+			})
+			.catch((err) => {
+				console.log(err, "error");
+			});
+	}, []);
 
-    if (files.length > 0) {
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+	const handleEditorChange = (event, editor) => {
+		const data = editor.getData();
+		setDescription(data);
+	};
 
-      const compressedImages = [];
-      const imagePreviews = [];
+	const handleSubmit = async () => {
+		try {
+			await form.validateFields();
+			setDisable(true);
 
-      for (const file of files) {
-        if (!allowedTypes.includes(file.type)) {
-          console.error(
-            "Error: Invalid file type. Images (JPEG, JPG, PNG) only!"
-          );
-          return;
-        }
+			const formData = new FormData();
+			formData.append("title", title);
+			formData.append("description", description);
 
-        const compressedFile =
-          file.size <= 1024 * 1024
-            ? file
-            : await imageCompression(file, {
-                maxSizeMB: 1,
-                maxWidthOrHeight: 1920,
-              });
+			// Instead of appending the blogCategoryId as a single string, loop through the array
+			blogCategoryId.forEach((id) => {
+				formData.append("blog_category_ids[]", id); // Append each category ID separately
+			});
 
-        compressedImages.push(
-          new Blob([compressedFile], { type: "image/jpeg" })
-        );
+			if (fileList.length > 0) {
+				// Get the first file from the fileList and append it to FormData
+				const imageFile = fileList[0].originFileObj;
+				formData.append("images", imageFile, imageFile.name);
+			}
 
-        // Create image preview URL
-        const previewUrl = URL.createObjectURL(compressedFile);
-        imagePreviews.push({ name: file.name, previewUrl });
-      }
+			const response = await CreateBlog(formData);
 
-      setImages(compressedImages);
-      setImagePreviews(imagePreviews);
-    }
-  };
+			if (response.status === 201) {
+				message.success("Blog added successfully!");
+				navigate("/blogs");
+			}
+		} catch (error) {
+			if (error?.response?.status === 401) {
+				message.error("Token expired");
+				localStorage.removeItem("adminToken");
+				setTimeout(() => {
+					navigate("/Login");
+				}, 1000);
+			} else {
+				message.error("Something went wrong");
+			}
+		} finally {
+			setDisable(false);
+		}
+	};
 
-  const handleRemoveImage = (index) => {
-    const updatedImages = [...images];
-    const updatedPreviews = [...imagePreviews];
+	const navigateToService = () => {
+		navigate("/blogs");
+	};
+	const onPreview = async (file) => {
+		let src = file.url;
+		if (!src) {
+			src = await new Promise((resolve) => {
+				const reader = new FileReader();
+				reader.readAsDataURL(file.originFileObj);
+				reader.onload = () => resolve(reader.result);
+			});
+		}
+		const image = new Image();
+		image.src = src;
+		const imgWindow = window.open(src);
+		imgWindow?.document.write(image.outerHTML);
+	};
 
-    updatedImages.splice(index, 1);
-    updatedPreviews.splice(index, 1);
+	const handleFileChange = ({ fileList }) => {
+		setFileList(fileList);
+	};
 
-    setImages(updatedImages);
-    setImagePreviews(updatedPreviews);
-  };
+	return (
+		<Box>
+			<Box
+				display="flex"
+				justifyContent="space-between"
+				alignItems="center"
+				marginBottom="30px"
+			>
+				<div>
+					<h3 className="page-title">Create BLOG</h3>
+					<p className="page-sub-title">Add new Blog</p>
+				</div>
+				<div>
+					<Button
+						type="primary"
+						icon={<ArrowLeftOutlined />}
+						onClick={navigateToService}
+						style={{ backgroundColor: "#64748B" }}
+						size="large"
+					>
+						Return To Blogs
+					</Button>
+				</div>
+			</Box>
+			<Card className="service_card">
+				<Form layout="vertical" form={form} onFinish={handleSubmit}>
+					<Form.Item
+						label="Blog Title"
+						name="title"
+						rules={[{ required: true, message: "Please enter title" }]}
+					>
+						<Input
+							placeholder="Enter Blog Title"
+							value={title}
+							onChange={(e) => setTitle(e.target.value)}
+						/>
+					</Form.Item>
 
-  const handleEditorChange = (event, editor) => {
-    const data = editor.getData();
-    setDescription(data);
-  };
+					<Form.Item
+						label="Blog Category"
+						name="blogCategoryId"
+						// rules={[
+						// 	{ required: true, message: "Please select a blog category" },
+						// ]}
+					>
+						<Select
+							mode="multiple"
+							placeholder="Select Blog Category"
+							value={blogCategoryId}
+							onChange={(value) => setBlogCategoryId(value)}
+						>
+							{blogData?.map((category) => (
+								<Option key={category.id} value={category.id}>
+									{category?.title}
+								</Option>
+							))}
+						</Select>
+					</Form.Item>
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setDisable(true);
+					<Form.Item
+						label="Image"
+						name="images"
+						rules={[{ required: true, message: "Please upload an image" }]}
+					>
+						<Upload
+							fileList={fileList}
+							beforeUpload={() => false}
+							onChange={handleFileChange}
+							multiple={false}
+							listType="picture"
+							onPreview={onPreview}
+							maxCount={1}
+						>
+							<Button icon={<UploadOutlined />}>Upload Images</Button>
+						</Upload>
+					</Form.Item>
 
-    if (!heading) {
-      toast.error("Please enter heading");
-      setDisable(false);
-      return;
-    }
-    if (!description) {
-      toast.error("Please enter description");
-      setDisable(false);
-      return;
-    }
-    try {
-      const formData = new FormData();
-      formData.append("heading", heading);
-      formData.append("description", description);
-      if (images.length > 0) {
-        images.forEach((image, index) => {
-          formData.append(`images`, image, `compressed_image_${index}.jpg`);
-        });
-      }
+					<Form.Item
+						label="Description"
+						name="description"
+						rules={[{ required: true, message: "Please enter Description" }]}
+					>
+						<CKEditor
+							editor={ClassicEditor}
+							onChange={handleEditorChange}
+							config={{
+								height: "50%",
+							}}
+						/>
+					</Form.Item>
 
-      const response = await CreateBlog(formData);
-
-      if (response.status === 201) {
-        message.success("Blog addedd successfully!");
-      }
-      navigate("/blogs");
-      setDisable(false);
-    } catch (error) {
-      if (error.response.status === 400) {
-        message.error("Blog with this title already exist");
-      } else if (error.response.status === 401) {
-        message.error("Token expired");
-        localStorage.removeItem("adminToken");
-        setTimeout(() => {
-          navigate("/Login");
-        }, 1000);
-      } else {
-        message.error("Something went wrong");
-      }
-      setDisable(false);
-    }
-  };
-
-  const navigateToBlogs = () => {
-    navigate("/blogs");
-  };
-
-  return (
-    <div>
-      <h3 className="page-title">Create Blog</h3>
-      <p className="page-sub-title">Add new Blog</p>
-
-      <Card>
-        <div>
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label> Heading:</Form.Label>
-              <Form.Control
-                type="text"
-                required
-                placeholder="Enter Blog heading"
-                value={heading}
-                onChange={(e) => setHeading(e.target.value)}
-                className="new_form_control"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Image:</Form.Label>
-              <Form.Control
-                type="file"
-                required
-                accept="image/*"
-                id="imageInput"
-                onChange={handleImageChange}
-                multiple
-              />
-            </Form.Group>
-
-            {imagePreviews.map((preview, index) => (
-              <div
-                key={index}
-                style={{
-                  border: "1px solid #ccc",
-                  borderRadius: "5px",
-                  padding: "10px",
-                  marginBottom: "10px",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <img
-                    src={preview.previewUrl}
-                    alt={`Preview ${index}`}
-                    style={{
-                      height: "80px",
-                      width: "80px",
-                      marginRight: "10px",
-                    }}
-                  />
-                  <span>{preview.name}</span>
-                  <DeleteIcon
-                    fontSize="large"
-                    color="warning"
-                    style={{ marginLeft: "auto", cursor: "pointer" }}
-                    onClick={() => handleRemoveImage(index)}
-                  />
-                </div>
-              </div>
-            ))}
-
-            <Form.Group className="mb-3">
-              <Form.Label> Blog's Description:</Form.Label>
-
-              <CKEditor
-                editor={ClassicEditor}
-                onChange={handleEditorChange}
-                config={{
-                  height: "1000px",
-                }}
-              />
-            </Form.Group>
-
-            <div>
-              <Button
-                icon="pi pi-check"
-                severity="success"
-                htmlType="submit"
-                onClick={handleSubmit}
-                disabled={disable}
-                style={{
-                  borderRadius: "5px",
-                  margin: "0px 0px",
-                  height: "40px",
-                }}
-              >
-                {disable ? "Saving...." : "Save"}
-              </Button>
-
-              <Button
-                icon="pi pi-times"
-                severity="secondary"
-                onClick={(e) => {
-                  navigateToBlogs();
-                }}
-                style={{
-                  borderRadius: "5px",
-                  marginLeft: "10px",
-                  height: "40px",
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          </Form>
-        </div>
-      </Card>
-    </div>
-  );
+					<Button
+						type="primary"
+						icon={<CheckOutlined />}
+						size="large"
+						onClick={handleSubmit}
+					>
+						Save
+					</Button>
+					<Button
+						type="primary"
+						size="large"
+						icon={<RxCross2 />}
+						onClick={navigateToService}
+						style={{ backgroundColor: "#64748B", marginLeft: "20px" }}
+					>
+						Cancel
+					</Button>
+				</Form>
+			</Card>
+		</Box>
+	);
 };
 
 export default AddBlog;

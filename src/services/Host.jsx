@@ -1,7 +1,6 @@
-let HOST = "https://node.nunamoving.com:8080/api/v1/";
-export const BASE_URL = "https://node.nunamoving.com:8080/api/v1/";
-// export const BASE_URL = "https://node.mystorybank.info:4000/api/v1/";
-export const BASE_URL_IMAGE = "https://node.nunamoving.com:8080/images/";
-export const BASE_URL_VIDEO = "https://node.nunamoving.com:8080/videos/";
+let HOST = "https://node.glamlink.net:5000/api/v1/";
+export const BASE_URL = "https://node.glamlink.net:5000/api/v1/";
+export const BASE_URL_IMAGE = "https://node.glamlink.net:5000/images/";
+export const BASE_URL_VIDEO = "https://node.glamlink.net:5000/videos/";
 
 export default HOST;

@@ -54,7 +54,7 @@ const EditSupport = () => {
           message.error("Token expired!");
           localStorage.removeItem("adminToken");
           setTimeout(() => {
-            navigate("/Login");
+            navigate("/login");
           }, 3000);
         } else {
           message.error("Something went wrong");

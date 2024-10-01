@@ -11,7 +11,7 @@ body {
 }
 
 .trigger:hover {
-  color: #1890ff;
+  color: #0870B1;
 }
 
 
@@ -19,7 +19,7 @@ body {
   height: 32px;
   margin: 16px;
   background: rgba(255, 255, 255, 0.3);
-  background-color: #8B0D0E !important;
+  background-color: #23B8CB !important;
   margin: 0;
   height: 64px;
   position: sticky;
@@ -80,3 +80,5 @@ main::-webkit-scrollbar {
   color: red;
   font-size: 12px;
 }
+
+

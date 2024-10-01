@@ -5,7 +5,7 @@ import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { Form, Input } from "antd";
 import { message } from "antd";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/Logo new (transparent) (1) 1.png";
 const Login = () => {
   const navigate = useNavigate();
   const onFinish = (values) => {
@@ -15,7 +15,7 @@ const Login = () => {
     };
     AdminLogin(formData)
       .then((res) => {
-        message.success(res?.data?.message);
+        message.success("Logged In Successfully");
         setTimeout(() => {
           const token = res?.data?.data?.token;
           localStorage.removeItem("adminToken");
@@ -47,9 +47,9 @@ const Login = () => {
         <div className="Login_Container">
           <div className="LogoContainer">
             <img src={logo} alt="Logo" className="Logo" />
-            <h1 style={{ marginBottom: "10px", marginLeft: "10px" }}>
-              Nunamoving
-            </h1>
+            {/* <h1 style={{ marginBottom: "10px", marginLeft: "10px" }}>
+            Mobile Pool 
+            </h1> */}
           </div>
           <div className="heading_two_content">
             <h2 className="heading_2">Hi, Welcome Back</h2>

@@ -40,14 +40,14 @@ const EditAboutUs = () => {
         if (res.status === 200) {
           message.success("About us edited successfully!");
         }
-        navigate("/termsAndConditions");
+        navigate("/aboutUs");
       })
       .catch((err) => {
         if (err.response && err.response.status === 401) {
           message.error("Token expired!");
           localStorage.removeItem("adminToken");
           setTimeout(() => {
-            navigate("/Login");
+            navigate("/login");
           }, 3000);
         } else {
           message.error("Something went wrong");

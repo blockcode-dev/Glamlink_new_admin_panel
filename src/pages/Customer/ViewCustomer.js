@@ -1,175 +1,148 @@
+/** @format */
+
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { Button } from "primereact/button";
 import { Box } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
-import Form from "react-bootstrap/Form";
-import { Row, Col } from "react-bootstrap";
-import { GetUserById } from "../../services/Api/Api";
-import { BASE_URL_IMAGE } from "../../services/Host";
+
 import { Card } from "primereact/card";
+import { Row, Col, Form } from "react-bootstrap";
+import "./Customers.css";
+import { GetUserById } from "../../services/Api/UserApi";
 
 const ViewCustomer = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const [userData, setUserData] = useState([]);
-  const [image, setImage] = useState({ preview: "", raw: "" });
+	const navigate = useNavigate();
+	const { id } = useParams();
+	const [userData, setUserData] = useState([]);
+	const [activeTab, setActiveTab] = useState("all");
 
-  const navigateToUser = () => {
-    navigate("/customers");
-  };
+	useLayoutEffect(() => {
+		GetUserById(id)
+			.then((res) => {
+				setUserData(res.data.data);
+				console.log("user", res.data.data);
+			})
+			.catch((err) => {
+				console.log(err, "error");
+			});
+	}, [id]);
 
-  //get role By ID
-  useLayoutEffect(() => {
-    GetUserById(id)
-      .then((res) => {
-        setUserData(res.data.data);
-        console.log("user", res.data.data);
-      })
-      .catch((err) => {
-        console.log(err, "error");
-      });
-  }, [id]);
-  return (
-    <Box>
-      <Box style={{ marginBottom: "30px" }}>
-        <h3 className="page-title">User Details</h3>
-        <p className="page-sub-title">View Information of User</p>
-      </Box>
+	const navigateToUser = () => {
+		navigate("/users");
+	};
 
-      <Card>
-        <div className="admin_profile">
-          <Form className="admin_details_form">
-            <Row>
-              <Form.Group className="mb-3">
-                <Form.Label>User's Profile Picture:</Form.Label>
-                <br />
-                {userData?.user_attachments &&
-                userData?.user_attachments[0]?.file_name ? (
-                  <img
-                    crossOrigin="anonymous"
-                    src={`${BASE_URL_IMAGE}${userData?.user_attachments[0]?.file_name}`}
-                    // src="https://nmnode.blockcod.in:8080/images/images-1705307791412.jpg"
-                    alt="User's Dp"
-                    className="category-icon-preview"
-                    style={{
-                      height: "150px",
-                      width: "150px",
-                      borderRadius: "10px",
-                    }}
-                  />
-                ) : (
-                  <span>No Image Available</span>
-                )}
-              </Form.Group>
-            </Row>
+	const formatDate = (dateString) => {
+		if (!dateString) return "";
+		return dateString.split("T")[0];
+	};
 
-            <Row>
-              <Col>
-                <Form.Group className="mb-3">
-                  <Form.Label>Name:</Form.Label>
-                  <Form.Control
-                    name="name"
-                    defaultValue={userData?.user_profile?.name}
-                    type="text"
-                    disabled
-                  />
-                </Form.Group>
-              </Col>
+	const getStatusColor = (status) => {
+		switch (status) {
+			case "DELETED":
+			case "REJECTED":
+				return "red";
+			case "SUCCESS":
+				return "green";
+			case "ACCEPTED":
+				return "purple";
+			case "PENDING":
+				return "yellow";
+			case "COMPLETED":
+				return "green"; // Assuming you want COMPLETED to have the same color as SUCCESS
+			default:
+				return "geekblue"; // Default color
+		}
+	};
 
-              <Col>
-                <Form.Group className="mb-3">
-                  <Form.Label>User Name:</Form.Label>
-                  <Form.Control
-                    name="name"
-                    defaultValue={userData?.user_name}
-                    type="text"
-                    disabled
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+	return (
+		<Box>
+			<Box
+				display="flex"
+				justifyContent="space-between"
+				alignItems="center"
+				marginBottom="30px"
+			>
+				<div>
+					<h3 className="page-title">User MANAGEMENT</h3>
+					<p className="page-sub-title">View Information related with User</p>
+				</div>
+				<div>
+					<Button
+						icon="pi pi-arrow-left"
+						severity="secondary"
+						onClick={navigateToUser}
+						style={{ borderRadius: "5px", height: "47px" }}
+					>
+						<span style={{ marginLeft: "5px" }}>Return to User</span>
+					</Button>
+				</div>
+			</Box>
 
-            <Row>
-              <Form.Group className="mb-3">
-                <Form.Label>Email Address:</Form.Label>
-                <Form.Control
-                  name="email"
-                  defaultValue={userData?.email}
-                  type="text"
-                  disabled
-                />
-              </Form.Group>
-            </Row>
+			<Card>
+				<div className="admin_profile">
+					<Form className="admin_details_form">
+						<div>
+							<Row>
+								<Col>
+									<Form.Group className="mb-3">
+										<Form.Label>User's Name:</Form.Label>
+										<Form.Control
+											name="name"
+											defaultValue={userData?.user_profile?.name}
+											type="text"
+											rows={9}
+											disabled
+										/>
+									</Form.Group>
+								</Col>
+								<Col>
+									<Form.Group className="mb-3">
+										<Form.Label>User's Email:</Form.Label>
+										<Form.Control
+											name="name"
+											defaultValue={userData?.email}
+											type="text"
+											rows={9}
+											disabled
+										/>
+									</Form.Group>
+								</Col>
+								<Col>
+									<Form.Group className="mb-3">
+										<Form.Label>User's Mobile:</Form.Label>
+										<Form.Control
+											name="name"
+											defaultValue={userData?.user_profile?.mobile}
+											type="text"
+											rows={9}
+											disabled
+										/>
+									</Form.Group>
+								</Col>
+							</Row>
 
-            <Row>
-              <Col>
-                <Form.Group className="mb-3">
-                  <Form.Label>Mobile:</Form.Label>
-                  <Form.Control
-                    name="mobile"
-                    defaultValue={userData?.user_profile?.mobile}
-                    type="text"
-                    disabled
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col>
-                <Form.Group className="mb-3">
-                  <Form.Label>Date Of Birth:</Form.Label>
-                  <Form.Control
-                    name="mobile"
-                    defaultValue={userData?.user_profile?.dob}
-                    type="text"
-                    disabled
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col>
-                <Form.Group className="mb-3">
-                  <Form.Label>Address</Form.Label>
-                  <Form.Control
-                    name="mobile"
-                    defaultValue={userData?.user_profile?.address}
-                    type="text"
-                    disabled
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col>
-                <Form.Group className="mb-3">
-                  <Form.Label>Country:</Form.Label>
-                  <Form.Control
-                    name="mobile"
-                    defaultValue={userData?.user_profile?.country}
-                    type="text"
-                    disabled
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <div>
-            <Button
-              icon="pi pi-arrow-left"
-              severity="secondary"
-              onClick={(e) => {
-                navigateToUser();
-              }}
-              style={{ borderRadius: "5px", height: "40px" }}
-            >
-              <span style={{ marginLeft: "5px" }}> Return to Users</span>
-            </Button>
-          </div>
-          </Form>
-        </div>
-      </Card>
-    </Box>
-  );
+							<Row>
+								<Col>
+									<Form.Group className="mb-3">
+										<Form.Label>User's Addresses:</Form.Label>
+										<ul>
+											{userData?.user_address?.length > 0 ? (
+												userData.user_address.map((address, index) => (
+													<li key={index}>{address.full_address}</li>
+												))
+											) : (
+												<p>No address available</p>
+											)}
+										</ul>
+									</Form.Group>
+								</Col>
+							</Row>
+						</div>
+					</Form>
+				</div>
+			</Card>
+		</Box>
+	);
 };
 
 export default ViewCustomer;

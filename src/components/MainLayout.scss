@@ -32,4 +32,26 @@
   // text-align: center !important;
 }
 
+.notification_display{
+p{
+  margin: 0;
+}
+}
 
+.custom-logo-size {
+  font-size: 1.65rem;
+}
+
+// .custom-menu .ant-menu-item-selected {
+//   background-color: #23B8CB !important;  // Change the background color
+//   border-left: 3px solid #23B8CB !important;  // Optional: Adjust the left border color
+// }
+
+// .custom-menu .ant-menu-item-selected a {
+//   color: white !important;  // Ensure the text color is visible
+// }
+
+.ant-menu-item-selected{
+  background-color: #23B8CB !important; 
+  border-left: 3px solid #23B8CB !important;
+}
