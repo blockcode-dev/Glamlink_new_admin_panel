@@ -34,12 +34,12 @@ const Appointments = () => {
 		},
 		{
 			title: "Profesisonal's Name",
-			dataIndex: ["appointment_counselor", "user_profile", "name"], 
+			dataIndex: ["appointment_counselor", "user_profile", "name"],
 			width: "20%",
 		},
 		{
 			title: "User's Name",
-			dataIndex: ["appointment_user", "user_profile", "name"], 
+			dataIndex: ["appointment_user", "user_profile", "name"],
 			width: "20%",
 		},
 		{
@@ -48,7 +48,7 @@ const Appointments = () => {
 			width: "20%",
 			render: (status) => {
 				let textColor = "#000"; // Default text color
-		
+
 				switch (status) {
 					case "PENDING":
 						textColor = "#FFD700"; // Yellow
@@ -69,7 +69,7 @@ const Appointments = () => {
 					default:
 						textColor = "#000"; // Default to black if status is unknown
 				}
-		
+
 				return (
 					<span
 						style={{
@@ -84,16 +84,22 @@ const Appointments = () => {
 					</span>
 				);
 			},
-		},		  
+		},
 		{
 			title: "Notes",
 			dataIndex: "notes",
 			width: "20%",
 		},
+
 		{
 			title: "Date",
-			dataIndex: ["appointment_slot","date"],
-			width: "30%",
+			dataIndex: ["appointment_slot", "date"],
+			width: "20%",
+		},
+		{
+			title: "Time",
+			dataIndex: ["appointment_slot", "start_time"],
+			width: "20%",
 		},
 	];
 
@@ -112,7 +118,7 @@ const Appointments = () => {
 				localStorage.getItem("adminToken"),
 				{
 					page: pagination.current,
-					limit: pagination.pageSize, 
+					limit: pagination.pageSize,
 					sortBy: sortField,
 				}
 			);
@@ -122,7 +128,7 @@ const Appointments = () => {
 				...item,
 				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
 			}));
-			console.log(newData,"newData")
+			console.log(newData, "newData");
 
 			setServiceData(newData);
 			setServiceBackupData(newData);
@@ -154,7 +160,6 @@ const Appointments = () => {
 		});
 	};
 
-
 	const onSearch = (searchField) => {
 		const LIST = [...serviceBackupData];
 		const searchList = LIST.filter(
@@ -168,9 +173,7 @@ const Appointments = () => {
 				item.appointment_slot.date
 					.toLowerCase()
 					.includes(searchField.toLowerCase()) || // Date
-				item.status
-					.toLowerCase()
-					.includes(searchField.toLowerCase()) // Status
+				item.status.toLowerCase().includes(searchField.toLowerCase()) // Status
 		);
 		setServiceData(searchList);
 	};

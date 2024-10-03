@@ -28,8 +28,10 @@ import { message } from "antd";
 import Login from "../pages/Login/Login";
 import { GetAdminProfile } from "../services/Api/Api";
 import { TbBrandBooking } from "react-icons/tb";
+import logo from "../assets/Logo new (transparent) (1) 1.png"
 import "./MainLayout.scss";
 const { Header, Sider, Content } = Layout;
+
 
 const MainLayout = () => {
 	const [anchorEl, setAnchorEl] = React.useState(null);
@@ -89,7 +91,16 @@ const MainLayout = () => {
 						<div className="logo">
 							<h2 className="text-white text-center py-3 mb-0 custom-logo-size">
 								<span className="sm-logo">GL</span>
-								<span className="lg-logo">GLAMLINK</span>
+								<span className="lg-logo">
+								<img
+										src={logo}
+										alt="Logo"
+										style={{
+											width: "120px",
+											objectFit: "contain",
+										}}
+									/>
+								</span>
 							</h2>
 						</div>
 

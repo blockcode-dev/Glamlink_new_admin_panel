@@ -16,11 +16,7 @@ body {
 
 
 .logo {
-  height: 32px;
-  margin: 16px;
-  background: rgba(255, 255, 255, 0.3);
   background-color: #23B8CB !important;
-  margin: 0;
   height: 64px;
   position: sticky;
   top: 0;

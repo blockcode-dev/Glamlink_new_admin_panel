@@ -97,7 +97,6 @@ const EditServiceCategory = () => {
 		try {
 			const formData = new FormData();
 			formData.append("title", serviceTitle);
-			formData.append("description", serviceDescription);
 			formData.append("category_id", id);
 
 			const response = await CreateSerice(formData);
@@ -478,7 +477,7 @@ const EditServiceCategory = () => {
 						<Form.Item
 							label="Description"
 							name="description"
-							rules={[{ required: true, message: "Please enter Description" }]}
+							// rules={[{ required: true, message: "Please enter Description" }]}
 						>
 							<CKEditor
 								editor={ClassicEditor}

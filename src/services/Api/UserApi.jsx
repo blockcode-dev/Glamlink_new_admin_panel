@@ -72,12 +72,20 @@ export const AddUser = async ({
 };
 
 //delete user
-export const DeleteUser = async (user_id, adminToken) => {
-	const formData = new FormData();
-	formData.append("user_id", user_id);
-	return axios.delete(BASE_URL + "admin/user/delete", {
-		data: formData,
-	});
+export const DeleteUser = async (user_id) => {
+	
+	return axios.post(
+		BASE_URL + "admin/users/delete",
+		{
+			user_id: user_id,
+		},
+		{
+			headers: {
+				"x-access-token": `${localStorage.getItem("adminToken")}`,
+				"Content-Type": "multipart/form-data",
+			},
+		}
+	);
 };
 
 export const getAllState = async () => {
