@@ -42,6 +42,7 @@ import BlogCategory from "./pages/BlogCategory/BlogCategory";
 import AddBlogCategory from "./pages/BlogCategory/AddBlogCategory";
 import EditBlogCategory from "./pages/BlogCategory/EditBlogCategory";
 import Professionals from "./pages/Professionals/Professionals";
+import ViewProfessionals from "./pages/Professionals/ViewProfessionals.jsx";
 import Specialities from "./pages/Specialities/Specialities";
 import AddSpecialities from "./pages/Specialities/AddSpecialities";
 import EditSpecialities from "./pages/Specialities/EditSpecialities";
@@ -49,6 +50,20 @@ import Appointments from "./pages/Appointments/Appointments";
 import Posts from "./pages/Post/Post";
 import Clips from "./pages/Clips/Clips";
 import UploadCSV from "./pages/ServiceCategory/UploadCSV.jsx";
+import UserPost from "./pages/Customer/Data/UserPost.jsx";
+import UserFollower from "./pages/Customer/Data/UserFollower.jsx";
+import UserFollowing from "./pages/Customer/Data/UserFollowing.jsx";
+import UserClips from "./pages/Customer/Data/UserClips.jsx";
+import PostLiked from "./pages/Customer/Data/PostLiked.jsx";
+import PostComment from "./pages/Customer/Data/PostComment.jsx";
+import ClipsLiked from "./pages/Customer/Data/ClipsLiked.jsx";
+import ClipsCommented from "./pages/Customer/Data/ClipsCommented.jsx";
+import ReviewsGiven from "./pages/Customer/Data/ReviewsGiven.jsx";
+import ReviewsTaken from "./pages/Customer/Data/ReviewsTaken.jsx";
+import UserBookings from "./pages/Customer/Data/UserBookings.jsx";
+import ProfessionalBooking from "./pages/Customer/Data/ProfessionalBooking.jsx";
+import UserService from "./pages/Customer/Data/UserService.jsx";
+import Availability from "./pages/Customer/Data/Availability.jsx";
 
 
 function App() {
@@ -63,6 +78,7 @@ function App() {
 					<Route path="/reset-password" element={<ChangePassword />} />
 					<Route path="/users" element={<User />} />
 					<Route path="/professionals" element={<Professionals />} />
+					<Route path="/viewProfessionals/:id" element={<ViewProfessionals />} />
 					<Route path="/addUser" element={<AddUser />} />
 					<Route path="/viewUser/:id" element={<ViewCustomer />} />
 					<Route path="/test" element={<Test />} />
@@ -111,8 +127,20 @@ function App() {
 					<Route path="/addAboutUs" element={<AddAboutUs />} />
 					<Route path="/editAboutUs" element={<EditAboutUs />} />
 					<Route path="/UploadCSV" element={<UploadCSV category_id={3} />} />
-					
-	
+					<Route path="/viewUserPost/:id" element={<UserPost />} />
+					<Route path="/viewUserFollower/:id" element={<UserFollower />} />
+					<Route path="/viewUserFollowing/:id" element={<UserFollowing />} />
+					<Route path="/viewUserClips/:id" element={<UserClips />} />
+					<Route path="/viewUserPostLikes/:id" element={<PostLiked />} />
+					<Route path="/viewUserPostComment/:id" element={<PostComment />} />
+					<Route path="/viewUserClipsLiked/:id" element={<ClipsLiked />} />
+					<Route path="/viewUserClipsCommented/:id" element={<ClipsCommented />} />
+					<Route path="/viewUserReviewsGiven/:id" element={<ReviewsGiven />} />
+					<Route path="/viewUserReviewsTaken/:id" element={<ReviewsTaken />} />
+					<Route path="/viewUserBookings/:id" element={<UserBookings />} />
+					<Route path="/viewProfessionalBooking/:id" element={<ProfessionalBooking />} />
+					<Route path="/viewUserService/:id" element={<UserService />} />
+					<Route path="/viewAvailability/:id" element={<Availability />} />
 				</Route>
 			</Routes>
 		</Router>

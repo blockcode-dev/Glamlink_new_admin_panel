@@ -174,31 +174,49 @@ const Clips = () => {
 		try {
 			setLoading(true);
 			const { pagination, sortField, sortOrder } = params;
+	
+			// Fetch clips with pagination and sorting
 			const result = await GetAllClips(localStorage.getItem("adminToken"), {
 				page: pagination.current,
 				limit: pagination.pageSize,
 				sortBy: sortField,
+				order: sortOrder === "ascend" ? "ASC" : "DESC", // Handle sort order if needed
 			});
-
+	
+			// Adding index for serial number based on pagination
 			const newData = result.data.map((item, index) => ({
 				...item,
 				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
 			}));
-
+	
+			// Update state with fetched data
 			setServiceData(newData);
 			setServiceBackupData(newData);
+	
+			// Update pagination with total count from the result
 			setTableParams({
 				...tableParams,
 				pagination: {
 					...pagination,
-					total: result.count,
+					total: result.count, // Total number of clips from API
 				},
 			});
 		} catch (e) {
-			console.log(e);
+			// Log the full error object for debugging
+			console.log("Error: ", e);
+	
 			if (e.response && e.response.status === 401) {
 				navigate("/error401");
 				console.log("You do not have access to this page as a sub-admin.");
+			} else if (e.response && e.response.status === 500) {
+				// Handling specific 500 error (like JWT expiration)
+				const errorMessage = e.response.data?.message || e.response.message;
+				if (errorMessage === "jwt expired") {
+					navigate("/login");
+					message.error("Session Expired");
+				} else {
+					console.log("Server error. Please try again later.");
+				}
 			} else {
 				console.log("Error loading data. Please try again later.");
 			}
@@ -206,6 +224,7 @@ const Clips = () => {
 			setLoading(false);
 		}
 	};
+	
 
 	const handleTableChange = (pagination, filters, sorter) => {
 		setTableParams({

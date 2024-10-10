@@ -48,22 +48,12 @@ const User = () => {
 			dataIndex: "email",
 			width: "20%",
 		},
-		// {
-		// 	title: "Mobile",
-		// 	dataIndex: ["user_profile", "mobile"],
-		// 	width: "20%",
-		// 	render: (mobile) => mobile || "---",
-		// },
+
 		{
 			title: "No. Of Post",
-			dataIndex: ["user_profile","no_of_post_posted"],
+			dataIndex: ["user_profile", "no_of_post_posted"],
 			width: "10%",
 		},
-		// {
-		// 	title: "No. Of Clips",
-		// 	dataIndex: ["user_profile","number_of_reels"],
-		// 	width: "10%",
-		// },
 
 		{
 			title: "Account Created On",
@@ -110,10 +100,19 @@ const User = () => {
 			setData(newData);
 			setUserBackupData(newData);
 		} catch (e) {
-			console.log(e);
+			console.log("Error object: ", e); // Log the whole error to see its structure
 			if (e.response && e.response.status === 401) {
 				navigate("/error401");
 				console.log("You do not have access to this page as a sub-admin.");
+			} else if (e.response && e.response.status === 500) {
+				// Check if the error message is contained inside `e.response.data.message`
+				const errorMessage = e.response.data?.message || e.response.message;
+				if (errorMessage === "jwt expired") {
+					message.error("Session Expired");
+					navigate("/login");
+				} else {
+					console.log("Error loading data. Please try again later.");
+				}
 			} else {
 				console.log("Error loading data. Please try again later.");
 			}
@@ -194,10 +193,6 @@ const User = () => {
 		link.setAttribute("download", "customers.csv");
 		document.body.appendChild(link);
 		link.click();
-	};
-
-	const navigateToAddUser = () => {
-		navigate("/addUser");
 	};
 
 	const navigateToViewUser = (event, id) => {

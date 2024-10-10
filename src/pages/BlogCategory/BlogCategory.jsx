@@ -81,19 +81,35 @@ const BlogCategory = () => {
 				localStorage.getItem("adminToken"),
 				{ ...params, limit: 100 }
 			);
+	
 			console.log(result, "data");
+	
 			// Adding index for serial number
 			const newData = result.data.rows.map((item, index) => ({
 				...item,
 				index: index + 1,
 			}));
+	
+			// Update state with new data
 			setData(newData);
 			setUserBackupData(newData);
+	
 		} catch (e) {
-			console.log(e);
+			// Log the error object for debugging
+			console.log("Error: ", e);
+	
 			if (e.response && e.response.status === 401) {
 				navigate("/error401");
 				console.log("You do not have access to this page as a sub-admin.");
+			} else if (e.response && e.response.status === 500) {
+				// Handling specific 500 error (like JWT expiration)
+				const errorMessage = e.response.data?.message || e.response.message;
+				if (errorMessage === "jwt expired") {
+					navigate("/login");
+					message.error("Session Expired");
+				} else {
+					console.log("Server error. Please try again later.");
+				}
 			} else {
 				console.log("Error loading data. Please try again later.");
 			}
@@ -101,6 +117,7 @@ const BlogCategory = () => {
 			setLoading(false);
 		}
 	};
+	
 	
 
 	useEffect(() => {

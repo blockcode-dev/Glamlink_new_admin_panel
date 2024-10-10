@@ -110,36 +110,51 @@ const ServiceCategory = () => {
 	const getData = async (params = {}) => {
 		try {
 			setLoading(true);
+
 			const { pagination, sortField, sortOrder } = params;
+			// Fetch service categories with pagination and sorting
 			const result = await GetServiceCategory(
 				localStorage.getItem("adminToken"),
 				{
 					page: pagination.current,
-					limit: pagination.pageSize, // Pass 'limit' instead of 'pageSize'
+					limit: pagination.pageSize, // Ensure correct pagination limit
 					sortBy: sortField,
+					order: sortOrder === "ascend" ? "ASC" : "DESC", // Optional: sorting order
 				}
 			);
 
-			// Adding index for serial number
+			// Adding index for serial numbers
 			const newData = result.data.rows.map((item, index) => ({
 				...item,
 				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
 			}));
 
+			// Update the state with the new data and pagination
 			setServiceData(newData);
 			setServiceBackupData(newData);
 			setTableParams({
 				...tableParams,
 				pagination: {
 					...pagination,
-					total: result.count, // Total count from the API response
+					total: result.count, // Set total items count from the API response
 				},
 			});
 		} catch (e) {
-			console.log(e);
+			// Log the full error object for debugging purposes
+			console.log("Error: ", e);
+
 			if (e.response && e.response.status === 401) {
 				navigate("/error401");
 				console.log("You do not have access to this page as a sub-admin.");
+			} else if (e.response && e.response.status === 500) {
+				// Handle specific 500 error (like JWT expiration)
+				const errorMessage = e.response.data?.message || e.response.message;
+				if (errorMessage === "jwt expired") {
+					message.error("Session Expired");
+					navigate("/login");
+				} else {
+					console.log("Server error. Please try again later.");
+				}
 			} else {
 				console.log("Error loading data. Please try again later.");
 			}
@@ -176,15 +191,13 @@ const ServiceCategory = () => {
 			sortOrder: sorter.order,
 		});
 	};
-	
+
 	const onSearch = (searchField) => {
 		const LIST = [...serviceBackupData];
 		const searchList = LIST.filter(
 			(item) =>
 				item.title.toLowerCase().includes(searchField.toLowerCase()) ||
-				item.title
-					.toLowerCase()
-					.includes(searchField.toLowerCase())
+				item.title.toLowerCase().includes(searchField.toLowerCase())
 		);
 		setServiceData(searchList);
 	};
@@ -197,7 +210,10 @@ const ServiceCategory = () => {
 			}?`,
 			onOk: async () => {
 				try {
-					await DeleteServiceCategory(blogIds, localStorage.getItem("adminToken"));
+					await DeleteServiceCategory(
+						blogIds,
+						localStorage.getItem("adminToken")
+					);
 					message.success("Categroy(s) deleted successfully");
 					setSelectedRowKeys([]);
 					getData();

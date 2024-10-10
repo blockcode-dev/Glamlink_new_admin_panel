@@ -72,7 +72,7 @@ const AddBlogCategory = () => {
 					</Button>
 				</div>
 			</Box>
-			<Card>
+			<Card style={{padding:"20px"}}>
 				<Form form={form} onFinish={handleSubmit} layout="vertical">
 					<Form.Item
 						name="title"

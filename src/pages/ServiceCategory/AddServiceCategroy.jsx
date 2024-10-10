@@ -77,7 +77,7 @@ const AddServiceCategory = () => {
 					</Button>
 				</div>
 			</Box>
-			<Card className="service_card">
+			<Card style={{padding:"20px"}}>
 				<div>
 					<Form onSubmit={handleSubmit}>
 						<Form.Group className="mb-3">

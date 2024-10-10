@@ -51,3 +51,15 @@ export const GetCommentsByPostId = async (post_id) => {
 		post_id: post_id,
 	});
 };
+
+export const GetPostByUserId = async (user_id) => {
+	return await axios.post(BASE_URL + `admin/getPostByUserId`, {
+		user_id: user_id,
+	});
+};
+
+export const GetClipsByUserId = async (user_id) => {
+	return await axios.post(BASE_URL + `admin/getClipsByUserId`, {
+		user_id: user_id,
+	});
+};

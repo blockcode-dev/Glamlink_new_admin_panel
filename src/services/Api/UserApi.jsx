@@ -73,7 +73,6 @@ export const AddUser = async ({
 
 //delete user
 export const DeleteUser = async (user_id) => {
-	
 	return axios.post(
 		BASE_URL + "admin/users/delete",
 		{
@@ -97,3 +96,112 @@ export const getAllCityByStateId = async (stateId) => {
 	const res = await axios.get(BASE_URL + `state/${stateId}`);
 	return res;
 };
+
+export const GetFollowersByUserId = async (user_id) => {
+	return await axios.post(BASE_URL + `admin/getFollowersByUserId`, {
+		user_id: user_id,
+	});
+};
+
+export const GetFollowingByUserId = async (user_id) => {
+	return await axios.post(BASE_URL + `admin/getFollowByUserId`, {
+		user_id: user_id,
+	});
+};
+
+export const GetPostLikedByUserId = async (user_id) => {
+	return await axios.post(BASE_URL + `admin/getPostLikeByUserId`, {
+		user_id: user_id,
+	});
+};
+
+export const GetPostCommentedByUserId = async (user_id) => {
+	return await axios.post(BASE_URL + `admin/getPostCommentByUserId`, {
+		user_id: user_id,
+	});
+};
+
+export const GetClipsLikedByUserId = async (user_id) => {
+	return await axios.post(BASE_URL + `admin/getClipsLikeByUserId`, {
+		user_id: user_id,
+	});
+};
+
+export const GetClipsCommentedByUserId = async (user_id) => {
+	return await axios.post(BASE_URL + `admin/getClipsCommentByUserId`, {
+		user_id: user_id,
+	});
+};
+export const GetReviewsGivenByUserId = async (user_id) => {
+	return await axios.post(BASE_URL + `admin/getReviewsGivenByUserId`, {
+		user_id: user_id,
+	});
+};
+
+export const GetReviewsTakenByUserId = async (counselor_id) => {
+	return await axios.post(BASE_URL + `admin/getReviewsTakenByUserId`, {
+		counselor_id: counselor_id,
+	});
+};
+
+export const GetServiceByUserId = async (user_id) => {
+	return await axios.post(BASE_URL + `admin/getServicesByUserId`, {
+		user_id: user_id,
+	});
+};
+
+export const GetAvailabilityByUserId = async (counselor_id) => {
+	return await axios.post(BASE_URL + `admin/getAvailablityByUserId`, {
+		counselor_id: counselor_id,
+	});
+};
+
+export const GetBookingsByUserId = async (status, user_id) => {
+	let config = {
+		status: status,
+		user_id: user_id,
+	};
+	try {
+		const res = await axios.post(
+			BASE_URL + "admin/getBookingsByUserId",
+			config
+		);
+
+		return res;
+	} catch (error) {
+		console.error("Error fetching users:", error);
+		throw error;
+	}
+};
+
+export const GetBookingsByCounsellorId = async (status, user_id) => {
+	let config = {
+		status: status,
+		user_id: user_id,
+	};
+	try {
+		const res = await axios.post(
+			BASE_URL + "admin/getBookingsByCounsellorId",
+			config
+		);
+
+		return res;
+	} catch (error) {
+		console.error("Error fetching users:", error);
+		throw error;
+	}
+};
+
+export const PromoteUser = async (user_id) => {
+	return await axios.post(
+	  BASE_URL + "admin/user/promoted", 
+	  { user_id },  
+	  {
+		headers: {
+		  "Content-Type": "application/json",  
+		  "x-access-token": `${localStorage.getItem("adminToken")}`,  
+		},
+	  }
+	);
+  };
+  

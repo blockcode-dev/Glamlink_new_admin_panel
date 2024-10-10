@@ -139,7 +139,7 @@ const AddService = () => {
 				<h3 className="page-title">Create Service</h3>
 				<p className="page-sub-title">Add new Service</p>
 			</Box>
-			<Card className="service_card">
+			<Card style={{padding:"20px"}}>
 				<div>
 					<Form onSubmit={handleSubmit}>
 						<Form.Group className="mb-3">

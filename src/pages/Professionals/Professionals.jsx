@@ -42,42 +42,19 @@ const Professionals = () => {
 			sorter: (a, b) => a.user_profile.name.localeCompare(b.user_profile.name),
 			width: "15%",
 		},
-		// {
-		// 	title: "UserName",
-		// 	dataIndex: "user_name",
-		// 	width: "20%",
-		// },
+
 		{
 			title: "Email",
 			dataIndex: "email",
 			width: "15%",
 		},
-		// {
-		// 	title: "Mobile",
-		// 	dataIndex: ["user_profile", "mobile"],
-		// 	width: "20%",
-		// 	render: (mobile) => mobile || "---",
-		// },
+
 		{
 			title: "No. Of Post",
-			dataIndex: ["user_profile","no_of_post_posted"],
+			dataIndex: ["user_profile", "no_of_post_posted"],
 			width: "10%",
 		},
-		{
-			title: "No. Of Clips",
-			dataIndex: ["user_profile","number_of_reels"],
-			width: "10%",
-		},
-		// {
-		// 	title: "Post Liked",
-		// 	dataIndex: "courseEntryCount",
-		// 	width: "10%",
-		// },
-		// {
-		// 	title: "Post Commented",
-		// 	dataIndex: "courseEntryCount",
-		// 	width: "10%",
-		// },
+
 		{
 			title: "Account Created On",
 			dataIndex: "created_at",
@@ -118,6 +95,7 @@ const Professionals = () => {
 				localStorage.getItem("adminToken"),
 				params
 			);
+	
 			// Adding index for serial number
 			const newData = result.data.data.rows.map((item, index) => ({
 				...item,
@@ -125,11 +103,23 @@ const Professionals = () => {
 			}));
 			setData(newData);
 			setUserBackupData(newData);
+	
 		} catch (e) {
-			console.log(e);
+			console.log("Error object: ", e); // Log the full error object for debugging
+			
 			if (e.response && e.response.status === 401) {
 				navigate("/error401");
 				console.log("You do not have access to this page as a sub-admin.");
+			} else if (e.response && e.response.status === 500) {
+				// Handling specific 500 error
+				const errorMessage = e.response.data?.message || e.response.message;
+				if (errorMessage === "jwt expired") {
+					message.error("Session Expired");
+					navigate("/login");
+					
+				} else {
+					console.log("Server error. Please try again later.");
+				}
 			} else {
 				console.log("Error loading data. Please try again later.");
 			}
@@ -137,7 +127,7 @@ const Professionals = () => {
 			setLoading(false);
 		}
 	};
-
+	
 	useEffect(() => {
 		getData({
 			page: tableParams.pagination.current,
@@ -212,12 +202,10 @@ const Professionals = () => {
 		link.click();
 	};
 
-	const navigateToAddUser = () => {
-		navigate("/addUser");
-	};
+
 
 	const navigateToViewUser = (event, id) => {
-		navigate(`/viewUser/${id}`);
+		navigate(`/viewProfessionals/${id}`);
 	};
 
 	const rowSelection = {

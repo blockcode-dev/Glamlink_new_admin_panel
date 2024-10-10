@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table, Space } from "antd";
+import { Table, Space, message } from "antd";
 import { useNavigate } from "react-router";
 import { Box } from "@material-ui/core";
 import { InputText } from "primereact/inputtext";
@@ -113,6 +113,7 @@ const Appointments = () => {
 	const getData = async (params = {}) => {
 		try {
 			setLoading(true);
+	
 			const { pagination, sortField, sortOrder } = params;
 			const result = await GetAllAppointments(
 				localStorage.getItem("adminToken"),
@@ -120,30 +121,46 @@ const Appointments = () => {
 					page: pagination.current,
 					limit: pagination.pageSize,
 					sortBy: sortField,
+					// Optional: include sort order if needed
+					order: sortOrder === "ascend" ? "ASC" : "DESC", 
 				}
 			);
-
+	
 			// Adding index for serial number
 			const newData = result.data.rows.map((item, index) => ({
 				...item,
-				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
+				index: index + 1 + (pagination.current - 1) * pagination.pageSize, // Adjusting index based on pagination
 			}));
 			console.log(newData, "newData");
-
+	
+			// Update state with fetched data
 			setServiceData(newData);
 			setServiceBackupData(newData);
 			setTableParams({
 				...tableParams,
 				pagination: {
 					...pagination,
-					total: result.count, // Total count from the API response
+					total: result.count, // Update total count
 				},
 			});
+	
 		} catch (e) {
-			console.log(e);
+			// Log the full error object to inspect the structure
+			console.log("Error object: ", e);
+	
 			if (e.response && e.response.status === 401) {
 				navigate("/error401");
 				console.log("You do not have access to this page as a sub-admin.");
+			} else if (e.response && e.response.status === 500) {
+				// Handling specific 500 error
+				const errorMessage = e.response.data?.message || e.response.message;
+				if (errorMessage === "jwt expired") {
+					message.error("Session Expired");
+					navigate("/login");
+					
+				} else {
+					console.log("Server error. Please try again later.");
+				}
 			} else {
 				console.log("Error loading data. Please try again later.");
 			}
@@ -151,6 +168,7 @@ const Appointments = () => {
 			setLoading(false);
 		}
 	};
+	
 
 	const handleTableChange = (pagination, filters, sorter) => {
 		setTableParams({

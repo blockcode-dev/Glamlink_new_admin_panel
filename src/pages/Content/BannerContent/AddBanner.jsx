@@ -116,7 +116,7 @@ const AddBanner = () => {
 				<h3 className="page-title">Create Banner</h3>
 				<p className="page-sub-title">Add new Banner</p>
 			</Box>
-			<Card className="service_card">
+			<Card tyle={{padding:"20px"}}>
 				<div>
 					<Form onSubmit={handleSubmit}>
 						

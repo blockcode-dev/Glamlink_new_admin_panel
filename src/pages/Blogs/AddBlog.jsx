@@ -112,7 +112,7 @@ const AddBlog = () => {
 	};
 
 	return (
-		<Box>
+		<Box >
 			<Box
 				display="flex"
 				justifyContent="space-between"
@@ -135,7 +135,7 @@ const AddBlog = () => {
 					</Button>
 				</div>
 			</Box>
-			<Card className="service_card">
+			<Card style={{padding:"20px"}}>
 				<Form layout="vertical" form={form} onFinish={handleSubmit}>
 					<Form.Item
 						label="Blog Title"

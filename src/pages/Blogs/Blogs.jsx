@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table, Space, message,Modal } from "antd";
+import { Table, Space, message, Modal } from "antd";
 import { useNavigate } from "react-router";
 import { Box } from "@material-ui/core";
 import { InputText } from "primereact/inputtext";
@@ -43,10 +43,10 @@ const Blogs = () => {
 			dataIndex: "blog_categories", // Make sure this is the correct field in your data
 			render: (categories) => {
 				if (!categories || categories.length === 0) {
-					return 'No category selected yet';
+					return "No category selected yet";
 				}
 				// If categories is an array of objects, join the titles with commas
-				return categories.map(cat => cat.title).join(', ');
+				return categories.map((cat) => cat.title).join(", ");
 			},
 		},
 		{
@@ -83,7 +83,6 @@ const Blogs = () => {
 			),
 		},
 	];
-	
 
 	const rowSelection = {
 		selectedRowKeys,
@@ -96,10 +95,13 @@ const Blogs = () => {
 		try {
 			setLoading(true);
 			const { pagination, sortField, sortOrder } = params;
+
+			// Fetch blogs with pagination and sorting
 			const result = await GetBlogs(localStorage.getItem("adminToken"), {
 				page: pagination.current,
-				limit: pagination.pageSize, // Use 'limit' instead of 'pageSize'
+				limit: pagination.pageSize, // Ensure correct pagination limit
 				sortBy: sortField,
+				order: sortOrder === "ascend" ? "ASC" : "DESC", // Optional sorting order if needed
 			});
 
 			// Adding index for serial number
@@ -108,20 +110,32 @@ const Blogs = () => {
 				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
 			}));
 
+			// Update state with fetched blog data
 			setServiceData(newData);
 			setServiceBackupData(newData);
 			setTableParams({
 				...tableParams,
 				pagination: {
 					...pagination,
-					total: result.count,
+					total: result.count, // Total number of blogs from the API response
 				},
 			});
 		} catch (e) {
-			console.log(e);
+			// Log the full error object for debugging
+			console.log("Error: ", e);
+
 			if (e.response && e.response.status === 401) {
 				navigate("/error401");
 				console.log("You do not have access to this page as a sub-admin.");
+			} else if (e.response && e.response.status === 500) {
+				// Handling specific 500 error (like JWT expiration)
+				const errorMessage = e.response.data?.message || e.response.message;
+				if (errorMessage === "jwt expired") {
+					navigate("/login");
+					message.error("Session Expired");
+				} else {
+					console.log("Server error. Please try again later.");
+				}
 			} else {
 				console.log("Error loading data. Please try again later.");
 			}
@@ -129,7 +143,6 @@ const Blogs = () => {
 			setLoading(false);
 		}
 	};
-
 
 	const handleTableChange = (pagination, filters, sorter) => {
 		setTableParams({
@@ -161,17 +174,18 @@ const Blogs = () => {
 					await DeleteBlog(blogIds, localStorage.getItem("adminToken"));
 					message.success("Blog(s) deleted successfully");
 					setSelectedRowKeys([]);
-	
+
 					// Update serviceData to remove deleted blogs
-					setServiceData((prevData) => prevData.filter(item => !blogIds.includes(item.id)));
-	
+					setServiceData((prevData) =>
+						prevData.filter((item) => !blogIds.includes(item.id))
+					);
 				} catch (error) {
 					console.error("Error deleting Blog(s):", error);
 					message.error("Error deleting Blog(s)");
 				}
 			},
 		});
-	};	
+	};
 
 	useEffect(() => {
 		getData({
@@ -181,8 +195,6 @@ const Blogs = () => {
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
-
-
 
 	const navigateToAddBlog = () => {
 		navigate("/add-blogs");
@@ -220,7 +232,7 @@ const Blogs = () => {
 								placeholder="Search..."
 							/>
 						</span>
-						
+
 						<Button
 							icon="pi pi-trash"
 							severity="danger"

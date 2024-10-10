@@ -28,10 +28,9 @@ import { message } from "antd";
 import Login from "../pages/Login/Login";
 import { GetAdminProfile } from "../services/Api/Api";
 import { TbBrandBooking } from "react-icons/tb";
-import logo from "../assets/Logo new (transparent) (1) 1.png"
+import logo from "../assets/Logo new (transparent) (1) 1.png";
 import "./MainLayout.scss";
 const { Header, Sider, Content } = Layout;
-
 
 const MainLayout = () => {
 	const [anchorEl, setAnchorEl] = React.useState(null);
@@ -47,14 +46,36 @@ const MainLayout = () => {
 	const getData = async () => {
 		try {
 			let result = await GetAdminProfile(localStorage.getItem("adminToken"));
-			if (result.status === 500 && result.message === "jwt expired") {
-				navigate("/Login");
-				message.error("Session Expired")
-			} else {
-				setIdData(result.data.data);
+
+			// Checking if result contains an error status and message
+			if (result.status === 500) {
+				const errorMessage = result.data?.message || result.message;
+				if (errorMessage === "jwt expired") {
+					navigate("/Login");
+					message.error("Session Expired");
+					return; // Prevent further execution
+				}
 			}
+
+			// If no error, update the state with the data
+			setIdData(result.data.data);
 		} catch (e) {
-			console.log(e);
+			// Log the full error object for debugging
+			console.log("Error: ", e);
+
+			// Check if the error response status is 500 and the message is "jwt expired"
+			if (e.response && e.response.status === 500) {
+				const errorMessage = e.response.data?.message || e.response.message;
+				if (errorMessage === "jwt expired") {
+					message.error("Session Expired");
+					navigate("/login");
+				
+				} else {
+					console.log("Server error. Please try again later.");
+				}
+			} else {
+				console.log("Error loading data. Please try again later.");
+			}
 		}
 	};
 
@@ -92,7 +113,7 @@ const MainLayout = () => {
 							<h2 className="text-white text-center py-3 mb-0 custom-logo-size">
 								<span className="sm-logo">GL</span>
 								<span className="lg-logo">
-								<img
+									<img
 										src={logo}
 										alt="Logo"
 										style={{

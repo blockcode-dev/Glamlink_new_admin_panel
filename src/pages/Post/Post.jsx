@@ -10,7 +10,7 @@ import {
 	DeletePost,
 	GetAllPosts,
 	GetLikesByPostId,
-	GetCommentsByPostId
+	GetCommentsByPostId,
 } from "../../services/Api/PostApi";
 import moment from "moment";
 import { BASE_URL_IMAGE, BASE_URL_VIDEO } from "../../services/Host";
@@ -257,18 +257,21 @@ const Posts = () => {
 	};
 
 	const handleViewMedia = (attachments) => {
+		// Clear previous media data to prevent showing old media
+		setMediaSrc(null);
+		setMediaType(null);
+		setIsMediaLoading(true); // Set loading to true before fetching new media
+
 		const firstAttachment = attachments[0];
-		setMediaSrc(null)
 		if (firstAttachment) {
 			const mediaUrl =
 				firstAttachment.file_type === "Video"
 					? `${BASE_URL_VIDEO}${firstAttachment.file_name}`
 					: `${BASE_URL_IMAGE}${firstAttachment.file_name}`;
 
-			setMediaSrc(mediaUrl);
-			setMediaType(firstAttachment.file_type);
-			setIsMediaLoading(true);
-			setIsModalVisible(true);
+			setMediaSrc(mediaUrl); // Set new media source
+			setMediaType(firstAttachment.file_type); // Set media type (Image/Video)
+			setIsModalVisible(true); // Show modal after media details are set
 		}
 	};
 
@@ -365,7 +368,13 @@ const Posts = () => {
 			<Modal
 				centered
 				open={isModalVisible}
-				onCancel={() => setIsModalVisible(false)}
+				onCancel={() => {
+					setIsModalVisible(false);
+					setMediaSrc(null); // Clear media source
+					setMediaType("");  // Clear media type
+					setIsMediaLoading(false); // Reset loading state
+				}}
+			
 				footer={null}
 				width={500}
 			>
@@ -412,7 +421,7 @@ const Posts = () => {
 						},
 						{
 							title: "Name",
-							dataIndex: ["liked_by","user_profile","name"],
+							dataIndex: ["liked_by", "user_profile", "name"],
 							key: "name",
 							width: "30%",
 						},
@@ -448,7 +457,7 @@ const Posts = () => {
 						},
 						{
 							title: "Name",
-							dataIndex: ["commented_by","user_profile","name"],
+							dataIndex: ["commented_by", "user_profile", "name"],
 							key: "name",
 							width: "30%",
 						},
