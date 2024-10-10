@@ -159,7 +159,7 @@ const ViewProfessionals = () => {
 			<Grid container spacing={2}>
 				{/* Card 1: Personal Information */}
 				<Grid item size={{ xs: 6, md: 4 }}>
-					<Card style={{ padding: "10px" }}>
+					<Card style={{ padding: "10px",height:"100%" }}>
 						<Box textAlign="center" marginBottom="20px">
 							<Avatar
 								alt={userData?.user_profile?.name}
@@ -257,7 +257,7 @@ const ViewProfessionals = () => {
 
 				{/* Card 2: User Counts */}
 				<Grid item size={{ xs: 6, md: 8 }}>
-					<Card style={{ padding: "20px" }}>
+					<Card style={{ padding: "20px",height:"100%" }}>
 						<Box className="personal_informtaion_box">
 							<SiReactivex style={{ fontSize: "25px", marginRight: "15px" }} />
 							<h5 className="personal_informtaion">

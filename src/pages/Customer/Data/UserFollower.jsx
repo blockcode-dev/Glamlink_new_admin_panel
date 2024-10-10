@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table } from "antd";
+import { message, Table } from "antd";
 import { useNavigate, useParams } from "react-router";
 import { Box } from "@material-ui/core";
 import moment from "moment";
@@ -34,7 +34,6 @@ const UserFollower = () => {
 			title: "Follower Name",
 			dataIndex: ["follow_user", "user_profile", "name"],
 			width: "30%",
-			
 		},
 		{
 			title: "Followed On",
@@ -101,6 +100,7 @@ const UserFollower = () => {
 			sortOrder: tableParams.sortOrder,
 		});
 	}, []);
+
 
 	const navigateToUser = () => {
 		navigate(`/viewUser/${id}`);

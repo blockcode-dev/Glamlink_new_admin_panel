@@ -183,8 +183,11 @@ const Clips = () => {
 				order: sortOrder === "ascend" ? "ASC" : "DESC", // Handle sort order if needed
 			});
 	
-			// Adding index for serial number based on pagination
-			const newData = result.data.map((item, index) => ({
+			// Sort the clips based on a date field (e.g., createdAt) in descending order
+			const sortedData = result.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Adjust "createdAt" as needed
+	
+			// Adding index for serial number based on pagination and sorted data
+			const newData = sortedData.map((item, index) => ({
 				...item,
 				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
 			}));
@@ -289,6 +292,8 @@ const Clips = () => {
 	};
 
 	const handleViewThumbNail = (fileName) => {
+		setMediaSrc(null);
+		setIsMediaLoading(true); 
 		if (fileName) {
 			const mediaUrl =
 				fileName.split("//")[0] === "https:"
@@ -307,8 +312,11 @@ const Clips = () => {
 
 	const handleModalCancel = () => {
 		setIsModalVisible(false);
+		setMediaSrc(null); // Set to null to ensure the player is unmounted
 		setIsMediaLoading(false);
 	};
+	
+	
 
 	const handleThumbNailModalCancel = () => {
 		setIsThumbNailModalVisible(false);
@@ -427,7 +435,13 @@ const Clips = () => {
 			<Modal
 				centered
 				open={isThumbNailModalVisible}
-				onCancel={handleThumbNailModalCancel}
+				// onCancel={handleThumbNailModalCancel}
+				onCancel={() => {
+					setIsModalVisible(false);
+					setMediaSrc(null); 
+					setIsMediaLoading(false); 
+					handleThumbNailModalCancel();
+				}}
 				footer={null}
 				width={500}
 			>

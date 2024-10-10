@@ -174,12 +174,16 @@ const Posts = () => {
 				limit: pagination.pageSize,
 				sortBy: sortField,
 			});
-
-			const newData = result.data.map((item, index) => ({
+	
+			// Sort the posts based on the createdAt date field (newest first)
+			const sortedData = result.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort in descending order
+	
+			// Map through the sorted data and set the index for serial number
+			const newData = sortedData.map((item, index) => ({
 				...item,
 				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
 			}));
-
+	
 			setServiceData(newData);
 			setServiceBackupData(newData);
 			setTableParams({
@@ -201,6 +205,8 @@ const Posts = () => {
 			setLoading(false);
 		}
 	};
+	
+	
 
 	const handleTableChange = (pagination, filters, sorter) => {
 		setTableParams({
@@ -262,12 +268,14 @@ const Posts = () => {
 		setMediaType(null);
 		setIsMediaLoading(true); // Set loading to true before fetching new media
 
-		const firstAttachment = attachments[0];
+		const firstAttachment = attachments[0]; // Get the first attachment
 		if (firstAttachment) {
 			const mediaUrl =
-				firstAttachment.file_type === "Video"
-					? `${BASE_URL_VIDEO}${firstAttachment.file_name}`
-					: `${BASE_URL_IMAGE}${firstAttachment.file_name}`;
+				firstAttachment.file_name.split("//")[0] === "https:"
+					? firstAttachment.file_name // Use the file_name directly if it's already a full URL
+					: firstAttachment.file_type === "Video"
+					? `${BASE_URL_VIDEO}${firstAttachment.file_name}` // If it's a video, append it to BASE_URL_VIDEO
+					: `${BASE_URL_IMAGE}${firstAttachment.file_name}`; // If it's an image, append it to BASE_URL_IMAGE
 
 			setMediaSrc(mediaUrl); // Set new media source
 			setMediaType(firstAttachment.file_type); // Set media type (Image/Video)
@@ -371,10 +379,9 @@ const Posts = () => {
 				onCancel={() => {
 					setIsModalVisible(false);
 					setMediaSrc(null); // Clear media source
-					setMediaType("");  // Clear media type
+					setMediaType(""); // Clear media type
 					setIsMediaLoading(false); // Reset loading state
 				}}
-			
 				footer={null}
 				width={500}
 			>

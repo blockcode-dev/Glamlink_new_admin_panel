@@ -115,6 +115,8 @@ const Appointments = () => {
 			setLoading(true);
 	
 			const { pagination, sortField, sortOrder } = params;
+	
+			// Fetch appointments with pagination and sorting
 			const result = await GetAllAppointments(
 				localStorage.getItem("adminToken"),
 				{
@@ -122,15 +124,21 @@ const Appointments = () => {
 					limit: pagination.pageSize,
 					sortBy: sortField,
 					// Optional: include sort order if needed
-					order: sortOrder === "ascend" ? "ASC" : "DESC", 
+					order: sortOrder === "ascend" ? "ASC" : "DESC",
 				}
 			);
 	
+			// Sort the rows based on appointment_slot.date in descending order
+			const sortedData = result.data.rows.sort((a, b) => 
+				new Date(b['appointment_slot'].date) - new Date(a['appointment_slot'].date)
+			);
+	
 			// Adding index for serial number
-			const newData = result.data.rows.map((item, index) => ({
+			const newData = sortedData.map((item, index) => ({
 				...item,
 				index: index + 1 + (pagination.current - 1) * pagination.pageSize, // Adjusting index based on pagination
 			}));
+			
 			console.log(newData, "newData");
 	
 			// Update state with fetched data
@@ -157,7 +165,6 @@ const Appointments = () => {
 				if (errorMessage === "jwt expired") {
 					message.error("Session Expired");
 					navigate("/login");
-					
 				} else {
 					console.log("Server error. Please try again later.");
 				}
@@ -168,6 +175,8 @@ const Appointments = () => {
 			setLoading(false);
 		}
 	};
+	
+	
 	
 
 	const handleTableChange = (pagination, filters, sorter) => {
