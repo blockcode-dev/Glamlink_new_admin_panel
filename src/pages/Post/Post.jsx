@@ -54,12 +54,16 @@ const Posts = () => {
 			dataIndex: "content",
 			width: "20%",
 			render: (text) => {
-				const words = text.split(" ");
-				const truncatedText =
-					words.length > 10 ? words.slice(0, 10).join(" ") + " ..." : text;
-				return <span>{truncatedText}</span>;
+			  if (!text || text.trim() === "") {
+				return <span>Not Provided</span>; // Display 'Not Provided' if no content
+			  }
+			  
+			  const words = text.split(" ");
+			  const truncatedText =
+				words.length > 10 ? words.slice(0, 10).join(" ") + " ..." : text;
+			  return <span>{truncatedText}</span>;
 			},
-		},
+		  },		  
 		{
 			title: "Media Type",
 			dataIndex: "attachements", // Reference the entire attachments array

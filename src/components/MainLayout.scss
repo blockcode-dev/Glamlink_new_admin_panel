@@ -55,3 +55,18 @@ p{
   background-color: #23B8CB !important; 
   border-left: 3px solid #23B8CB !important;
 }
+
+
+.logo {
+	background-color: #23B8CB !important;
+	text-align: center;
+	.logo-image-1 {
+		width: 100%;
+		padding: 20px;
+    justify-self: center;
+
+	}.logo-image{
+		width: 115px;
+    justify-self: center;
+	}
+}

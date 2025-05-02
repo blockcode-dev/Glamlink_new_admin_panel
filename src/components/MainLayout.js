@@ -24,25 +24,22 @@ import { BiSolidCategoryAlt } from "react-icons/bi";
 import { PiFilmReelFill } from "react-icons/pi";
 import { MdManageAccounts } from "react-icons/md";
 import { FaSpeakerDeck } from "react-icons/fa";
+import { AiOutlineShoppingCart } from "react-icons/ai";
+import { RiProductHuntLine } from "react-icons/ri";
+import { FiBox } from "react-icons/fi";
+import { BsGraphUpArrow } from "react-icons/bs";
 import { message } from "antd";
 import Login from "../pages/Login/Login";
 import { GetAdminProfile } from "../services/Api/Api";
 import { TbBrandBooking } from "react-icons/tb";
-import logo from "../assets/Logo new (transparent) (1) 1.png";
+import { MdOutlineCategory } from "react-icons/md";
+import logo from "../assets/glamlink.png";
+import { IoInformationCircle } from "react-icons/io5";
 import "./MainLayout.scss";
 const { Header, Sider, Content } = Layout;
 
 const MainLayout = () => {
-	const [anchorEl, setAnchorEl] = React.useState(null);
 	const [idData, setIdData] = React.useState({});
-	const open = Boolean(anchorEl);
-	const handleClick = (event) => {
-		setAnchorEl(event.currentTarget);
-	};
-	const handleClose = () => {
-		setAnchorEl(null);
-	};
-
 	const getData = async () => {
 		try {
 			let result = await GetAdminProfile(localStorage.getItem("adminToken"));
@@ -69,7 +66,6 @@ const MainLayout = () => {
 				if (errorMessage === "jwt expired") {
 					message.error("Session Expired");
 					navigate("/login");
-				
 				} else {
 					console.log("Server error. Please try again later.");
 				}
@@ -109,7 +105,14 @@ const MainLayout = () => {
 						collapsed={collapsed}
 						className="sidebar"
 					>
-						<div className="logo">
+						<div className="logo ">
+							{collapsed ? (
+								<img src={logo} className="logo-image-1" alt="logo" />
+							) : (
+								<img src={logo} className="logo-image" alt="logo" />
+							)}
+						</div>
+						{/* <div className="logo">
 							<h2 className="text-white text-center py-3 mb-0 custom-logo-size">
 								<span className="sm-logo">GL</span>
 								<span className="lg-logo">
@@ -123,7 +126,7 @@ const MainLayout = () => {
 									/>
 								</span>
 							</h2>
-						</div>
+						</div> */}
 
 						<Menu
 							theme="dark"
@@ -152,21 +155,19 @@ const MainLayout = () => {
 									label: "Professionals",
 								},
 								{
+									key: "/promotion-request",
+									icon: <BsGraphUpArrow className="fs-4" />,
+									label: "Promotion Request",
+								},
+								{
+									key: "/form",
+									icon: <IoInformationCircle className="fs-4" />,
+									label: "Form",
+								},
+								{
 									key: "/service-categories",
 									icon: <BiSolidCategoryAlt className="fs-4" />,
 									label: "Services",
-									// children: [
-									// 	{
-									// 		key: "/services",
-									// 		icon: <BiSolidCategoryAlt className="fs-4" />,
-									// 		label: "Services",
-									// 	},
-									// 	{
-									// 		key: "/service-categories",
-									// 		icon: <BiSolidCategoryAlt className="fs-4" />,
-									// 		label: "Categories",
-									// 	},
-									// ],
 								},
 								{
 									key: "/blogs",
@@ -204,6 +205,28 @@ const MainLayout = () => {
 									key: "/clips-list",
 									icon: <PiFilmReelFill className="fs-4" />,
 									label: "Clips",
+								},
+								{
+									key: "/product-category",
+									icon: <AiOutlineShoppingCart className="fs-4" />,
+									label: "Ecommerce",
+									children: [
+										{
+											key: "/product-category",
+											icon: <MdOutlineCategory className="fs-4" />,
+											label: "Product Category",
+										},
+										{
+											key: "/product-list",
+											icon: <RiProductHuntLine className="fs-4" />,
+											label: "Product",
+										},
+										{
+											key: "/orders",
+											icon: <FiBox className="fs-4" />,
+											label: "Orders",
+										},
+									],
 								},
 								{
 									key: "/t&c1",

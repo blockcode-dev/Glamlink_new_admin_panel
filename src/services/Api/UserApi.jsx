@@ -4,12 +4,18 @@ import axios from "axios";
 import { BASE_URL } from "../Host";
 
 //get all user
-export const GetUsers = async (adminToken, roleId) => {
+export const GetUsers = async (adminToken, params) => {
 	try {
+		const { page, limit, sortBy } = params;
 		const res = await axios.get(BASE_URL + `admin/users/list/6`, {
 			headers: {
 				"x-access-token": `${adminToken}`,
 				"Content-Type": "multipart/form-data",
+			},
+			params: {
+				page: page,
+				limit: limit,
+				sortBy: sortBy,
 			},
 		});
 
@@ -21,12 +27,18 @@ export const GetUsers = async (adminToken, roleId) => {
 	}
 };
 
-export const GetProfessionals = async (adminToken, roleId) => {
+export const GetProfessionals = async (adminToken, params) => {
+	const { page, limit, sortBy } = params;
 	try {
 		const res = await axios.get(BASE_URL + `admin/users/list/7`, {
 			headers: {
 				"x-access-token": `${adminToken}`,
 				"Content-Type": "multipart/form-data",
+			},
+			params: {
+				page: page,
+				limit: limit,
+				sortBy: sortBy,
 			},
 		});
 
@@ -41,6 +53,19 @@ export const GetProfessionals = async (adminToken, roleId) => {
 //get userby id
 export const GetUserById = async (id) => {
 	return await axios.get(BASE_URL + `admin/users/getUserById/${id}`);
+};
+
+export const GetProfessionalPayoutSummary = async (id) => {
+	return await axios.get(BASE_URL + `stripe/getProfessionalPayoutSummary/${id}`);
+};
+
+export const ProfessialPayout = async (formData) => {
+	return await axios.post(BASE_URL + "stripe/payout/professional", formData, {
+		headers: {
+			"x-access-token": `${localStorage.getItem("adminToken")}`,
+			"Content-Type": "multipart/form-data",
+		},
+	});
 };
 
 //admin add user
@@ -204,4 +229,9 @@ export const PromoteUser = async (user_id) => {
 	  }
 	);
   };
+
+  export const GetPromotionRequest = async () => {
+	return await axios.get(BASE_URL + `admin/user/getAllPromotionRequest`
+	);
+};
   

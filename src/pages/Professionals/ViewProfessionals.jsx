@@ -28,12 +28,14 @@ const ViewProfessionals = () => {
 	const navigate = useNavigate();
 	const { id } = useParams();
 	const [userData, setUserData] = useState([]);
+	
 
 	useLayoutEffect(() => {
 		// Fetching user data logic here
 		GetUserById(id)
 			.then((res) => {
 				setUserData(res.data.data);
+				setIsPromoted(res.data.data.is_promoted);
 			})
 			.catch((err) => {
 				console.log(err, "error");
@@ -192,7 +194,7 @@ const ViewProfessionals = () => {
 							marginBottom="20px"
 						>
 							<Typography variant="subtitle2" color="gray" marginRight="10px">
-								Promoted:
+								Promote:
 							</Typography>
 							<Switch
 								checked={isPromoted} // Now this will properly reflect the initial state
@@ -200,6 +202,20 @@ const ViewProfessionals = () => {
 								color="primary"
 							/>
 						</Box>
+
+							{/* Eligibility & Request Status Section */}
+							<Box textAlign="center" marginBottom="10px">
+							<Typography variant="body1" color={userData?.is_premium ? "green" : "red"}>
+								{userData?.is_premium ? "✅ Eligible for Promotion" : "❌ Not Eligible for Promotion"}
+							</Typography>
+
+							{userData?.request_for_promotion && (
+								<Typography variant="body2" color="blue">
+									🟢 Requested for Promotion
+								</Typography>
+							)}
+						</Box>
+
 
 						<Box className="personal_informtaion_box">
 							<FaCircleUser style={{ fontSize: "25px", marginRight: "15px" }} />

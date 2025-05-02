@@ -91,30 +91,59 @@ const User = () => {
 	const getData = async (params = {}) => {
 		try {
 			setLoading(true);
-			let result = await GetUsers(localStorage.getItem("adminToken"), params);
-			// Adding index for serial number
-			const newData = result.data.data.rows.map((item, index) => ({
+
+			const {
+				pagination = { current: 1, pageSize: 100 },
+				sortField = null,
+				sortOrder = null,
+			} = params;
+
+			const result = await GetUsers(
+				localStorage.getItem("adminToken"),
+				{
+					page: pagination.current, // Current page
+					limit: pagination.pageSize, // Page size
+					sortBy: sortField, // Sort field
+					order: sortOrder === "ascend" ? "ASC" : "DESC", // Sort order
+				}
+			);
+
+			// Debugging API Response
+			console.log("API Response:", result);
+
+			const rows = result?.data?.data?.rows || []; // Safely access rows
+			const total = result?.data?.data?.count || 0; // Total number of records
+
+			const newData = rows.map((item, index) => ({
 				...item,
-				index: index + 1,
+				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
 			}));
-			setData(newData);
-			setUserBackupData(newData);
+
+			setData(newData); // Update current page's data
+			setUserBackupData(newData); // Backup for search functionality
+
+			setTableParams((prev) => ({
+				...prev,
+				pagination: {
+					...pagination,
+					total, // Update total records count
+				},
+			}));
 		} catch (e) {
-			console.log("Error object: ", e); // Log the whole error to see its structure
-			if (e.response && e.response.status === 401) {
+			console.error("Error loading data:", e);
+
+			if (e.response?.status === 401) {
 				navigate("/error401");
-				console.log("You do not have access to this page as a sub-admin.");
-			} else if (e.response && e.response.status === 500) {
-				// Check if the error message is contained inside `e.response.data.message`
+			} else if (e.response?.status === 500) {
 				const errorMessage = e.response.data?.message || e.response.message;
 				if (errorMessage === "jwt expired") {
 					message.error("Session Expired");
 					navigate("/login");
 				} else {
-					console.log("Error loading data. Please try again later.");
+					console.error("Server error. Please try again later.");
 				}
 			} else {
-				console.log("Error loading data. Please try again later.");
+				message.error("Error loading data. Please try again later.");
 			}
 		} finally {
 			setLoading(false);
@@ -122,13 +151,19 @@ const User = () => {
 	};
 
 	useEffect(() => {
-		getData({
-			page: tableParams.pagination.current,
-			pageSize: tableParams.pagination.pageSize,
-			sortField: tableParams.sortField,
-			sortOrder: tableParams.sortOrder,
-		});
-	}, [tableParams]);
+		if (tableParams.pagination.current && tableParams.pagination.pageSize) {
+			getData({
+				pagination: tableParams.pagination,
+				sortField: tableParams.sortField,
+				sortOrder: tableParams.sortOrder,
+			});
+		}
+	}, [
+		tableParams.pagination.current,
+		tableParams.pagination.pageSize,
+		tableParams.sortField,
+		tableParams.sortOrder,
+	]);
 
 	const handleTableChange = (pagination, filters, sorter) => {
 		setTableParams({

@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table, Space, message } from "antd";
+import { Table, message } from "antd";
 import { useNavigate } from "react-router";
 import { Box } from "@material-ui/core";
 import { InputText } from "primereact/inputtext";
@@ -12,9 +12,6 @@ const Appointments = () => {
 	const [serviceData, setServiceData] = useState([]);
 	const [serviceBackupData, setServiceBackupData] = useState([]);
 	const [loading, setLoading] = useState(false);
-	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-	const [isModalVisible, setIsModalVisible] = useState(false);
-	const [serviceListData, setServiceListData] = useState([]);
 
 	const [tableParams, setTableParams] = useState({
 		pagination: {
@@ -103,12 +100,6 @@ const Appointments = () => {
 		},
 	];
 
-	const rowSelection = {
-		selectedRowKeys,
-		onChange: (selectedRowKeys) => {
-			setSelectedRowKeys(selectedRowKeys);
-		},
-	};
 
 	const getData = async (params = {}) => {
 		try {
@@ -123,7 +114,6 @@ const Appointments = () => {
 					page: pagination.current,
 					limit: pagination.pageSize,
 					sortBy: sortField,
-					// Optional: include sort order if needed
 					order: sortOrder === "ascend" ? "ASC" : "DESC",
 				}
 			);
@@ -233,22 +223,6 @@ const Appointments = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	const navigateToAddBlog = () => {
-		navigate("/add-service-categories");
-	};
-
-	const navigateToEditBlog = (event, id) => {
-		navigate(`/edit-service-categories/${id}`);
-	};
-
-	const navigateToViewBlog = (event, id) => {
-		navigate(`/view-service-categories/${id}`);
-	};
-
-	const handleModalClose = () => {
-		setIsModalVisible(false);
-		setServiceListData([]); // Clear the data on modal close
-	};
 
 	return (
 		<Box>

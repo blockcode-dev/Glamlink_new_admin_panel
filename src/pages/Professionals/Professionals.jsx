@@ -10,8 +10,9 @@ import moment from "moment/moment";
 
 import {
 	DeleteUser,
+	GetProfessionalPayoutSummary,
 	GetProfessionals,
-	GetUsers,
+	ProfessialPayout,
 } from "../../services/Api/UserApi";
 
 const Professionals = () => {
@@ -20,10 +21,16 @@ const Professionals = () => {
 	const [userBackupData, setUserBackupData] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+	const [payoutModalVisible, setPayoutModalVisible] = useState(false);
+	const [selectedProfessional, setSelectedProfessional] = useState(null);
+	const [payoutSummary, setPayoutSummary] = useState(null);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [paying, setPaying] = useState(false);
+
 	const [tableParams, setTableParams] = useState({
 		pagination: {
 			current: 1,
-			pageSize: 20,
+			pageSize: 100,
 		},
 		sortField: null,
 		sortOrder: null,
@@ -67,6 +74,21 @@ const Professionals = () => {
 			render: (_, record) => (
 				<Space size="middle">
 					<Button
+						icon="pi pi-dollar"
+						rounded
+						outlined
+						severity="info"
+						style={{
+							borderRadius: "25px",
+							color: "green",
+							borderColor: "green",
+						}}
+						onClick={() => {
+							fetchPayoutSummary(record.id);
+						}}
+					/>
+
+					<Button
 						icon="pi pi-eye"
 						rounded
 						outlined
@@ -91,51 +113,79 @@ const Professionals = () => {
 	const getData = async (params = {}) => {
 		try {
 			setLoading(true);
-			let result = await GetProfessionals(
+
+			const {
+				pagination = { current: 1, pageSize: 100 },
+				sortField = null,
+				sortOrder = null,
+			} = params;
+
+			const result = await GetProfessionals(
 				localStorage.getItem("adminToken"),
-				params
+				{
+					page: pagination.current, // Current page
+					limit: pagination.pageSize, // Page size
+					sortBy: sortField, // Sort field
+					order: sortOrder === "ascend" ? "ASC" : "DESC", // Sort order
+				}
 			);
-	
-			// Adding index for serial number
-			const newData = result.data.data.rows.map((item, index) => ({
+
+			// Debugging API Response
+			console.log("API Response:", result);
+
+			const rows = result?.data?.data?.rows || []; // Safely access rows
+			const total = result?.data?.data?.count || 0; // Total number of records
+
+			const newData = rows.map((item, index) => ({
 				...item,
-				index: index + 1,
+				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
 			}));
-			setData(newData);
-			setUserBackupData(newData);
-	
+
+			setData(newData); // Update current page's data
+			setUserBackupData(newData); // Backup for search functionality
+
+			setTableParams((prev) => ({
+				...prev,
+				pagination: {
+					...pagination,
+					total, // Update total records count
+				},
+			}));
 		} catch (e) {
-			console.log("Error object: ", e); // Log the full error object for debugging
-			
-			if (e.response && e.response.status === 401) {
+			console.error("Error loading data:", e);
+
+			if (e.response?.status === 401) {
 				navigate("/error401");
-				console.log("You do not have access to this page as a sub-admin.");
-			} else if (e.response && e.response.status === 500) {
-				// Handling specific 500 error
+			} else if (e.response?.status === 500) {
 				const errorMessage = e.response.data?.message || e.response.message;
 				if (errorMessage === "jwt expired") {
 					message.error("Session Expired");
 					navigate("/login");
-					
 				} else {
-					console.log("Server error. Please try again later.");
+					console.error("Server error. Please try again later.");
 				}
 			} else {
-				console.log("Error loading data. Please try again later.");
+				message.error("Error loading data. Please try again later.");
 			}
 		} finally {
 			setLoading(false);
 		}
 	};
-	
+
 	useEffect(() => {
-		getData({
-			page: tableParams.pagination.current,
-			pageSize: tableParams.pagination.pageSize,
-			sortField: tableParams.sortField,
-			sortOrder: tableParams.sortOrder,
-		});
-	}, [tableParams]);
+		if (tableParams.pagination.current && tableParams.pagination.pageSize) {
+			getData({
+				pagination: tableParams.pagination,
+				sortField: tableParams.sortField,
+				sortOrder: tableParams.sortOrder,
+			});
+		}
+	}, [
+		tableParams.pagination.current,
+		tableParams.pagination.pageSize,
+		tableParams.sortField,
+		tableParams.sortOrder,
+	]);
 
 	const handleTableChange = (pagination, filters, sorter) => {
 		setTableParams({
@@ -202,8 +252,6 @@ const Professionals = () => {
 		link.click();
 	};
 
-
-
 	const navigateToViewUser = (event, id) => {
 		navigate(`/viewProfessionals/${id}`);
 	};
@@ -213,6 +261,73 @@ const Professionals = () => {
 		onChange: (selectedRowKeys) => {
 			setSelectedRowKeys(selectedRowKeys);
 		},
+	};
+
+	const fetchPayoutSummary = async (professionalId) => {
+		try {
+			const res = await GetProfessionalPayoutSummary(professionalId);
+			const professional = data.find((p) => p.id === professionalId);
+			setSelectedProfessional(professional || null);
+
+			if (res.data.success) {
+				const result = res.data.data;
+
+				if (result.length === 0) {
+					setPayoutSummary(null); // No payout to show
+				} else {
+					setPayoutSummary(result[0]);
+				}
+			} else {
+				setPayoutSummary(null);
+				message.error(res.data.message || "Failed to fetch payout summary.");
+			}
+
+			setIsModalOpen(true); // Always show modal
+		} catch (err) {
+			console.error("Error fetching payout summary:", err);
+			message.error("Server error.");
+			setIsModalOpen(true);
+			setPayoutSummary(null);
+		}
+	};
+
+	const showModal = () => {
+		setIsModalOpen(true);
+	};
+
+	const handleOk = () => {
+		setIsModalOpen(false);
+	};
+
+	const handleCancel = () => {
+		setIsModalOpen(false);
+	};
+
+	const handlePayout = async () => {
+		if (!selectedProfessional || !payoutSummary?.netPayout) return;
+		setPaying(true);
+		try {
+			const formData = new FormData();
+			formData.append("professional_id", selectedProfessional.id);
+			formData.append("amount", payoutSummary.netPayout);
+
+			const response = await ProfessialPayout(formData);
+
+			if (response.status === 201) {
+				message.success("Payout processed successfully.");
+				setPayoutModalVisible(false);
+				setIsModalOpen(false);
+			}
+		} catch (err) {
+			console.error("Payout error:", err.message);
+			if (err.response && err.response.status === 400) {
+				message.error("You have insufficient funds in your Stripe account.");
+			} else {
+				message.error("Server error.");
+			}
+		} finally {
+			setPaying(false);
+		}
 	};
 
 	return (
@@ -284,6 +399,77 @@ const Professionals = () => {
 				onChange={handleTableChange}
 				rowSelection={rowSelection}
 			/>
+
+			<Modal
+				title={
+					<span style={{ fontWeight: 600, fontSize: "18px" }}>
+						Payout Summary -{" "}
+						{selectedProfessional?.user_profile?.name || "Professional"}
+					</span>
+				}
+				open={isModalOpen}
+				onCancel={handleCancel}
+				footer={[
+					<Button
+						onClick={handleCancel}
+						label="Cancel"
+						severity="secondary"
+						outlined
+						style={{ marginRight: "10px", borderRadius: "8px", height: "32px" }}
+					/>,
+					<Button
+						label="Process Payout"
+						severity="info"
+						loading={paying}
+						onClick={handlePayout}
+						style={{ marginRight: "10px", borderRadius: "8px", height: "32px" }}
+						disabled={!payoutSummary?.netPayout || !selectedProfessional}
+					/>,
+				]}
+			>
+				{payoutSummary ? (
+					<div style={{ display: "grid", rowGap: "12px", padding: "10px 0" }}>
+						<div style={{ display: "flex", justifyContent: "space-between" }}>
+							<span>
+								<strong>Total Gross Sales:</strong>
+							</span>
+							<span>${payoutSummary.grossSales}</span>
+						</div>
+						<div style={{ display: "flex", justifyContent: "space-between" }}>
+							<span>
+								<strong>Total Tax:</strong>
+							</span>
+							<span>${payoutSummary.totalTax}</span>
+						</div>
+						<div style={{ display: "flex", justifyContent: "space-between" }}>
+							<span>
+								<strong>Platform Fees:</strong>
+							</span>
+							<span>${payoutSummary.totalPlatformFees}</span>
+						</div>
+						<div style={{ display: "flex", justifyContent: "space-between" }}>
+							<span>
+								<strong>Net Payout:</strong>
+							</span>
+							<span style={{ fontWeight: 600, color: "#0a7" }}>
+								${payoutSummary.netPayout}
+							</span>
+						</div>
+						<div style={{ display: "flex", justifyContent: "space-between" }}>
+							<span>
+								<strong>Total Orders:</strong>
+							</span>
+							<span>{payoutSummary.totalOrders}</span>
+						</div>
+					</div>
+				) : (
+					<div style={{ textAlign: "center", padding: "20px", color: "#999" }}>
+						<p>
+							<strong>No payout available for this professional.</strong>
+						</p>
+					</div>
+				)}
+			</Modal>
 		</Box>
 	);
 };

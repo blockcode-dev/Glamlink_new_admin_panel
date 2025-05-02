@@ -5,7 +5,7 @@ import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { Form, Input } from "antd";
 import { message } from "antd";
-import logo from "../../assets/Logo new (transparent) (1) 1.png";
+import logo from "../../assets/glamlink (1) (4).png";
 const Login = () => {
   const navigate = useNavigate();
   const onFinish = (values) => {
@@ -24,11 +24,11 @@ const Login = () => {
         }, 1000);
       })
       .catch((error) => {
-        if (error.response.data.message === "Error: User not found.") {
+        if (error.response.data.message === "User not found.") {
           message.error("Email Doesn't Exist");
         } else if (
           error.response.data.message ===
-          "Error: Invalid email or password. Please try again."
+          "Invalid email or password. Please try again."
         ) {
           message.error("Invalid Password");
         } else if (

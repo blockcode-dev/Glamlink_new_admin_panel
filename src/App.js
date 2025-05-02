@@ -28,7 +28,6 @@ import AddSupport from "./pages/Content/Support/AddSupport";
 import AboutUs from "./pages/Content/AboutUs/AboutUs";
 import AddAboutUs from "./pages/Content/AboutUs/AddAboutUs";
 import EditAboutUs from "./pages/Content/AboutUs/EditAboutUs";
-import Test from "./pages/test";
 import Error401 from "./pages/ErrorPages/Error401";
 import ServiceCategory from "./pages/ServiceCategory/ServiceCategory";
 import AddServiceCategory from "./pages/ServiceCategory/AddServiceCategroy";
@@ -64,6 +63,16 @@ import UserBookings from "./pages/Customer/Data/UserBookings.jsx";
 import ProfessionalBooking from "./pages/Customer/Data/ProfessionalBooking.jsx";
 import UserService from "./pages/Customer/Data/UserService.jsx";
 import Availability from "./pages/Customer/Data/Availability.jsx";
+import ProductCategory from "./pages/Ecommerce/ProductCategory/ProductCategory.jsx";
+import EditProductCategory from "./pages/Ecommerce/ProductCategory/EditProductCategory.jsx";
+import AddProductCategory from "./pages/Ecommerce/ProductCategory/AddProductCategory.jsx";
+import Product from "./pages/Ecommerce/Product/Product.jsx";
+import ViewProduct from "./pages/Ecommerce/Product/ViewProduct.jsx";
+import Ratings from "./pages/Ecommerce/Product/Rating.jsx";
+import Orders from "./pages/Ecommerce/Order/Orders.jsx";
+import ViewOrder from "./pages/Ecommerce/Order/ViewOrder.jsx";
+import PromotionRequest from "./pages/PromotionRequest/PromotionRequest.jsx";
+import ProfessionalForm from "./pages/ProfessionalForm/ProfessionalForm.jsx";
 
 
 function App() {
@@ -81,7 +90,6 @@ function App() {
 					<Route path="/viewProfessionals/:id" element={<ViewProfessionals />} />
 					<Route path="/addUser" element={<AddUser />} />
 					<Route path="/viewUser/:id" element={<ViewCustomer />} />
-					<Route path="/test" element={<Test />} />
 					<Route path="adminUser" element={<AdminList />} />
 					<Route path="/adminList" element={<AdminUser />} />
 					<Route path="/viewAdmin" element={<ViewAdmin />} />
@@ -141,6 +149,16 @@ function App() {
 					<Route path="/viewProfessionalBooking/:id" element={<ProfessionalBooking />} />
 					<Route path="/viewUserService/:id" element={<UserService />} />
 					<Route path="/viewAvailability/:id" element={<Availability />} />
+					<Route path="/product-category" element={<ProductCategory />} />
+					<Route path="/edit-product-category/:id" element={<EditProductCategory />} />
+					<Route path="/add-product-category" element={<AddProductCategory />} />
+					<Route path="/product-list" element={<Product />} />
+					<Route path="/view-product/:id" element={<ViewProduct />} />
+					<Route path="/product-rating/:id" element={<Ratings />} />
+					<Route path="/orders" element={<Orders />} />
+					<Route path="/view-order/:id" element={<ViewOrder />} />
+					<Route path="/promotion-request" element={<PromotionRequest />} />
+					<Route path="/form" element={<ProfessionalForm />} />
 				</Route>
 			</Routes>
 		</Router>

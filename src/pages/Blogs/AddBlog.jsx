@@ -2,17 +2,13 @@
 
 import React, { useLayoutEffect, useState } from "react";
 import { Box } from "@mui/material";
-// import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { useNavigate } from "react-router-dom";
-import imageCompression from "browser-image-compression";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { message, Form, Input, Select, Upload, Button } from "antd";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { CreateBlog, GetBlogCategoryName } from "../../services/Api/BlogsApi";
 import {
-	PlusOutlined,
 	UploadOutlined,
 	CheckOutlined,
 	ArrowLeftOutlined,
@@ -26,7 +22,6 @@ const AddBlog = () => {
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
 	const [blogCategoryId, setBlogCategoryId] = useState("");
-	const [images, setImages] = useState([]);
 	const [blogData, setBlogData] = useState([]);
 	const [disable, setDisable] = useState(false);
 	const [fileList, setFileList] = useState([]);

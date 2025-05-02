@@ -23,3 +23,54 @@
   text-align: center;
   /* margin-bottom: 20px; */
 }
+
+.headingTitle{
+  margin-bottom: 20px;
+  font-size: 1rem;
+  color: black;
+}
+
+.scrollable-table-container {
+  max-height: 220px; /* Adjust this value as needed */
+  overflow-y: auto;
+}
+
+.card-box {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.small-card {
+  flex: 1;
+}
+
+.large-card {
+  flex: 2; /* Takes up the space of two small cards */
+}
+
+.percentage {
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.positive {
+  color: green;
+}
+
+.negative {
+  color: red;
+}
+
+.graph-placeholder {
+  background: linear-gradient(to top right, #FFD700, #FFAA00);
+  height: 60px; /* Placeholder for a graph or image */
+  margin-top: 20px;
+  border-radius: 4px;
+}
+
+
