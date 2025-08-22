@@ -52,16 +52,18 @@ const Clips = () => {
 			width: "5%",
 		},
 		{
-			title: "Content",
-			dataIndex: "description",
-			width: "20%",
-			render: (text) => {
-				const words = text.split(" ");
-				const truncatedText =
-					words.length > 10 ? words.slice(0, 10).join(" ") + " ..." : text;
-				return <span>{truncatedText}</span>;
-			},
-		},
+	title: "Content",
+	dataIndex: "description",
+	width: "20%",
+	render: (text) => {
+		if (!text) return <span>No description</span>; // or just return null
+		const words = text.split(" ");
+		const truncatedText =
+			words.length > 10 ? words.slice(0, 10).join(" ") + " ..." : text;
+		return <span>{truncatedText}</span>;
+	},
+},
+
 		{
 			title: "View Clip",
 			dataIndex: "file_name",
@@ -174,7 +176,7 @@ const Clips = () => {
 		try {
 			setLoading(true);
 			const { pagination, sortField, sortOrder } = params;
-	
+
 			// Fetch clips with pagination and sorting
 			const result = await GetAllClips(localStorage.getItem("adminToken"), {
 				page: pagination.current,
@@ -182,20 +184,22 @@ const Clips = () => {
 				sortBy: sortField,
 				order: sortOrder === "ascend" ? "ASC" : "DESC", // Handle sort order if needed
 			});
-	
+
 			// Sort the clips based on a date field (e.g., createdAt) in descending order
-			const sortedData = result.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Adjust "createdAt" as needed
-	
+			const sortedData = result.data.sort(
+				(a, b) => new Date(b.created_at) - new Date(a.created_at)
+			); // Adjust "createdAt" as needed
+
 			// Adding index for serial number based on pagination and sorted data
 			const newData = sortedData.map((item, index) => ({
 				...item,
 				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
 			}));
-	
+
 			// Update state with fetched data
 			setServiceData(newData);
 			setServiceBackupData(newData);
-	
+
 			// Update pagination with total count from the result
 			setTableParams({
 				...tableParams,
@@ -207,7 +211,7 @@ const Clips = () => {
 		} catch (e) {
 			// Log the full error object for debugging
 			console.log("Error: ", e);
-	
+
 			if (e.response && e.response.status === 401) {
 				navigate("/error401");
 				console.log("You do not have access to this page as a sub-admin.");
@@ -227,7 +231,6 @@ const Clips = () => {
 			setLoading(false);
 		}
 	};
-	
 
 	const handleTableChange = (pagination, filters, sorter) => {
 		setTableParams({
@@ -280,30 +283,32 @@ const Clips = () => {
 	}, []);
 
 	const handleViewMedia = (fileName) => {
-		if (fileName) {
-			const mediaUrl =
-				fileName.split("//")[0] === "https:"
-					? fileName
-					: `${BASE_URL_VIDEO}${fileName}`;
-			setMediaSrc(mediaUrl);
-			setIsMediaLoading(true);
-			setIsModalVisible(true);
-		}
+		if (!fileName) return; // Prevent null/undefined from processing
+
+		const mediaUrl =
+			fileName?.includes("https://") || fileName?.includes("http://")
+				? fileName
+				: `${BASE_URL_VIDEO}${fileName}`;
+
+		setMediaSrc(mediaUrl);
+		setIsMediaLoading(true);
+		setIsModalVisible(true);
 	};
 
 	const handleViewThumbNail = (fileName) => {
-		setMediaSrc(null);
-		setIsMediaLoading(true); 
-		if (fileName) {
-			const mediaUrl =
-				fileName.split("//")[0] === "https:"
-					? fileName
-					: `${BASE_URL_IMAGE}${fileName}`;
-			setThumbNailSrc(mediaUrl);
+		if (!fileName) return;
 
-			setIsThumnbNailIsLoading(true);
-			setIsThumbNailModalVisible(true);
-		}
+		setMediaSrc(null);
+		setIsMediaLoading(true);
+
+		const mediaUrl =
+			fileName?.includes("https://") || fileName?.includes("http://")
+				? fileName
+				: `${BASE_URL_IMAGE}${fileName}`;
+
+		setThumbNailSrc(mediaUrl);
+		setIsThumnbNailIsLoading(true);
+		setIsThumbNailModalVisible(true);
 	};
 
 	const handleVideoReady = () => {
@@ -315,8 +320,6 @@ const Clips = () => {
 		setMediaSrc(null); // Set to null to ensure the player is unmounted
 		setIsMediaLoading(false);
 	};
-	
-	
 
 	const handleThumbNailModalCancel = () => {
 		setIsThumbNailModalVisible(false);
@@ -438,8 +441,8 @@ const Clips = () => {
 				// onCancel={handleThumbNailModalCancel}
 				onCancel={() => {
 					setIsModalVisible(false);
-					setMediaSrc(null); 
-					setIsMediaLoading(false); 
+					setMediaSrc(null);
+					setIsMediaLoading(false);
 					handleThumbNailModalCancel();
 				}}
 				footer={null}

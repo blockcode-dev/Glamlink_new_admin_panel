@@ -8,13 +8,14 @@ import "primeicons/primeicons.css";
 import { useNavigate } from "react-router";
 import { InputText } from "primereact/inputtext";
 import { Box } from "@material-ui/core";
-import { Tooltip } from "antd";
+import { Tooltip,Modal } from "antd";
 import DOMPurify from "dompurify";
 import { FaStar } from "react-icons/fa";
 import {
 	GetAllNumeralCategory,
 	GetProduct,
 	UpdateProduct,
+	DeleteProduct
 } from "../../../services/Api/EcommeceApi";
 
 const Product = () => {
@@ -237,10 +238,41 @@ const Product = () => {
 							onClick={(event) => navigateToViewProduct(event, record.id)}
 						></Button>
 					</Tooltip>
+					<Tooltip placement="bottom" title="Delete Product">
+						<Button
+							icon="pi pi-trash"
+							rounded
+							outlined
+							severity="danger"
+							className="mr-2"
+							style={{ margin: "0px", borderRadius: "25px" }}
+							onClick={() => handleDelete([record.id])}
+						></Button>
+					</Tooltip>
 				</Space>
 			),
 		},
 	];
+
+
+	const handleDelete = (blogIds) => {
+		Modal.confirm({
+			title: "Confirm",
+			content: `Are you sure you want to delete ${
+				blogIds.length > 1 ? "these Products" : "this Product"
+			}?`,
+			onOk: async () => {
+				try {
+					await DeleteProduct(blogIds, localStorage.getItem("adminToken"));
+					message.success("Product(s) deleted successfully");
+					getData();
+				} catch (error) {
+					console.error("Error deleting Product(s):", error);
+					message.error("Error deleting Product(s)");
+				}
+			},
+		});
+	};
 
 	const getData = async () => {
 		try {

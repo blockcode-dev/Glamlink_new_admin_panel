@@ -73,6 +73,10 @@ import Orders from "./pages/Ecommerce/Order/Orders.jsx";
 import ViewOrder from "./pages/Ecommerce/Order/ViewOrder.jsx";
 import PromotionRequest from "./pages/PromotionRequest/PromotionRequest.jsx";
 import ProfessionalForm from "./pages/ProfessionalForm/ProfessionalForm.jsx";
+import Banner from "./pages/Banner/Banner.jsx";
+import Faq from "./pages/Content/FAQ/Faq.jsx";
+import CreateFaq from "./pages/Content/FAQ/CreateFaq.jsx";
+import EditFaq from "./pages/Content/FAQ/EditFaq.jsx";
 
 
 function App() {
@@ -159,6 +163,10 @@ function App() {
 					<Route path="/view-order/:id" element={<ViewOrder />} />
 					<Route path="/promotion-request" element={<PromotionRequest />} />
 					<Route path="/form" element={<ProfessionalForm />} />
+					<Route path="/banner" element={<Banner />} />
+					<Route path="/faqs" element={<Faq />} />
+					<Route path="/createFaq" element={<CreateFaq />} />
+					<Route path="/editFaq/:id" element={<EditFaq />} />
 				</Route>
 			</Routes>
 		</Router>

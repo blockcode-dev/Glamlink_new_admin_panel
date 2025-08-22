@@ -56,7 +56,9 @@ export const GetUserById = async (id) => {
 };
 
 export const GetProfessionalPayoutSummary = async (id) => {
-	return await axios.get(BASE_URL + `stripe/getProfessionalPayoutSummary/${id}`);
+	return await axios.get(
+		BASE_URL + `stripe/getProfessionalPayoutSummary/${id}`
+	);
 };
 
 export const ProfessialPayout = async (formData) => {
@@ -217,21 +219,48 @@ export const GetBookingsByCounsellorId = async (status, user_id) => {
 	}
 };
 
-export const PromoteUser = async (user_id) => {
-	return await axios.post(
-	  BASE_URL + "admin/user/promoted", 
-	  { user_id },  
-	  {
+export const PromoteUserAPI = async (formData) => {
+	return await axios.post(BASE_URL + `admin/user/promoted`, formData, {
 		headers: {
-		  "Content-Type": "application/json",  
-		  "x-access-token": `${localStorage.getItem("adminToken")}`,  
+			"Content-Type": "application/json",
+			"x-access-token": `${localStorage.getItem("adminToken")}`,
 		},
-	  }
-	);
-  };
+	});
+};
 
-  export const GetPromotionRequest = async () => {
-	return await axios.get(BASE_URL + `admin/user/getAllPromotionRequest`
+export const UnpromoteUserAPI = async (formData) => {
+	return await axios.post(BASE_URL + `admin/user/unpromoted`, formData);
+};
+
+export const UnpromoteAllAPI = async (formData) => {
+	return await axios.post(BASE_URL + `admin/user/unpromotedAll`, formData);
+};
+
+export const GetUserPromotions = async (id) => {
+	return await axios.get(BASE_URL + `admin/user/getUserPromotions/${id}`);
+};
+
+export const GetAllProfessional = () => {
+	return axios.get(BASE_URL + `promotion/getAllProfessionsByProfessional`);
+};
+
+export const GetAllkeywords = () => {
+	return axios.get(BASE_URL + `promotion/getAllKeywords`);
+};
+
+export const CreateFounder = async (user_id) => {
+	return await axios.post(
+		BASE_URL + "admin/foundersToogle",
+		{ user_id },
+		{
+			headers: {
+				"Content-Type": "application/json",
+				"x-access-token": `${localStorage.getItem("adminToken")}`,
+			},
+		}
 	);
 };
-  
+
+export const GetPromotionRequest = async () => {
+	return await axios.get(BASE_URL + `admin/user/getAllPromotionRequest`);
+};

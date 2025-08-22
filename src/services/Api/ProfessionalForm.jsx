@@ -14,3 +14,7 @@ export const GetUsersWhoSubmittedForm = async () => {
 export const GetAllAnswersByUserId = async (id) => {
 	return await axios.get(BASE_URL + `form/getAllAnswersByUserId/${id}`);
 };
+
+export const DeleteFormByUserId = async (id) => {
+	return await axios.post(BASE_URL + `form/deleteForm/${id}`);
+};

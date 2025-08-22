@@ -77,7 +77,7 @@ const AddAdmin = () => {
   };
 
   return (
-    <Box m="20px">
+    <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center">
        <div style={{ marginBottom: "50px" }}>
        <h3 className="page-title">Create New Admin</h3>
@@ -85,7 +85,7 @@ const AddAdmin = () => {
        </div>
       </Box>
       <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
-        <Card style={{ width: "70%" }}>
+        <Card style={{ width: "100%",padding:"20px" }}>
           <div>
             <Form>
               <Form.Group className="mb-3">
@@ -162,7 +162,7 @@ const AddAdmin = () => {
             </Form>
           </div>
         </Card>
-        <Card
+        {/* <Card
           className="admin_description"
           style={{ width: "30%", marginLeft: "10px" }}
         >
@@ -193,7 +193,7 @@ const AddAdmin = () => {
               },
             ]}
           />
-        </Card>
+        </Card> */}
       </div>
     </Box>
   );

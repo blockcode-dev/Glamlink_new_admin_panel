@@ -147,3 +147,47 @@ export const CreateBanner = async (formData) => {
     },
   });
 };
+
+// faq
+
+export const GetFAQ = async (adminToken) => {
+	try {
+		const res = await axios.get(BASE_URL + "faq", {
+			headers: {
+				"x-access-token": `${adminToken}`,
+				"Content-Type": "multipart/form-data",
+			},
+		});
+
+		return res;
+	} catch (error) {
+		console.error("Error fetching users:", error);
+		throw error;
+	}
+};
+
+export const GetFAQId = async (id) => {
+	return await axios.get(BASE_URL + `faq/${id}`);
+};
+
+export const UpdateFAQ = async (id, formData) => {
+	return await axios.put(BASE_URL + `faq/${id}`, formData, {
+		headers: {
+			"x-access-token": `${localStorage.getItem("adminToken")}`,
+			"Content-Type": "multipart/form-data",
+		},
+	});
+};
+
+export const CreateFAQ = async (formData) => {
+	return await axios.post(BASE_URL + `faq`, formData, {
+		headers: {
+			"x-access-token": `${localStorage.getItem("adminToken")}`,
+			"Content-Type": "multipart/form-data",
+		},
+	});
+};
+
+export const DeleteFAQ = async (id) => {
+	return axios.delete(BASE_URL + `faq/${id}`);
+};

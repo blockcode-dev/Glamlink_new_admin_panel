@@ -87,7 +87,7 @@ export const ChangeAdminPassword = async (data) => {
 
 export const GetAdmins = async (adminToken, role_id) => {
 	try {
-		const res = await axios.get(BASE_URL + "admin/auth/getAllAdmins", {
+		const res = await axios.get(BASE_URL + "admin/list", {
 			headers: {
 				"x-access-token": `${adminToken}`,
 				"Content-Type": "multipart/form-data",
@@ -96,7 +96,7 @@ export const GetAdmins = async (adminToken, role_id) => {
 
 		return res;
 	} catch (error) {
-		// Handle error if needed
+
 		console.error("Error fetching users:", error);
 		throw error;
 	}
@@ -126,9 +126,26 @@ export const DeleteAdmin = async (admin_id, adminToken) => {
 		},
 	});
 };
-
 export const GetAdminProfile = async (adminToken) => {
 	return axios.get(BASE_URL + "admin/profile", {
+		headers: {
+			"Content-Type": "multipart/form-data",
+			"x-access-token": adminToken,
+		},
+	});
+};
+
+export const GetPendingFormCount = async (adminToken) => {
+	return axios.get(BASE_URL + "form/getPendingFormCount", {
+		headers: {
+			"Content-Type": "multipart/form-data",
+			"x-access-token": adminToken,
+		},
+	});
+};
+
+export const GetPendingProductCount = async (adminToken) => {
+	return axios.get(BASE_URL + "product/getPendingProductCount", {
 		headers: {
 			"Content-Type": "multipart/form-data",
 			"x-access-token": adminToken,

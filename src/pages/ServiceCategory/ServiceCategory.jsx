@@ -12,6 +12,8 @@ import {
 	DeleteServiceCategory,
 	GetServiceCategory,
 	GetServiceListByCategoryId,
+	GetOtherServiceListByCategoryId,
+	DeleteOtherServiceCategory,
 } from "../../services/Api/ServiceApi";
 
 const ServiceCategory = () => {
@@ -22,6 +24,7 @@ const ServiceCategory = () => {
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [serviceListData, setServiceListData] = useState([]);
+	const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
 	const [tableParams, setTableParams] = useState({
 		pagination: {
@@ -55,7 +58,7 @@ const ServiceCategory = () => {
 							<span>{number_of_service_list} </span>
 							<a
 								style={{ color: "#1890ff", cursor: "pointer" }}
-								onClick={() => handleViewServices(record.id)} // Call function to view services
+								onClick={() => handleViewServices(record.id, record.title)}
 							>
 								View
 							</a>
@@ -68,35 +71,33 @@ const ServiceCategory = () => {
 		{
 			title: "Action",
 			dataIndex: "action",
-			render: (_, record) => (
-				<Space size="middle">
-					{/* <Button
-						icon="pi pi-eye"
-						rounded
-						severity="warning"
-						outlined
-						className="mr-2"
-						style={{ margin: "0px", borderRadius: "25px" }}
-						onClick={(event) => navigateToViewBlog(event, record.id)}
-					/> */}
-					<Button
-						icon="pi pi-pencil"
-						rounded
-						outlined
-						className="mr-2"
-						style={{ margin: "0px", borderRadius: "25px" }}
-						onClick={(event) => navigateToEditBlog(event, record.id)}
-					/>
-					<Button
-						icon="pi pi-trash"
-						rounded
-						outlined
-						severity="danger"
-						style={{ borderRadius: "25px", color: "red", borderColor: "red" }}
-						onClick={() => handleDelete([record.id])}
-					/>
-				</Space>
-			),
+			render: (_, record) => {
+				// Hide edit & delete if id === 23 and title is not 'Other'
+				if (record.id === 23) {
+					return null;
+				}
+
+				return (
+					<Space size="middle">
+						<Button
+							icon="pi pi-pencil"
+							rounded
+							outlined
+							className="mr-2"
+							style={{ margin: "0px", borderRadius: "25px" }}
+							onClick={(event) => navigateToEditBlog(event, record.id)}
+						/>
+						<Button
+							icon="pi pi-trash"
+							rounded
+							outlined
+							severity="danger"
+							style={{ borderRadius: "25px", color: "red", borderColor: "red" }}
+							onClick={() => handleDelete([record.id])}
+						/>
+					</Space>
+				);
+			},
 		},
 	];
 
@@ -118,8 +119,8 @@ const ServiceCategory = () => {
 				{
 					page: pagination.current,
 					limit: pagination.pageSize, // Ensure correct pagination limit
-					sortBy: sortField,
-					order: sortOrder === "ascend" ? "ASC" : "DESC", // Optional: sorting order
+					sortBy: sortOrder === "ascend" ? "ASC" : "ASC", // <== use ASC/DESC here
+					order: sortField,
 				}
 			);
 
@@ -128,6 +129,23 @@ const ServiceCategory = () => {
 				...item,
 				index: index + 1 + (pagination.current - 1) * pagination.pageSize,
 			}));
+
+			// If 'Other' category is present, get real service count
+			const otherIndex = newData.findIndex((item) => item.id === 23);
+			if (otherIndex !== -1) {
+				try {
+					const otherServiceRes = await GetOtherServiceListByCategoryId({
+						category_id: 23,
+					});
+					const serviceCount =
+						otherServiceRes?.data?.data?.number_of_service_list ?? 0;
+					newData[otherIndex].number_of_service_list = serviceCount;
+
+					console.log(serviceCount, "serviceCount");
+				} catch (e) {
+					console.warn("Failed to fetch services for 'Other' category", e);
+				}
+			}
 
 			// Update the state with the new data and pagination
 			setServiceData(newData);
@@ -163,21 +181,28 @@ const ServiceCategory = () => {
 		}
 	};
 
-	const handleViewServices = async (categoryId) => {
+	const handleViewServices = async (categoryId, title) => {
 		try {
-			// Fetch the service list data by category ID
-			let result = await GetServiceListByCategoryId(categoryId);
+			setSelectedCategoryId(categoryId);
 
-			// Add auto-increment index to the data for better display
-			const dataWithIndex = result.data.data.map((item, index) => ({
+			let result;
+			let services = [];
+
+			if (categoryId === 23) {
+				// Result is nested: data.data.data
+				result = await GetOtherServiceListByCategoryId({ category_id: 23 });
+				services = result?.data?.data?.data || [];
+			} else {
+				result = await GetServiceListByCategoryId(categoryId);
+				services = result?.data?.data || [];
+			}
+
+			const dataWithIndex = services.map((item, index) => ({
 				...item,
 				autoIncrementId: index + 1,
 			}));
 
-			// Set the service list data to display in the modal
 			setServiceListData(dataWithIndex);
-
-			// Show the modal
 			setIsModalVisible(true);
 		} catch (error) {
 			console.error("Error fetching service list data: ", error);
@@ -241,13 +266,39 @@ const ServiceCategory = () => {
 		navigate(`/edit-service-categories/${id}`);
 	};
 
-	const navigateToViewBlog = (event, id) => {
-		navigate(`/view-service-categories/${id}`);
-	};
-
 	const handleModalClose = () => {
 		setIsModalVisible(false);
-		setServiceListData([]); // Clear the data on modal close
+		setServiceListData([]);
+		setSelectedCategoryId(null); // reset
+	};
+
+	const handleDeleteOther = (blogIds) => {
+		Modal.confirm({
+			title: "Confirm",
+			content: `Are you sure you want to delete ${
+				blogIds.length > 1 ? "these Service" : "this Service"
+			}?`,
+			onOk: async () => {
+				try {
+					await DeleteOtherServiceCategory(
+						blogIds
+					);
+					message.success("Service(s) deleted successfully");
+					setSelectedRowKeys([]);
+					setIsModalVisible(false);
+					// getData()
+
+
+					// Update serviceData to remove deleted blogs
+					setServiceData((prevData) =>
+						prevData.filter((item) => !blogIds.includes(item.id))
+					);
+				} catch (error) {
+					console.error("Error deleting Service(s):", error);
+					message.error("Error deleting Service(s)");
+				}
+			},
+		});
 	};
 
 	return (
@@ -320,36 +371,84 @@ const ServiceCategory = () => {
 				onCancel={handleModalClose}
 				footer={null}
 			>
-				<Table
-					columns={[
-						{
-							title: "Service Name",
-							dataIndex: "title",
-							key: "title",
-						},
-						{
-							title: "Created On",
-							dataIndex: "created_at",
-							width: "30%",
-							render: (date) => moment(date).format("YYYY-MM-DD HH:mm:ss"),
-						},
-						{
-							title: "",
-							key: "redirect",
-							render: (text, record) => (
-								<IoArrowForwardCircleOutline
-									style={{ fontSize: "20px", cursor: "pointer" }}
-									onClick={() =>
-										navigate(`/edit-service-categories/${record.category_id}`)
-									}
-								/>
-							),
-						},
-					]}
-					dataSource={serviceListData}
-					rowKey={(record) => record.id}
-					pagination={false}
-				/>
+				{selectedCategoryId === 23 ? (
+					<>
+						<Table
+							columns={[
+								{
+									title: "Service Name",
+									dataIndex: "name",
+									key: "name",
+								},
+								{
+									title: "Beautician Name",
+									dataIndex: ["service_user", "user_profile", "name"],
+									key: "beautician_name",
+								},
+								{
+									title: "Created On",
+									dataIndex: "created_at",
+									width: "30%",
+									render: (date) => moment(date).format("YYYY-MM-DD HH:mm:ss"),
+								},
+								{
+									title: "Action",
+									dataIndex: "action",
+									render: (_, record) => (
+										<Space size="middle">
+											<Button
+												icon="pi pi-trash"
+												rounded
+												outlined
+												severity="danger"
+												style={{
+													borderRadius: "25px",
+													color: "red",
+													borderColor: "red",
+												}}
+												onClick={() => handleDeleteOther([record.id])}
+											/>
+										</Space>
+									),
+								},
+							]}
+							dataSource={serviceListData}
+							rowKey={(record) => record.id}
+							pagination={false}
+						/>
+					</>
+				) : (
+					<Table
+						columns={[
+							{
+								title: "Service Name",
+								dataIndex: "title",
+								key: "title",
+							},
+							{
+								title: "Created On",
+								dataIndex: "created_at",
+								width: "30%",
+								render: (date) => moment(date).format("YYYY-MM-DD HH:mm:ss"),
+							},
+							{
+								title: "",
+								key: "redirect",
+								render: (text, record) => (
+									<IoArrowForwardCircleOutline
+										style={{ fontSize: "20px", cursor: "pointer" }}
+										onClick={() =>
+											navigate(`/edit-service-categories/${record.category_id}`)
+										}
+									/>
+								),
+							},
+						]}
+						dataSource={serviceListData}
+						rowKey={(record) => record.id}
+						pagination={false}
+					/>
+				)}
 			</Modal>
 		</Box>
 	);

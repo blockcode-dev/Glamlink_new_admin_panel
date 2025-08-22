@@ -21,6 +21,7 @@ import { LuLayers } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import { FaUsersGear } from "react-icons/fa6";
 import { BiSolidCategoryAlt } from "react-icons/bi";
+import { PiFlagBannerBold } from "react-icons/pi";
 import { PiFilmReelFill } from "react-icons/pi";
 import { MdManageAccounts } from "react-icons/md";
 import { FaSpeakerDeck } from "react-icons/fa";
@@ -30,16 +31,22 @@ import { FiBox } from "react-icons/fi";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { message } from "antd";
 import Login from "../pages/Login/Login";
-import { GetAdminProfile } from "../services/Api/Api";
+import {
+	GetAdminProfile,
+	GetPendingFormCount,
+	GetPendingProductCount,
+} from "../services/Api/Api";
 import { TbBrandBooking } from "react-icons/tb";
 import { MdOutlineCategory } from "react-icons/md";
-import logo from "../assets/glamlink.png";
+import logo from "../assets/glamlink in black (1).png";
 import { IoInformationCircle } from "react-icons/io5";
+import { Badge } from "antd";
 import "./MainLayout.scss";
 const { Header, Sider, Content } = Layout;
 
 const MainLayout = () => {
 	const [idData, setIdData] = React.useState({});
+	const [applicantCount, setApplicantCount] = useState(0);
 	const getData = async () => {
 		try {
 			let result = await GetAdminProfile(localStorage.getItem("adminToken"));
@@ -77,6 +84,39 @@ const MainLayout = () => {
 
 	useEffect(() => {
 		getData();
+	}, []);
+
+	useEffect(() => {
+		async function fetchApplicantCount() {
+			try {
+				const res = await GetPendingFormCount();
+				console.log(res.data.data, "ddsd");
+				const count = parseInt(res.data.data, 10);
+				setApplicantCount(isNaN(count) ? 0 : count);
+
+				// setApplicantCount(parseInt(res.data.data.count, 10));
+			} catch (err) {
+				console.error("Failed to fetch applicant count:", err);
+			}
+		}
+
+		fetchApplicantCount();
+	}, []);
+
+	const [pendingProductCount, setPendingProductCount] = useState(0);
+
+	useEffect(() => {
+		async function fetchPendingProductCount() {
+			try {
+				const res = await GetPendingProductCount();
+				const count = parseInt(res.data?.data, 10);
+				setPendingProductCount(isNaN(count) ? 0 : count);
+			} catch (err) {
+				console.error("Failed to fetch pending product count:", err);
+			}
+		}
+
+		fetchPendingProductCount();
 	}, []);
 
 	const [collapsed, setCollapsed] = useState(false);
@@ -154,15 +194,26 @@ const MainLayout = () => {
 									icon: <FaUsersGear className="fs-4" />,
 									label: "Professionals",
 								},
-								{
-									key: "/promotion-request",
-									icon: <BsGraphUpArrow className="fs-4" />,
-									label: "Promotion Request",
-								},
+								// {
+								// 	key: "/promotion-request",
+								// 	icon: <BsGraphUpArrow className="fs-4" />,
+								// 	label: "Promotion Request",
+								// },
 								{
 									key: "/form",
 									icon: <IoInformationCircle className="fs-4" />,
-									label: "Form",
+									label: (
+										<span>
+											Applicant Form{" "}
+											{applicantCount > 0 && (
+												<Badge
+													count={applicantCount}
+													size="small"
+													style={{ marginLeft: "10px" }}
+												/>
+											)}
+										</span>
+									),
 								},
 								{
 									key: "/service-categories",
@@ -207,6 +258,16 @@ const MainLayout = () => {
 									label: "Clips",
 								},
 								{
+									key: "/banner",
+									icon: <PiFlagBannerBold className="fs-4" />,
+									label: "Banner",
+								},
+								{
+									key: "/faqs",
+									icon: <LuLayers className="fs-4" />,
+									label: "FAQs",
+								},
+								{
 									key: "/product-category",
 									icon: <AiOutlineShoppingCart className="fs-4" />,
 									label: "Ecommerce",
@@ -219,8 +280,23 @@ const MainLayout = () => {
 										{
 											key: "/product-list",
 											icon: <RiProductHuntLine className="fs-4" />,
-											label: "Product",
+											label: (
+												<span>
+													Product{" "}
+													{pendingProductCount > 0 && (
+														<Badge
+															count={pendingProductCount}
+															size="small"
+															style={{
+																backgroundColor: "#faad14",
+																marginLeft: "10px",
+															}}
+														/>
+													)}
+												</span>
+											),
 										},
+
 										{
 											key: "/orders",
 											icon: <FiBox className="fs-4" />,
@@ -228,23 +304,18 @@ const MainLayout = () => {
 										},
 									],
 								},
-								{
-									key: "/t&c1",
-									icon: <IoLayers className="fs-4" />,
-									label: "Content",
-									children: [
-										{
-											key: "support",
-											icon: <LuLayers className="fs-4" />,
-											label: "Support",
-										},
-										{
-											key: "/faqs",
-											icon: <LuLayers className="fs-4" />,
-											label: "FAQs",
-										},
-									],
-								},
+								// {
+								// 	key: "/t&c1",
+								// 	icon: <IoLayers className="fs-4" />,
+								// 	label: "Content",
+								// 	children: [
+								// 		{
+								// 			key: "support",
+								// 			icon: <LuLayers className="fs-4" />,
+								// 			label: "Support",
+								// 		},
+								// 	],
+								// },
 								{
 									key: "/adminList",
 									icon: <MdManageAccounts className="fs-4" />,

@@ -15,7 +15,12 @@ import Paper from "@mui/material/Paper";
 import { GetOrderById } from "../../../services/Api/EcommeceApi";
 
 function ccyFormat(num) {
-	return `${num.toFixed(2)}`;
+	const n = Number(num);
+	if (isNaN(n)) {
+		console.warn("Invalid number passed to ccyFormat:", num);
+		return "0.00";
+	}
+	return `${n.toFixed(2)}`;
 }
 
 function priceRow(qty, unit) {
@@ -235,10 +240,32 @@ const ViewOrder = ({ orderId, onClose }) => {
 											</TableRow>
 										))}
 
+									{/* Subtotal (Excluding Tax) */}
 									<TableRow>
-										<TableCell colSpan={3}>Total</TableCell>
+										<TableCell rowSpan={3} />
+										<TableCell colSpan={2}>Subtotal (Excl. Tax)</TableCell>
 										<TableCell align="right">
-											{sumOfPrice?.toFixed(2)}
+											{ccyFormat(orderData?.amount_excluding_tax)}
+										</TableCell>
+									</TableRow>
+
+									{/* Tax */}
+									<TableRow>
+										<TableCell colSpan={2}>Tax</TableCell>
+										<TableCell align="right">
+											{ccyFormat(orderData?.tax_amount)}
+										</TableCell>
+									</TableRow>
+
+									{/* Total (Including Tax) */}
+									<TableRow>
+										<TableCell colSpan={2}>
+											<strong>Total (Incl. Tax)</strong>
+										</TableCell>
+										<TableCell align="right">
+											<strong>
+												{ccyFormat(orderData?.amount_including_tax)}
+											</strong>
 										</TableCell>
 									</TableRow>
 								</TableBody>
@@ -337,8 +364,23 @@ const ViewOrder = ({ orderId, onClose }) => {
 							>
 								Delivery Address:
 							</h5>
-							<p style={{ marginBottom: "20px" }}>
-								{orderData?.order_details_order?.order_address?.full_address}
+							<p>
+								{/* <strong>Delivery Address:</strong>{" "} */}
+								{orderData?.order_details_order?.order_address
+									? [
+											orderData.order_details_order.order_address
+												.address_line_1,
+											orderData.order_details_order.order_address.user_city
+												?.name,
+											orderData.order_details_order.order_address.user_state
+												?.name,
+											orderData.order_details_order.order_address.user_country
+												?.name,
+											orderData.order_details_order.order_address.postal_code,
+									  ]
+											.filter(Boolean) // Removes undefined/null/empty entries
+											.join(", ")
+									: "N/A"}
 							</p>
 						</div>
 					</Card>

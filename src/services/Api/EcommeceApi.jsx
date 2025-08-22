@@ -35,9 +35,18 @@ export const GetProductCategoryById = async (id) => {
 	);
 };
 
+export const GetProductCategoryByCategoryId = async (category_id) => {
+	return await axios.post(
+		BASE_URL + `product/category/getProductCategoryByCategoryId`,
+		{
+			category_id: category_id,
+		}
+	);
+};
+
 export const CreateProductCategory = async (formData) => {
 	return await axios.post(
-		BASE_URL + "product/category/createProductCategory",
+		BASE_URL + "product/category/createProductCategoryHeading",
 		formData,
 		{
 			headers: {
@@ -50,7 +59,7 @@ export const CreateProductCategory = async (formData) => {
 
 export const UpdateProductCategory = async (id, formData) => {
 	return await axios.put(
-		BASE_URL + `product/category/updateProductCategory/${id}`,
+		BASE_URL + `product/category/updateProductCategoryHeading/${id}`,
 		formData,
 		{
 			headers: {
@@ -64,6 +73,47 @@ export const UpdateProductCategory = async (id, formData) => {
 export const DeleteProductCategory = async (category_id) => {
 	return await axios.post(
 		`${BASE_URL}product/category/delete`,
+		{ category_id: category_id },
+		{
+			headers: {
+				"x-access-token": `${localStorage.getItem("adminToken")}`,
+				"Content-Type": "multipart/form-data",
+			},
+		}
+	);
+};
+
+// sub-category
+
+export const CreateCategory = async (formData) => {
+	return await axios.post(
+		BASE_URL + "product/category/createProductCategory",
+		formData,
+		{
+			headers: {
+				"x-access-token": `${localStorage.getItem("adminToken")}`,
+				"Content-Type": "multipart/form-data",
+			},
+		}
+	);
+};
+
+export const UpdateCategory = async (id, formData) => {
+	return await axios.put(
+		BASE_URL + `product/category/updateProductCategory/${id}`,
+		formData,
+		{
+			headers: {
+				"x-access-token": `${localStorage.getItem("adminToken")}`,
+				"Content-Type": "multipart/form-data",
+			},
+		}
+	);
+};
+
+export const DeleteCategory = async (category_id) => {
+	return await axios.post(
+		`${BASE_URL}product/category/deleteProductCategory`,
 		{ category_id: category_id },
 		{
 			headers: {
@@ -115,8 +165,21 @@ export const UpdateProduct = async (id, formData) => {
 	);
 };
 
+export const DeleteProduct = async (product_id) => {
+	return await axios.post(
+		`${BASE_URL}product/delete`,
+		{ product_id: product_id },
+		{
+			headers: {
+				"x-access-token": `${localStorage.getItem("adminToken")}`,
+				"Content-Type": "multipart/form-data",
+			},
+		}
+	);
+};
+
 export const GetProductById = async (id) => {
-	return await axios.get(BASE_URL + `product/findProductById/${id}`);
+	return await axios.get(BASE_URL + `product/getProductById/${id}`);
 };
 
 export const GetReviewsByProductId = async (product_id) => {

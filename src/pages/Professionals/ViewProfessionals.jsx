@@ -1,11 +1,15 @@
 /** @format */
 
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState, } from "react";
 import { Button } from "primereact/button";
 import { Box, Avatar, Typography, Switch } from "@mui/material"; // Import Grid correctly
 import { useNavigate, useParams } from "react-router-dom";
 import { Card } from "primereact/card";
-import { GetUserById, PromoteUser } from "../../services/Api/UserApi";
+import {
+
+	GetUserById,
+
+} from "../../services/Api/UserApi";
 import Grid from "@mui/material/Grid2";
 import "./Professionals.css";
 import { BASE_URL_IMAGE } from "../../services/Host";
@@ -28,7 +32,10 @@ const ViewProfessionals = () => {
 	const navigate = useNavigate();
 	const { id } = useParams();
 	const [userData, setUserData] = useState([]);
+
 	
+
+
 
 	useLayoutEffect(() => {
 		// Fetching user data logic here
@@ -103,36 +110,33 @@ const ViewProfessionals = () => {
 		}
 	}, [userData?.is_promoted]);
 
-	const handlePromotionToggle = async () => {
-		setLoading(true); // Start loading
+	// const handlePromotionToggle = async () => {
+	// 	setLoading(true); // Start loading
 
-		try {
-			// Call the PromoteUser API
-			const response = await PromoteUser(
-				userData?.id,
+	// 	try {
+	// 		// Call the PromoteUser API
+	// 		const response = await PromoteUser(userData?.id);
 
-			);
+	// 		if (response.status === 200) {
+	// 			// Toggle the promotion state based on the API response
+	// 			setIsPromoted(!isPromoted);
 
-			if (response.status === 200) {
-				// Toggle the promotion state based on the API response
-				setIsPromoted(!isPromoted);
-
-				if (isPromoted) {
-					message.success("Professional no longer promoted.");
-				} else {
-					message.success("Professional promoted successfully.");
-				}
-			} else {
-				// If the status is not 200, show an error
-				message.error("Something went wrong. Please try again.");
-			}
-		} catch (error) {
-			console.error("Error promoting user:", error);
-			message.error("Failed to promote the user. Please try again.");
-		} finally {
-			setLoading(false); // Stop loading after the API call is done
-		}
-	};
+	// 			if (isPromoted) {
+	// 				message.success("Professional no longer promoted.");
+	// 			} else {
+	// 				message.success("Professional promoted successfully.");
+	// 			}
+	// 		} else {
+	// 			// If the status is not 200, show an error
+	// 			message.error("Something went wrong. Please try again.");
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Error promoting user:", error);
+	// 		message.error("Failed to promote the user. Please try again.");
+	// 	} finally {
+	// 		setLoading(false); // Stop loading after the API call is done
+	// 	}
+	// };
 	return (
 		<Box>
 			{/* Header Section */}
@@ -161,7 +165,7 @@ const ViewProfessionals = () => {
 			<Grid container spacing={2}>
 				{/* Card 1: Personal Information */}
 				<Grid item size={{ xs: 6, md: 4 }}>
-					<Card style={{ padding: "10px",height:"100%" }}>
+					<Card style={{ padding: "10px", height: "100%" }}>
 						<Box textAlign="center" marginBottom="20px">
 							<Avatar
 								alt={userData?.user_profile?.name}
@@ -187,7 +191,7 @@ const ViewProfessionals = () => {
 						</Box>
 
 						{/* Promotion Toggle */}
-						<Box
+						{/* <Box
 							display="flex"
 							justifyContent="center"
 							alignItems="center"
@@ -201,21 +205,20 @@ const ViewProfessionals = () => {
 								onChange={handlePromotionToggle}
 								color="primary"
 							/>
-						</Box>
+						</Box> */}
 
-							{/* Eligibility & Request Status Section */}
-							<Box textAlign="center" marginBottom="10px">
-							<Typography variant="body1" color={userData?.is_premium ? "green" : "red"}>
+						{/* Eligibility & Request Status Section */}
+						<Box textAlign="center" marginBottom="10px">
+							{/* <Typography variant="body1" color={userData?.is_premium ? "green" : "red"}>
 								{userData?.is_premium ? "✅ Eligible for Promotion" : "❌ Not Eligible for Promotion"}
-							</Typography>
+							</Typography> */}
 
-							{userData?.request_for_promotion && (
+							{/* {userData?.request_for_promotion && (
 								<Typography variant="body2" color="blue">
 									🟢 Requested for Promotion
 								</Typography>
-							)}
+							)} */}
 						</Box>
-
 
 						<Box className="personal_informtaion_box">
 							<FaCircleUser style={{ fontSize: "25px", marginRight: "15px" }} />
@@ -273,7 +276,7 @@ const ViewProfessionals = () => {
 
 				{/* Card 2: User Counts */}
 				<Grid item size={{ xs: 6, md: 8 }}>
-					<Card style={{ padding: "20px",height:"100%" }}>
+					<Card style={{ padding: "20px", height: "100%" }}>
 						<Box className="personal_informtaion_box">
 							<SiReactivex style={{ fontSize: "25px", marginRight: "15px" }} />
 							<h5 className="personal_informtaion">

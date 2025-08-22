@@ -5,7 +5,7 @@ import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { Form, Input } from "antd";
 import { message } from "antd";
-import logo from "../../assets/glamlink (1) (4).png";
+import logo from "../../assets/glamlink in black (1).png";
 const Login = () => {
   const navigate = useNavigate();
   const onFinish = (values) => {

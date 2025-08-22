@@ -11,6 +11,7 @@ import {
 	GetUsersWhoSubmittedForm,
 	GetAllAnswersByUserId,
 	UpdateStatus,
+	DeleteFormByUserId,
 } from "../../services/Api/ProfessionalForm";
 import { BASE_URL_IMAGE } from "../../services/Host";
 import moment from "moment";
@@ -92,17 +93,36 @@ const ProfessionalForm = () => {
 	};
 
 	const handleStatusChange = async (userId, value) => {
-		if (value === "approved") {
-			try {
-				const response = await UpdateStatus(userId, { status: "approved" });
-				if (response.status === 200) {
-					message.success("Form approved successfully!"); // ✅ Show success message
-					await getData(); 
-				}
-			} catch (error) {
-				message.error("Failed to approve form."); // ✅ Show error message
+		try {
+			const response = await UpdateStatus(userId, { status: value });
+			if (response.status === 201) {
+				message.success(`Form marked as ${value.toUpperCase()}`);
+				await getData(); // Refresh the table with updated data
 			}
+		} catch (error) {
+			console.error(error);
+			message.error(`Failed to update status to ${value}`);
 		}
+	};
+
+	const handleDeleteForm = async (userId) => {
+		Modal.confirm({
+			title: "Are you sure you want to delete this form?",
+			content: "This action cannot be undone.",
+			okText: "Yes, Delete",
+			okType: "danger",
+			cancelText: "Cancel",
+			onOk: async () => {
+				try {
+					await DeleteFormByUserId(userId);
+					message.success("Form deleted successfully.");
+					await getData(); // refresh list
+				} catch (error) {
+					console.error("Delete error:", error);
+					message.error("Failed to delete form.");
+				}
+			},
+		});
 	};
 
 	const columns = [
@@ -116,12 +136,12 @@ const ProfessionalForm = () => {
 			title: "User Name",
 			dataIndex: ["answers_user", "user_profile", "name"],
 			sorter: (a, b) => a.user_profile.name.localeCompare(b.user_profile.name),
-			width: "30%",
+			width: "20%",
 		},
 		{
 			title: "Email",
 			dataIndex: ["answers_user", "email"],
-			width: "30%",
+			width: "20%",
 		},
 		{
 			title: "Form Submitted Date",
@@ -138,28 +158,34 @@ const ProfessionalForm = () => {
 						View Form
 					</Button>
 
-					{record.status === "pending" ? (
-						<Select
-							defaultValue={record.status}
-							style={{ width: 150 }}
-							onChange={(value) => handleStatusChange(record.user_id, value)}
-						>
-							<Select.Option value={record.status} disabled>
-								{record.status.toUpperCase()} {/* ✅ Show default status */}
-							</Select.Option>
-							<Select.Option value="approved">APPROVE</Select.Option>
-						</Select>
-					) : (
-						// Show status without dropdown for "Approved" or "Rejected"
-						<span
-							style={{
-								color: record.status === "approved" ? "green" : "red",
-								fontWeight: "bold",
-							}}
-						>
-							{record.status.toUpperCase()}
-						</span>
-					)}
+					<Select
+						value={record.status}
+						style={{
+							width: 150,
+							color:
+								record.status === "approved"
+									? "green"
+									: record.status === "rejected"
+									? "red"
+									: "orange",
+							fontWeight: "bold",
+						}}
+						onChange={(value) => handleStatusChange(record.user_id, value)}
+					>
+						<Select.Option value="pending">
+							<span style={{ color: "orange" }}>PENDING</span>
+						</Select.Option>
+						<Select.Option value="approved">
+							<span style={{ color: "green" }}>APPROVED</span>
+						</Select.Option>
+						<Select.Option value="rejected">
+							<span style={{ color: "red" }}>REJECTED</span>
+						</Select.Option>
+					</Select>
+
+					<Button danger onClick={() => handleDeleteForm(record.user_id)}>
+						Delete
+					</Button>
 				</Space>
 			),
 		},

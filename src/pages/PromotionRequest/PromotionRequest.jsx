@@ -52,7 +52,7 @@ const PromotionRequest = () => {
 				<Space size="middle">
 					<Switch
 						checked={record.is_promoted} // Now this will reflect the actual state
-						onChange={() => handlePromotionToggle(record.id)} // Pass correct ID
+						// onChange={() => handlePromotionToggle(record.id)} // Pass correct ID
 						color="primary"
 					/>
 				</Space>
@@ -112,43 +112,43 @@ const PromotionRequest = () => {
 		setData(searchList);
 	};
 
-	const handlePromotionToggle = async (userId) => {
-		setLoading(true);
-		try {
-			// Ensure userId is passed correctly
-			if (!userId) {
-				message.error("Invalid user ID. Cannot promote user.");
-				return;
-			}
+	// const handlePromotionToggle = async (userId) => {
+	// 	setLoading(true);
+	// 	try {
+	// 		// Ensure userId is passed correctly
+	// 		if (!userId) {
+	// 			message.error("Invalid user ID. Cannot promote user.");
+	// 			return;
+	// 		}
 
-			// Call the PromoteUser API with the correct user ID
-			const response = await PromoteUser(userId);
+	// 		// Call the PromoteUser API with the correct user ID
+	// 		const response = await PromoteUser(userId);
 
-			if (response.status === 200) {
-				// Find the updated user and toggle their promotion status
-				setData((prevData) =>
-					prevData.map((user) =>
-						user.id === userId
-							? { ...user, is_promoted: !user.is_promoted }
-							: user
-					)
-				);
+	// 		if (response.status === 200) {
+	// 			// Find the updated user and toggle their promotion status
+	// 			setData((prevData) =>
+	// 				prevData.map((user) =>
+	// 					user.id === userId
+	// 						? { ...user, is_promoted: !user.is_promoted }
+	// 						: user
+	// 				)
+	// 			);
 
-				message.success(
-					!isPromoted
-						? "Professional promoted successfully."
-						: "Professional no longer promoted."
-				);
-			} else {
-				message.error("Something went wrong. Please try again.");
-			}
-		} catch (error) {
-			console.error("Error promoting user:", error);
-			message.error("Failed to promote the user. Please try again.");
-		} finally {
-			setLoading(false);
-		}
-	};
+	// 			message.success(
+	// 				!isPromoted
+	// 					? "Professional promoted successfully."
+	// 					: "Professional no longer promoted."
+	// 			);
+	// 		} else {
+	// 			message.error("Something went wrong. Please try again.");
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Error promoting user:", error);
+	// 		message.error("Failed to promote the user. Please try again.");
+	// 	} finally {
+	// 		setLoading(false);
+	// 	}
+	// };
 
 	return (
 		<Box>

@@ -103,8 +103,8 @@ const User = () => {
 				{
 					page: pagination.current, // Current page
 					limit: pagination.pageSize, // Page size
-					sortBy: sortField, // Sort field
-					order: sortOrder === "ascend" ? "ASC" : "DESC", // Sort order
+					sortBy: "DESC",
+					order: sortField,
 				}
 			);
 

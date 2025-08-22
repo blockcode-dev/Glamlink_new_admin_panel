@@ -8,7 +8,11 @@ import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { IoArrowForwardCircleOutline } from "react-icons/io5";
 import moment from "moment/moment";
-import { DeleteProductCategory, GetProductCategory } from "../../../services/Api/EcommeceApi";
+import {
+	DeleteProductCategory,
+	GetProductCategory,
+	GetProductCategoryByCategoryId,
+} from "../../../services/Api/EcommeceApi";
 
 const ProductCategory = () => {
 	const navigate = useNavigate();
@@ -17,7 +21,8 @@ const ProductCategory = () => {
 	const [loading, setLoading] = useState(false);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [isModalVisible, setIsModalVisible] = useState(false);
-	const [userListData, setUserListData] = useState([]);
+	const [serviceListData, setServiceListData] = useState([]);
+	const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
 	const [tableParams, setTableParams] = useState({
 		pagination: {
@@ -39,6 +44,27 @@ const ProductCategory = () => {
 			title: "Title",
 			dataIndex: "title",
 			width: "30%",
+		},
+		{
+			title: "Number of SubCategory",
+			dataIndex: "number_of_product_categories",
+			width: "30%",
+			render: (number_of_product_categories, record) => {
+				if (number_of_product_categories > 0) {
+					return (
+						<>
+							<span>{number_of_product_categories} </span>
+							<a
+								style={{ color: "#1890ff", cursor: "pointer" }}
+								onClick={() => handleViewServices(record.id, record.title)}
+							>
+								View
+							</a>
+						</>
+					);
+				}
+				return <span>{number_of_product_categories}</span>;
+			},
 		},
 		{
 			title: "Action",
@@ -78,11 +104,14 @@ const ProductCategory = () => {
 			setLoading(true);
 
 			// Fetch specialities with pagination and limit
-			const result = await GetProductCategory(localStorage.getItem("adminToken"), {
-				...params,
-				limit: 100, // Ensure the limit is passed
-				page: tableParams.pagination.current, // Use the correct current page from tableParams
-			});
+			const result = await GetProductCategory(
+				localStorage.getItem("adminToken"),
+				{
+					...params,
+					limit: 100, // Ensure the limit is passed
+					page: tableParams.pagination.current, // Use the correct current page from tableParams
+				}
+			);
 
 			// Adding index for serial number
 			const newData = result.data.rows.map((item, index) => ({
@@ -136,7 +165,6 @@ const ProductCategory = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-
 	const handleTableChange = (pagination, filters, sorter) => {
 		setTableParams({
 			pagination,
@@ -170,7 +198,10 @@ const ProductCategory = () => {
 			}?`,
 			onOk: async () => {
 				try {
-					await DeleteProductCategory(blogIds, localStorage.getItem("adminToken"));
+					await DeleteProductCategory(
+						blogIds,
+						localStorage.getItem("adminToken")
+					);
 					message.success("Category(s) deleted successfully");
 					getData();
 				} catch (error) {
@@ -181,9 +212,32 @@ const ProductCategory = () => {
 		});
 	};
 
+	const handleViewServices = async (categoryId, title) => {
+		try {
+			setSelectedCategoryId(categoryId);
+
+			let result;
+			let services = [];
+
+			result = await GetProductCategoryByCategoryId(categoryId);
+			services = result?.data?.data || [];
+
+			const dataWithIndex = services.map((item, index) => ({
+				...item,
+				autoIncrementId: index + 1,
+			}));
+
+			setServiceListData(dataWithIndex);
+			setIsModalVisible(true);
+		} catch (error) {
+			console.error("Error fetching service list data: ", error);
+		}
+	};
+
 	const handleModalClose = () => {
 		setIsModalVisible(false);
-		setUserListData([]); // Clear the data on modal close
+		setServiceListData([]);
+		setSelectedCategoryId(null); // reset
 	};
 
 	const navigateToAddBlog = () => {
@@ -257,17 +311,17 @@ const ProductCategory = () => {
 			<Modal
 				centered
 				width={800}
-				title="User List"
-				visible={isModalVisible}
+				title="SubCategory List"
+				open={isModalVisible}
 				onCancel={handleModalClose}
 				footer={null}
 			>
 				<Table
 					columns={[
 						{
-							title: "User Name",
-							dataIndex: "name",
-							key: "name",
+							title: "SubCategory Name",
+							dataIndex: "title",
+							key: "title",
 						},
 						{
 							title: "Created On",
@@ -281,12 +335,14 @@ const ProductCategory = () => {
 							render: (text, record) => (
 								<IoArrowForwardCircleOutline
 									style={{ fontSize: "20px", cursor: "pointer" }}
-									onClick={() => navigate(`/view-user/${record.id}`)}
+									onClick={() =>
+										navigate(`/edit-product-category/${record.category_id}`)
+									}
 								/>
 							),
 						},
 					]}
-					dataSource={userListData}
+					dataSource={serviceListData}
 					rowKey={(record) => record.id}
 					pagination={false}
 				/>
