@@ -264,3 +264,12 @@ export const CreateFounder = async (user_id) => {
 export const GetPromotionRequest = async () => {
 	return await axios.get(BASE_URL + `admin/user/getAllPromotionRequest`);
 };
+
+
+export const GetAllReferralByBeauticianId = async (id) => {
+	return await axios.get(BASE_URL + `admin/getAllReferralByBeauticianId/${id}`);
+};
+
+export const GetAllReferral = async () => {
+	return await axios.get(BASE_URL + `admin/getAllReferral`);
+};

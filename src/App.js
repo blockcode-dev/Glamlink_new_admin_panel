@@ -77,6 +77,7 @@ import Banner from "./pages/Banner/Banner.jsx";
 import Faq from "./pages/Content/FAQ/Faq.jsx";
 import CreateFaq from "./pages/Content/FAQ/CreateFaq.jsx";
 import EditFaq from "./pages/Content/FAQ/EditFaq.jsx";
+import Referral from "./pages/Referral/Referral.jsx";
 
 
 function App() {
@@ -167,6 +168,7 @@ function App() {
 					<Route path="/faqs" element={<Faq />} />
 					<Route path="/createFaq" element={<CreateFaq />} />
 					<Route path="/editFaq/:id" element={<EditFaq />} />
+					<Route path="/referral" element={<Referral />} />
 				</Route>
 			</Routes>
 		</Router>

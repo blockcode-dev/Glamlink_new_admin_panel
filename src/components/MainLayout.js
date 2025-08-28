@@ -14,7 +14,7 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { FiActivity } from "react-icons/fi";
 import { CiLogin } from "react-icons/ci";
 import { Layout, theme, Menu } from "antd";
-import { IoLayers } from "react-icons/io5";
+import { VscReferences } from "react-icons/vsc";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { FaPhotoVideo } from "react-icons/fa";
 import { LuLayers } from "react-icons/lu";
@@ -214,6 +214,11 @@ const MainLayout = () => {
 											)}
 										</span>
 									),
+								},
+								{
+									key: "/referral",
+									icon: <VscReferences className="fs-4" />,
+									label: "Referrals",
 								},
 								{
 									key: "/service-categories",

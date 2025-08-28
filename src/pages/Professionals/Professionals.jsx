@@ -29,6 +29,7 @@ import {
 	DeleteUser,
 	GetAllkeywords,
 	GetAllProfessional,
+	GetAllReferralByBeauticianId,
 	GetProfessionalPayoutSummary,
 	GetProfessionals,
 	GetUserPromotions,
@@ -60,6 +61,24 @@ const Professionals = () => {
 	const [selectedKeyword, setSelectedKeyword] = useState(null);
 
 	const [promotions, setPromotions] = useState([]);
+	// Referral modal states
+	const [isReferralModalOpen, setReferralModalOpen] = useState(false);
+	const [selectedReferrals, setSelectedReferrals] = useState([]);
+	const [referralLoading, setReferralLoading] = useState(false);
+
+	const openReferralModal = async (beauticianId) => {
+		try {
+			setReferralLoading(true);
+			const res = await GetAllReferralByBeauticianId(beauticianId);
+			const users = res.data?.data?.users || []; // assuming API returns { users: [...] }
+			setSelectedReferrals(users);
+			setReferralModalOpen(true);
+		} catch (err) {
+			message.error("Failed to load referred users");
+		} finally {
+			setReferralLoading(false);
+		}
+	};
 
 	const fetchUserPromotions = async (userId) => {
 		try {
@@ -111,11 +130,14 @@ const Professionals = () => {
 		{
 			title: "Name",
 			dataIndex: ["user_profile", "name"],
-			sorter: (a, b) => a.user_profile.name.localeCompare(b.user_profile.name),
-			width: "15%",
+			sorter: (a, b) =>
+				a.user_profile && b.user_profile
+					? a.user_profile.name.localeCompare(b.user_profile.name)
+					: 0,
+			width: "10%",
 			render: (_, record) => (
 				<span>
-					{record.user_profile.name}{" "}
+					{record.user_profile?.name || ""}
 					{record.is_founder && (
 						<span
 							style={{
@@ -136,41 +158,50 @@ const Professionals = () => {
 				</span>
 			),
 		},
-		// {
-		// 	title: "Name",
-		// 	dataIndex: ["user_profile", "name"],
-		// 	sorter: (a, b) => a.user_profile.name.localeCompare(b.user_profile.name),
-		// 	width: "15%",
-		// },
-
 		{
-	title: "Email",
-	dataIndex: "email",
-	width: "15%",
-	render: (email, record) => (
-		<span>
-			{email}{" "}
-			{record.status === "PENDING" && (
-				<span style={{ color: "red", fontStyle: "italic" }}>
-					(Unverified)
+			title: "Email",
+			dataIndex: "email",
+			width: "10%",
+			render: (email, record) => (
+				<span>
+					{email}{" "}
+					{record.status === "PENDING" && (
+						<span style={{ color: "red", fontStyle: "italic" }}>
+							(Unverified)
+						</span>
+					)}
 				</span>
-			)}
-		</span>
-	),
-},
+			),
+		},
+		{
+			title: "Referral",
+			width: "10%",
+			dataIndex: "referral_code",
+			render: (referral_code, record) => {
+				const referrals = record.referrals || []; // list of referral details
+				const count = record.referral_count || 0; // use API field instead of length
 
+				if (count === 0) {
+					return referral_code || "-";
+				}
 
-		// {
-		// 	title: "Email",
-		// 	dataIndex: "email",
-		// 	width: "15%",
-		// },
+				if (count === 1 && referrals.length === 1) {
+					return (
+						<>
+							{referral_code} ({count}) - {referrals[0].name}
+						</>
+					);
+				}
 
-		// {
-		// 	title: "No. Of Post",
-		// 	dataIndex: ["user_profile", "no_of_post_posted"],
-		// 	width: "10%",
-		// },
+				// More than one -> make count clickable
+				return (
+					<>
+						{referral_code} (
+						 <a onClick={() => openReferralModal(record.id)}>{count}</a>)
+					</>
+				);
+			},
+		},
 
 		{
 			title: "Account Created On",
@@ -181,7 +212,7 @@ const Professionals = () => {
 		{
 			title: "Promotion",
 			dataIndex: "promotion",
-			width: "10%",
+			width: "5%",
 			align: "center",
 			render: (_, record) => (
 				<Tooltip placement="bottom" title="Manage Promotion">
@@ -628,6 +659,7 @@ const Professionals = () => {
 				loading={loading}
 				onChange={handleTableChange}
 				rowSelection={rowSelection}
+				width={800} 
 			/>
 
 			<Modal
@@ -790,7 +822,11 @@ const Professionals = () => {
 
 					<Form.Item label="Select Service / Keyword">
 						<Select
-						      value={selectedKeyword && selectedKeyword.length > 0 ? selectedKeyword : undefined} 
+							value={
+								selectedKeyword && selectedKeyword.length > 0
+									? selectedKeyword
+									: undefined
+							}
 							placeholder="Select Service / Keyword"
 							mode="multiple"
 							style={{ width: "100%" }}
@@ -817,6 +853,47 @@ const Professionals = () => {
 					</div>
 				)}
 			</Modal>
+
+			<Modal
+	open={isReferralModalOpen}
+	onCancel={() => setReferralModalOpen(false)}
+	footer={null}
+	title="Referred Users"
+	width={600} // optional: to make table fit better
+>
+	{referralLoading ? (
+		<p style={{ textAlign: "center" }}>Loading...</p>
+	) : selectedReferrals.length > 0 ? (
+		<Table
+			dataSource={selectedReferrals}
+			rowKey="id"
+			pagination={false}
+			columns={[
+				{
+					title: "Name",
+					dataIndex: ["user_profile", "name"],
+					render: (text) => text || "-",
+				},
+				{
+					title: "Email",
+					dataIndex: "email",
+					render: (text) => text || "-",
+				},
+				{
+					title: "Joined On",
+					dataIndex: "created_at",
+					render: (date) =>
+						date ? new Date(date).toLocaleDateString() : "-",
+				},
+			]}
+		/>
+	) : (
+		<p style={{ textAlign: "center", color: "#999" }}>
+			No referred users found
+		</p>
+	)}
+</Modal>
+
 		</Box>
 	);
 };
