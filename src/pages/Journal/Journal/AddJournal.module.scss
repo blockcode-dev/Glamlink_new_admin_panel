@@ -1,0 +1,289 @@
+/** @format */
+
+// ---- Tokens (kept local to this page, matches the rest of the admin's
+// neutral palette — no new brand colors introduced) ----
+$border: #eef0f3;
+$border-strong: #e2e5ea;
+$text-primary: #1a1f27;
+$text-secondary: #8a94a3;
+$bg-page: #f6f7f9;
+$bg-soft: #fafbfc;
+$radius: 10px;
+$radius-sm: 8px;
+$shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
+
+.page {
+  background: $bg-page;
+  min-height: 100%;
+  padding-bottom: 32px;
+}
+
+// ---- Header (title/subtitle + action button — same pattern used on
+// User.jsx / ServiceProvider.jsx) ----
+.headerCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  box-shadow: $shadow-card;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: $text-primary;
+  letter-spacing: 0.2px;
+}
+
+.headerSubtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: $text-secondary;
+}
+
+// ---- Section card ----
+.sectionCard {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-card;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 22px;
+  border-bottom: 1px solid $border;
+}
+
+.sectionIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2ff;
+  color: #4f5deb;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.sectionHeaderText {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.sectionHint {
+  font-size: 12px;
+  color: $text-secondary;
+  margin-top: 1px;
+}
+
+.sectionBody {
+  padding: 22px;
+}
+
+// ---- Cover image ----
+.coverUploadArea {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.coverPreview {
+  width: 220px;
+  height: 124px;
+  border-radius: $radius-sm;
+  border: 1px dashed $border-strong;
+  background: $bg-soft;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.coverEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: $text-secondary;
+  font-size: 12px;
+}
+
+.coverActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coverHelp {
+  font-size: 12px;
+  color: $text-secondary;
+}
+
+// ---- Downloads ----
+.downloadsEmpty {
+  border: 1px dashed $border-strong;
+  border-radius: $radius-sm;
+  background: $bg-soft;
+  padding: 28px;
+  text-align: center;
+  color: $text-secondary;
+  font-size: 13px;
+}
+
+.downloadItem {
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  margin-bottom: 14px;
+  overflow: hidden;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.downloadItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: $bg-soft;
+  border-bottom: 1px solid $border;
+}
+
+.downloadDragHandle {
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: #8a94a3;
+  touch-action: none;
+
+  &:hover {
+    background: #eef2ff;
+    color: #4f5deb;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.downloadItemLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.downloadIndex {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #4f5deb;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.downloadItemBody {
+  padding: 16px;
+}
+
+.fileChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: $text-secondary;
+  margin-top: 6px;
+}
+
+// ---- Sticky footer actions ----
+.footerBar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px;
+  background: #fff;
+  border-top: 1px solid $border;
+  border-radius: 0 0 $radius $radius;
+}
+
+.footerHint {
+  margin-right: auto;
+  font-size: 12px;
+  color: $text-secondary;
+}
+
+// ---- Responsive ----
+@media (max-width: 768px) {
+  .headerCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sectionBody {
+    padding: 16px;
+  }
+
+  .coverUploadArea {
+    flex-direction: column;
+  }
+
+  .coverPreview {
+    width: 100%;
+  }
+
+  .footerBar {
+    flex-wrap: wrap;
+    justify-content: stretch;
+
+    button {
+      flex: 1;
+    }
+  }
+
+  .footerHint {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}

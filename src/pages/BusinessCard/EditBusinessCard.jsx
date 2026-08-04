@@ -15,10 +15,12 @@ import {
   Radio,
   Typography,
 } from "antd";
+import ImageCropModal from "../../components/ImageCropModal";
 import {
   PlusOutlined,
   MinusCircleOutlined,
   SaveOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -30,6 +32,7 @@ import {
 } from "../../services/Api/BusinessCardApi";
 import LocationAutocomplete from "../../utils/LocationAutocomplete";
 import { getAllState, getAllCityByStateId } from "../../services/Api/UserApi";
+import { GetSpecialities } from "../../services/Api/SpecialitiesApi";
 
 const { Title, Paragraph } = Typography;
 
@@ -107,6 +110,32 @@ const EditBusinessCard = () => {
 
   const [citiesByLocation, setCitiesByLocation] = useState({});
   const [states, setStates] = useState([]);
+  const [specialtyOptions, setSpecialtyOptions] = useState([]);
+
+  useEffect(() => {
+    loadSpecialties();
+  }, []);
+
+  const loadSpecialties = async () => {
+    try {
+      const res = await GetSpecialities(localStorage.getItem("adminToken"), {
+        page: 1,
+        limit: 1000,
+        sortBy: "asc",
+      });
+
+      const data = res?.data?.rows || [];
+
+      setSpecialtyOptions(
+        data.map((item) => ({
+          label: item.title,
+          value: item.title,
+        })),
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const loadStates = async () => {
     try {
@@ -185,6 +214,19 @@ const EditBusinessCard = () => {
 
       setCitiesByLocation(cityMap);
       const social = safeParse(data.social_media);
+
+      const instagramLinks = Object.keys(social || {})
+        .filter((key) => key.startsWith("instagram"))
+        .sort((a, b) => {
+          const aNum =
+            a === "instagram" ? 0 : parseInt(a.replace("instagram", ""));
+          const bNum =
+            b === "instagram" ? 0 : parseInt(b.replace("instagram", ""));
+          return aNum - bNum;
+        })
+        .map((key) => social[key])
+        .filter(Boolean);
+
       const bookingMethodMap = {
         Go_to_Booking_Link: "GO_TO_BOOKING_LINK",
         Call_Text: "CALL_TEXT",
@@ -193,9 +235,9 @@ const EditBusinessCard = () => {
 
       form.setFieldsValue({
         ...data,
-        preferred_booking_method:
-          bookingMethodMap[data.preferred_booking_method] ||
-          data.preferred_booking_method,
+
+        preferred_booking_method: data.preferred_booking_method || [],
+
         excites_about_glamlink: mapExcites(
           safeParse(data.excites_about_glamlink),
         ),
@@ -203,18 +245,16 @@ const EditBusinessCard = () => {
         biggest_pain_points: mapPainPoints(safeParse(data.biggest_pain_points)),
         important_info: safeParse(data.important_info),
         specialties: safeParse(data.specialties),
-        instagram: social?.instagram || "",
+        instagram_links: instagramLinks,
         tiktok: social?.tiktok || "",
         linkedin: social?.linkedin || "",
         youtube: social?.youtube || "",
         facebook: social?.facebook || "",
         locations,
         business_hour:
-          data.business_hour?.map((h) => {
-            if (h.note) return { value: h.note };
-            if (h.is_closed) return { value: `${h.day}: Closed` };
-            return { value: `${h.day}: ${h.open_time} - ${h.close_time}` };
-          }) || [],
+          data.business_hour?.map((h) => ({
+            value: h.note || "",
+          })) || [],
       });
 
       if (data.profile_image) {
@@ -236,7 +276,17 @@ const EditBusinessCard = () => {
           if (m.file_type === "image") {
             imgs.push(fileObj);
           } else {
-            vids.push({ ...fileObj, thumbUrl: m.thumbnail_uri });
+            vids.push({
+              uid: m.id,
+              video: {
+                url: m.file_uri,
+              },
+              thumbnail: m.thumbnail_uri
+                ? {
+                    url: m.thumbnail_uri,
+                  }
+                : null,
+            });
           }
         });
         setImages(imgs);
@@ -251,50 +301,61 @@ const EditBusinessCard = () => {
     fetchData();
   }, [id]);
 
-  const handleUpload =
-    (setter) =>
-    ({ file, onSuccess }) => {
-      const newFile = {
-        uid: file.uid,
-        url: URL.createObjectURL(file),
-        status: "done",
-        originFileObj: file,
-      };
-      setter((prev) => [...prev, newFile]);
-      onSuccess("ok");
-    };
-
   const handleSubmit = async () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
       const formData = new FormData();
 
+      const bookingLink = (values.preferred_booking_method || []).includes(
+        "GO_TO_BOOKING_LINK",
+      )
+        ? values.website
+        : values.booking_link;
+
+      for (const item of videos) {
+        if (!item.thumbnail) {
+          message.error("Please upload a thumbnail for every video.");
+          setLoading(false);
+          return;
+        }
+      }
       const social_media = {
-        instagram: values.instagram || null,
         tiktok: values.tiktok || null,
         linkedin: values.linkedin || null,
         youtube: values.youtube || null,
         facebook: values.facebook || null,
       };
+
+      (values.instagram_links || []).forEach((link, index) => {
+        if (!link?.trim()) return;
+
+        social_media[index === 0 ? "instagram" : `instagram${index}`] =
+          link.trim();
+      });
       formData.append("social_media", JSON.stringify(social_media));
+      const formattedHours = (values.business_hour || [])
+        .map((h) => {
+          const val = h?.value?.trim();
 
-      if (values.business_hour) {
-        const formattedHours = values.business_hour.map((h) => {
-          const val = h.value?.trim();
-          if (!val) return { note: "" };
-          if (val.startsWith("Availability")) return { note: val };
-
-          const match = val.match(/^(.+?)[,:]\s*(.+?)\s*-\s*(.+)$/);
-          if (!match) return { note: val };
+          if (!val) return null;
 
           return {
-            day: match[1].trim(),
-            open_time: match[2].trim(),
-            close_time: match[3].trim(),
-            closed: false,
+            note: val,
           };
-        });
+        })
+        .filter(Boolean);
+
+      if (formattedHours.length === 0) {
+        formData.append(
+          "business_hour",
+          JSON.stringify([
+            {
+              note: "Appointment on request",
+            },
+          ]),
+        );
+      } else {
         formData.append("business_hour", JSON.stringify(formattedHours));
       }
 
@@ -312,7 +373,11 @@ const EditBusinessCard = () => {
         JSON.stringify(values.biggest_pain_points || []),
       );
       formData.append("locations", JSON.stringify(values.locations || []));
-      formData.append("other_links", JSON.stringify(values.other_links || []));
+      const otherLinks = (values.other_links || []).filter((item) =>
+        item?.url?.trim(),
+      );
+
+      formData.append("other_links", JSON.stringify(otherLinks));
 
       const existingImageIds = images
         .filter((img) => !img.originFileObj)
@@ -320,7 +385,7 @@ const EditBusinessCard = () => {
       formData.append("existing_image_ids", JSON.stringify(existingImageIds));
 
       const existingVideoIds = videos
-        .filter((v) => !v.originFileObj)
+        .filter((v) => !v.video?.originFileObj)
         .map((v) => v.uid);
       formData.append("existing_video_ids", JSON.stringify(existingVideoIds));
 
@@ -338,8 +403,14 @@ const EditBusinessCard = () => {
         if (i.originFileObj) formData.append("images", i.originFileObj);
       });
 
-      videos.forEach((v) => {
-        if (v.originFileObj) formData.append("videos", v.originFileObj);
+      videos.forEach((item) => {
+        if (item.video?.originFileObj) {
+          formData.append("videos", item.video.originFileObj);
+
+          if (item.thumbnail?.originFileObj) {
+            formData.append("video_thumbnails", item.thumbnail.originFileObj);
+          }
+        }
       });
 
       const basicFields = [
@@ -351,8 +422,8 @@ const EditBusinessCard = () => {
         "phone",
         "website",
         "custom_handle",
-        "preferred_booking_method",
-        "booking_link",
+        "is_phone_visible",
+        // "booking_link",
         "primary_specialty",
         "offer_promotion",
         "promotion_details",
@@ -364,6 +435,15 @@ const EditBusinessCard = () => {
           formData.append(key, values[key] ?? "");
         }
       });
+
+      formData.append(
+        "preferred_booking_method",
+        JSON.stringify(values.preferred_booking_method || []),
+      );
+
+      if (bookingLink) {
+        formData.append("booking_link", bookingLink);
+      }
 
       await UpdateBusinessCard(id, formData);
       message.success("Business Card Updated Successfully");
@@ -379,24 +459,39 @@ const EditBusinessCard = () => {
   return (
     <Box style={{ padding: "4px" }}>
       {/* Brand Aligned Header Panel */}
-      <Box marginBottom="24px">
-        <h3 className="page-title" style={{ margin: 0, fontWeight: 700 }}>
-          Digital Business Cards
-        </h3>
-        <p
-          className="page-sub-title"
-          style={{ margin: "4px 0 0 0", color: "#666" }}
+      <Box
+        marginBottom="24px"
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div>
+          <h3 className="page-title" style={{ margin: 0, fontWeight: 700 }}>
+            Edit Access Card
+          </h3>
+          <p
+            className="page-sub-title"
+            style={{ margin: "4px 0 0 0", color: "#666" }}
+          >
+            Modify and configure professional details for this digital business
+          </p>
+        </div>
+
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/digital-card")}
         >
-          Modify and configure professional details for this digital business
-          profile card workspace.
-        </p>
+          Back
+        </Button>
       </Box>
 
       <Form form={form} layout="vertical">
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: "minmax(400px, 1fr) minmax(400px, 1fr)",
             gap: 24,
             marginBottom: 24,
           }}
@@ -435,15 +530,91 @@ const EditBusinessCard = () => {
             <Form.Item name="phone" label="Phone">
               <Input style={{ borderRadius: "6px", height: "40px" }} />
             </Form.Item>
-            <Form.Item name="website" label="Website">
-              <Input style={{ borderRadius: "6px", height: "40px" }} />
+
+            <Form.Item
+              name="is_phone_visible"
+              valuePropName="checked"
+              initialValue={true}
+              style={{ marginTop: -8 }}
+            >
+              <Checkbox>
+                Display phone number publicly on my Access Card
+              </Checkbox>
             </Form.Item>
-            <Form.Item name="instagram" label="Instagram">
+            {/* <Form.Item name="custom_handle" label="Handle">
+              <Input style={{ borderRadius: "6px", height: "40px" }} />
+            </Form.Item> */}
+            <Form.Item name="website" label="Website">
               <Input
-                placeholder="https://instagram.com/..."
                 style={{ borderRadius: "6px", height: "40px" }}
+                onChange={(e) => {
+                  if (
+                    (
+                      form.getFieldValue("preferred_booking_method") || []
+                    ).includes("GO_TO_BOOKING_LINK")
+                  ) {
+                    form.setFieldValue("booking_link", e.target.value);
+                  }
+                }}
               />
             </Form.Item>
+
+            <Form.List name="instagram_links">
+              {(fields, { add, remove }) => (
+                <>
+                  <label
+                    style={{
+                      fontWeight: 500,
+                      display: "block",
+                      marginBottom: 10,
+                    }}
+                  >
+                    Instagram Profiles
+                  </label>
+
+                  {fields.map(({ key, name }) => (
+                    <div
+                      key={key}
+                      style={{
+                        display: "flex",
+                        gap: 10,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <Form.Item
+                        name={name}
+                        style={{
+                          flex: 1,
+                          marginBottom: 0,
+                        }}
+                      >
+                        <Input
+                          placeholder="https://instagram.com/..."
+                          style={{ borderRadius: "6px", height: "40px" }}
+                        />
+                      </Form.Item>
+
+                      <Button
+                        danger
+                        onClick={() => remove(name)}
+                        style={{ height: "40px" }}
+                      >
+                        X
+                      </Button>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="dashed"
+                    block
+                    onClick={() => add()}
+                    style={{ borderRadius: "6px", height: "40px" }}
+                  >
+                    + Add Instagram Profile
+                  </Button>
+                </>
+              )}
+            </Form.List>
             <Form.Item name="linkedin" label="LinkedIn">
               <Input style={{ borderRadius: "6px", height: "40px" }} />
             </Form.Item>
@@ -484,7 +655,20 @@ const EditBusinessCard = () => {
                       }}
                     >
                       <Form.Item
-                        name={name}
+                        name={[name, "title"]}
+                        style={{
+                          width: "35%",
+                          marginBottom: 0,
+                        }}
+                      >
+                        <Input
+                          placeholder="Link Title"
+                          style={{ borderRadius: "6px", height: "40px" }}
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name={[name, "url"]}
                         style={{
                           flex: 1,
                           marginBottom: 0,
@@ -509,7 +693,12 @@ const EditBusinessCard = () => {
                   <Button
                     type="dashed"
                     block
-                    onClick={() => add()}
+                    onClick={() =>
+                      add({
+                        title: "",
+                        url: "",
+                      })
+                    }
                     style={{ borderRadius: "6px", height: "40px" }}
                   >
                     + Add Link
@@ -519,11 +708,21 @@ const EditBusinessCard = () => {
             </Form.List>
             <Form.Item
               name="preferred_booking_method"
-              label="Preferred Booking Method"
+              label="Ways To Connect
+"
               style={{ marginTop: "24px" }}
             >
               <Select
+                mode="multiple"
                 style={{ height: "40px" }}
+                onChange={(value) => {
+                  if ((value || []).includes("GO_TO_BOOKING_LINK")) {
+                    form.setFieldValue(
+                      "booking_link",
+                      form.getFieldValue("website"),
+                    );
+                  }
+                }}
                 options={[
                   {
                     label: "Go to Booking Link",
@@ -547,16 +746,14 @@ const EditBusinessCard = () => {
               noStyle
             >
               {({ getFieldValue }) =>
-                getFieldValue("preferred_booking_method") ===
-                  "GO_TO_BOOKING_LINK" && (
+                (getFieldValue("preferred_booking_method") || []).includes(
+                  "GO_TO_BOOKING_LINK",
+                ) && (
                   <Form.Item name="booking_link" label="Booking Link">
                     <Input style={{ borderRadius: "6px", height: "40px" }} />
                   </Form.Item>
                 )
               }
-            </Form.Item>
-            <Form.Item name="custom_handle" label="Handle">
-              <Input style={{ borderRadius: "6px", height: "40px" }} />
             </Form.Item>
           </Card>
         </div>
@@ -569,53 +766,19 @@ const EditBusinessCard = () => {
             boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
           }}
         >
-          <Form.Item name="primary_specialty" label="Primary Specialty">
+          {/* <Form.Item name="primary_specialty" label="Primary Specialty">
             <Input style={{ borderRadius: "6px", height: "40px" }} />
+          </Form.Item> */}
+          <Form.Item name="specialties" label="Additional Specialties">
+            <Select
+              mode="tags"
+              allowClear
+              showSearch
+              placeholder="Select or type specialties"
+              options={specialtyOptions}
+              tokenSeparators={[","]}
+            />
           </Form.Item>
-          <Form.List name="specialties">
-            {(fields, { add, remove }) => (
-              <>
-                <label
-                  style={{ fontWeight: 500, display: "block", marginBottom: 8 }}
-                >
-                  Specialties
-                </label>
-                {fields.map(({ key, name }) => (
-                  <div
-                    key={key}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: 8,
-                      gap: 10,
-                    }}
-                  >
-                    <Form.Item name={name} style={{ flex: 1, marginBottom: 0 }}>
-                      <Input
-                        placeholder="Enter specialty"
-                        style={{ borderRadius: "6px", height: "40px" }}
-                      />
-                    </Form.Item>
-                    <Button
-                      danger
-                      onClick={() => remove(name)}
-                      style={{ height: "40px" }}
-                    >
-                      X
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  type="dashed"
-                  onClick={() => add()}
-                  block
-                  style={{ borderRadius: "6px", height: "40px", marginTop: 4 }}
-                >
-                  + Add Specialty
-                </Button>
-              </>
-            )}
-          </Form.List>
 
           <Form.List name="important_info">
             {(fields, { add, remove }) => (
@@ -668,7 +831,7 @@ const EditBusinessCard = () => {
           </Form.List>
         </Card>
 
-        <Card
+        {/* <Card
           title="Glamlink Integration"
           style={{
             marginBottom: 24,
@@ -763,7 +926,7 @@ const EditBusinessCard = () => {
               <strong>The Elite Setup</strong>: Let the team build my profile.
             </Checkbox>
           </Form.Item>
-        </Card>
+        </Card> */}
 
         <Card
           title="Locations"
@@ -1010,7 +1173,7 @@ const EditBusinessCard = () => {
                       style={{ flex: 1, marginBottom: 0 }}
                     >
                       <Input
-                        placeholder="e.g. Mon: 10am - 7pm"
+                        placeholder="e.g. Mon-Fri: 10am - 7pm, Sunday: Closed, By Appointment Only"
                         style={{ borderRadius: "6px", height: "40px" }}
                       />
                     </Form.Item>
@@ -1051,33 +1214,47 @@ const EditBusinessCard = () => {
           }}
         >
           <Form.Item label="Profile Image">
-            <Upload
-              listType="picture-card"
+            <ImageCropModal
+              aspect={1}
               fileList={profileImage}
-              customRequest={handleUpload(setProfileImage)}
-              onRemove={() => setProfileImage([])}
-            >
-              {profileImage.length < 1 && <PlusOutlined />}
-            </Upload>
+              setFileList={setProfileImage}
+              maxCount={1}
+              accept=".jpg,.jpeg,.png,.webp"
+              listType="picture-card"
+              uploadText="Upload"
+            />
           </Form.Item>
           <Form.Item label="Images Gallery">
-            <Upload
-              listType="picture-card"
+            <ImageCropModal
+              aspect={16 / 9}
               fileList={images}
-              customRequest={handleUpload(setImages)}
+              setFileList={setImages}
               multiple
-              onRemove={(file) =>
-                setImages(images.filter((i) => i.uid !== file.uid))
-              }
-            >
-              <PlusOutlined />
-            </Upload>
+              maxCount={20}
+              accept=".jpg,.jpeg,.png,.webp"
+              uploadText="Upload"
+            />
           </Form.Item>
 
           <Form.Item label="Production Videos">
             <Upload
+              accept=".mp4"
               fileList={videos}
-              customRequest={handleUpload(setVideos)}
+              customRequest={({ file, onSuccess }) => {
+                setVideos((prev) => [
+                  ...prev,
+                  {
+                    uid: file.uid,
+                    video: {
+                      originFileObj: file,
+                      url: URL.createObjectURL(file),
+                    },
+                    thumbnail: null,
+                  },
+                ]);
+
+                onSuccess("ok");
+              }}
               multiple
               showUploadList={false}
             >
@@ -1091,44 +1268,131 @@ const EditBusinessCard = () => {
 
             <div
               style={{
+                marginTop: 12,
+                marginBottom: 18,
+                padding: "12px 16px",
+                background: "#f6ffed",
+                border: "1px solid #b7eb8f",
+                borderRadius: 8,
+                color: "#389e0d",
+                fontSize: 13,
+                lineHeight: 1.6,
+              }}
+            >
+              <strong>Video Requirements</strong>
+              <br />• Upload only <strong>.mp4</strong> videos.
+              <br />• Video duration must be{" "}
+              <strong>less than 60 seconds</strong>.
+            </div>
+
+            <div
+              style={{
                 display: "flex",
                 gap: 16,
                 flexWrap: "wrap",
                 marginTop: 16,
               }}
             >
-              {videos.map((video) => (
-                <div
-                  key={video.uid}
+              {videos.map((item, index) => (
+                <Card
+                  key={item.uid}
+                  size="small"
                   style={{
-                    width: 220,
-                    background: "#f9f9f9",
-                    padding: 8,
-                    borderRadius: 6,
-                    border: "1px solid #eee",
+                    width: 300,
+                    borderRadius: 10,
                   }}
                 >
-                  <video
-                    width="204"
-                    height="130"
-                    controls
-                    style={{ borderRadius: 4, background: "#000" }}
-                  >
-                    <source src={video.url} type="video/mp4" />
-                  </video>
+                  <div style={{ marginBottom: 12 }}>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        marginBottom: 6,
+                      }}
+                    >
+                      Video
+                    </div>
+
+                    <video
+                      width="100%"
+                      height="150"
+                      controls
+                      style={{
+                        borderRadius: 8,
+                        objectFit: "cover",
+                      }}
+                      src={item.video?.url}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: 12 }}>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        marginBottom: 6,
+                      }}
+                    >
+                      Thumbnail
+                    </div>
+
+                    {item.thumbnail ? (
+                      <img
+                        src={item.thumbnail.url}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: 150,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                          border: "1px solid #eee",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          height: 150,
+                          border: "1px dashed #d9d9d9",
+                          borderRadius: 8,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        No Thumbnail
+                      </div>
+                    )}
+                  </div>
+
+                  {item.video?.originFileObj && (
+                   <ImageCropModal
+  aspect={16 / 9}
+  fileList={item.thumbnail ? [item.thumbnail] : []}
+  setFileList={(files) => {
+    setVideos((prev) =>
+      prev.map((video, i) =>
+        i === index
+          ? {
+              ...video,
+              thumbnail: files[0] || null,
+            }
+          : video,
+      ),
+    );
+  }}
+  maxCount={1}
+  uploadText="Thumbnail"
+/>
+                  )}
 
                   <Button
                     danger
-                    size="small"
                     block
-                    style={{ marginTop: 8, borderRadius: 4 }}
                     onClick={() =>
-                      setVideos(videos.filter((v) => v.uid !== video.uid))
+                      setVideos(videos.filter((v) => v.uid !== item.uid))
                     }
                   >
                     Remove Video
                   </Button>
-                </div>
+                </Card>
               ))}
             </div>
           </Form.Item>

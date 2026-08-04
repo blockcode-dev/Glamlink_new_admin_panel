@@ -20,6 +20,7 @@ import {
   PlusOutlined,
   MinusCircleOutlined,
   DeleteOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -28,6 +29,57 @@ import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { GenerateBusinessCard } from "../../services/Api/BusinessCardApi";
 import LocationAutocomplete from "../../utils/LocationAutocomplete";
 import { getAllCityByStateId, getAllState } from "../../services/Api/UserApi";
+import { GetSpecialities } from "../../services/Api/SpecialitiesApi";
+import ImageCropModal from "../../components/ImageCropModal";
+
+/* =========================================================
+   Scoped CSS for the media upload boxes.
+   AntD's own picture-card list already gives us a native
+   delete (trash) icon on hover — we just need the box size
+   and image fit to be correct. Covers both old and new AntD
+   classnames (ant-upload-list-item-thumbnail / -image) so it
+   works regardless of exact antd version.
+   ========================================================= */
+const mediaUploadCSS = `
+  .gl-profile-upload .ant-upload.ant-upload-select,
+  .gl-profile-upload .ant-upload-list-picture-card-container {
+    width: 104px !important;
+    height: 104px !important;
+  }
+
+  .gl-gallery-upload .ant-upload.ant-upload-select,
+  .gl-gallery-upload .ant-upload-list-picture-card-container {
+    width: 160px !important;
+    height: 90px !important;
+  }
+
+  .gl-video-thumb-upload .ant-upload.ant-upload-select,
+  .gl-video-thumb-upload .ant-upload-list-picture-card-container {
+    width: 100% !important;
+    height: 120px !important;
+  }
+
+  .gl-profile-upload .ant-upload-list-item-thumbnail,
+  .gl-profile-upload .ant-upload-list-item-image,
+  .gl-gallery-upload .ant-upload-list-item-thumbnail,
+  .gl-gallery-upload .ant-upload-list-item-image,
+  .gl-video-thumb-upload .ant-upload-list-item-thumbnail,
+  .gl-video-thumb-upload .ant-upload-list-item-image {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .gl-profile-upload .ant-upload-list-item-thumbnail img,
+  .gl-profile-upload .ant-upload-list-item-image img,
+  .gl-gallery-upload .ant-upload-list-item-thumbnail img,
+  .gl-gallery-upload .ant-upload-list-item-image img,
+  .gl-video-thumb-upload .ant-upload-list-item-thumbnail img,
+  .gl-video-thumb-upload .ant-upload-list-item-image img {
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+`;
 
 const CreateBusinessCard = () => {
   const [form] = Form.useForm();
@@ -39,6 +91,32 @@ const CreateBusinessCard = () => {
   const [loading, setLoading] = useState(false);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
+  const [specialtyOptions, setSpecialtyOptions] = useState([]);
+
+  useEffect(() => {
+    loadSpecialties();
+  }, []);
+
+  const loadSpecialties = async () => {
+    try {
+      const res = await GetSpecialities(localStorage.getItem("adminToken"), {
+        page: 1,
+        limit: 1000,
+        sortBy: "asc",
+      });
+
+      const data = res?.data?.rows || [];
+
+      setSpecialtyOptions(
+        data.map((item) => ({
+          label: item.title,
+          value: item.title,
+        })),
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
     loadStates();
@@ -53,20 +131,6 @@ const CreateBusinessCard = () => {
     }
   };
 
-  /* ================= FILE HANDLER ================= */
-  const handleUpload =
-    (setter) =>
-    ({ file, onSuccess }) => {
-      const newFile = {
-        uid: file.uid,
-        url: URL.createObjectURL(file),
-        status: "done",
-        originFileObj: file,
-      };
-      setter((prev) => [...prev, newFile]);
-      onSuccess("ok");
-    };
-
   /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
     try {
@@ -76,41 +140,43 @@ const CreateBusinessCard = () => {
 
       /* ================= SOCIAL MEDIA ================= */
       const social_media = {
-        instagram: values.instagram || null,
         facebook: values.facebook || null,
         linkedin: values.linkedin || null,
         youtube: values.youtube || null,
         tiktok: values.tiktok || null,
       };
+
+      (values.instagram_links || []).forEach((link, index) => {
+        if (!link?.trim()) return;
+
+        social_media[index === 0 ? "instagram" : `instagram${index}`] =
+          link.trim();
+      });
       formData.append("social_media", JSON.stringify(social_media));
 
       /* ================= BUSINESS HOURS ================= */
-      if (values.business_hour) {
-        const formattedHours = values.business_hour
-          .map((h) => {
-            const val = (h?.value || "").trim();
-            if (!val) return null;
+      const formattedHours = (values.business_hour || [])
+        .map((h) => {
+          const val = (h?.value || "").trim();
 
-            if (!val.match(/\d{1,2}:\d{2}/)) {
-              return { note: val };
-            }
+          if (!val) return null;
 
-            const [dayPart, timePart] = val.split(":");
-            if (!timePart) return { note: val };
+          return {
+            note: val,
+          };
+        })
+        .filter(Boolean);
 
-            if (timePart.toLowerCase().includes("closed")) {
-              return { day: dayPart.trim(), closed: true };
-            }
-
-            const [open, close] = timePart.split("-");
-            return {
-              day: dayPart.trim(),
-              open_time: open?.trim(),
-              close_time: close?.trim(),
-              closed: false,
-            };
-          })
-          .filter(Boolean);
+      if (formattedHours.length === 0) {
+        formData.append(
+          "business_hour",
+          JSON.stringify([
+            {
+              note: "Appointment on request",
+            },
+          ]),
+        );
+      } else {
         formData.append("business_hour", JSON.stringify(formattedHours));
       }
 
@@ -152,10 +218,14 @@ const CreateBusinessCard = () => {
         "biggest_pain_points",
         JSON.stringify(values.biggest_pain_points || []),
       );
-      formData.append(
-        "other_links",
-        JSON.stringify((values.other_links || []).filter(Boolean)),
+      const otherLinks = (values.other_links || []).filter((item) =>
+        item?.url?.trim(),
       );
+
+      formData.append("other_links", JSON.stringify(otherLinks));
+
+      const bookingLink =
+        values.booking_link?.trim() || values.website?.trim() || "";
 
       /* ================= BASIC FIELDS ================= */
       const basicFields = [
@@ -166,8 +236,8 @@ const CreateBusinessCard = () => {
         "professional_title",
         "bio",
         "website",
-        "preferred_booking_method",
-        "booking_link",
+        "is_phone_visible",
+        // "booking_link",
         "primary_specialty",
         "offer_promotion",
         "promotion_details",
@@ -181,6 +251,17 @@ const CreateBusinessCard = () => {
         }
       });
 
+      formData.append("is_phone_visible", values.is_phone_visible !== false);
+
+      formData.append(
+        "preferred_booking_method",
+        JSON.stringify(values.preferred_booking_method || []),
+      );
+
+      if (bookingLink) {
+        formData.append("booking_link", bookingLink);
+      }
+
       /* ================= FILES ================= */
       if (profileImage[0]?.originFileObj) {
         formData.append("profile_image", profileImage[0].originFileObj);
@@ -190,8 +271,24 @@ const CreateBusinessCard = () => {
         if (img.originFileObj) formData.append("images", img.originFileObj);
       });
 
-      videos.forEach((vid) => {
-        if (vid.originFileObj) formData.append("videos", vid.originFileObj);
+      for (const item of videos) {
+        if (!item.video) {
+          message.error("Video is missing.");
+          setLoading(false);
+          return;
+        }
+
+        if (!item.thumbnail) {
+          message.error("Please upload a thumbnail for every video.");
+          setLoading(false);
+          return;
+        }
+      }
+
+      videos.forEach((item) => {
+        formData.append("videos", item.video.originFileObj);
+
+        formData.append("video_thumbnails", item.thumbnail.originFileObj);
       });
 
       /* ================= API CALL ================= */
@@ -211,6 +308,39 @@ const CreateBusinessCard = () => {
 
   return (
     <Form form={form} layout="vertical">
+      <style>{mediaUploadCSS}</style>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          marginBottom: 24,
+          justifyContent: "space-between",
+        }}
+      >
+        <div>
+          <h3 className="page-title" style={{ margin: 0, fontWeight: 700 }}>
+            Create Access Card
+          </h3>
+          <p
+            className="page-sub-title"
+            style={{ margin: "4px 0 0 0", color: "#666" }}
+          >
+            Create your GlamLink Access Card and share your profile, services,
+            booking options, locations, and social links in one place.
+          </p>
+        </div>
+
+        <div>
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate("/digital-card")}
+          >
+            Back
+          </Button>
+        </div>
+      </div>
       <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
         {/* BASIC INFORMATION */}
         <Col xs={24} lg={12}>
@@ -280,22 +410,43 @@ const CreateBusinessCard = () => {
                 <Form.Item
                   name="phone"
                   label="Phone"
-                  rules={[{ required: true, message: "Phone is required" }]}
+                  // rules={[{ required: true, message: "Phone is required" }]}
                 >
                   <Input placeholder="123-456-7890" />
                 </Form.Item>
+                <Form.Item
+                  name="is_phone_visible"
+                  valuePropName="checked"
+                  initialValue={true}
+                  style={{ marginTop: -8 }}
+                >
+                  <Checkbox>
+                    Display phone number publicly on my Access Card
+                  </Checkbox>
+                </Form.Item>
               </Col>
-              <Col xs={24}>
+              {/* <Col xs={24}>
                 <Form.Item
                   name="custom_handle"
                   label="Claim Your Custom Handle"
                 >
                   <Input placeholder="luxebeauty" />
                 </Form.Item>
-              </Col>
+              </Col> */}
               <Col xs={24}>
                 <Form.Item name="website" label="Website">
-                  <Input placeholder="https://luxebeauty.com" />
+                  <Input
+                    placeholder="https://luxebeauty.com"
+                    onChange={(e) => {
+                      if (
+                        (
+                          form.getFieldValue("preferred_booking_method") || []
+                        ).includes("GO_TO_BOOKING_LINK")
+                      ) {
+                        form.setFieldValue("booking_link", e.target.value);
+                      }
+                    }}
+                  />
                 </Form.Item>
               </Col>
             </Row>
@@ -306,9 +457,41 @@ const CreateBusinessCard = () => {
 
             <Row gutter={[16, 0]}>
               <Col xs={24} sm={12}>
-                <Form.Item name="instagram" label="Instagram">
-                  <Input placeholder="@yourusername or full URL" />
-                </Form.Item>
+                <Form.List name="instagram_links">
+                  {(fields, { add, remove }) => (
+                    <Form.Item label="Instagram Profiles">
+                      {fields.map(({ key, name }) => (
+                        <div
+                          key={key}
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            marginBottom: 8,
+                          }}
+                        >
+                          <Form.Item name={name} noStyle>
+                            <Input placeholder="https://instagram.com/username" />
+                          </Form.Item>
+
+                          <Button
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => remove(name)}
+                          />
+                        </div>
+                      ))}
+
+                      <Button
+                        type="dashed"
+                        block
+                        icon={<PlusOutlined />}
+                        onClick={() => add()}
+                      >
+                        Add Instagram Profile
+                      </Button>
+                    </Form.Item>
+                  )}
+                </Form.List>
               </Col>
               <Col xs={24} sm={12}>
                 <Form.Item name="linkedin" label="LinkedIn">
@@ -346,11 +529,23 @@ const CreateBusinessCard = () => {
                     {fields.map(({ key, name }) => (
                       <div
                         key={key}
-                        style={{ display: "flex", gap: 8, marginBottom: 8 }}
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          marginBottom: 8,
+                        }}
                       >
-                        <Form.Item name={name} noStyle>
+                        <Form.Item name={[name, "title"]} noStyle>
+                          <Input
+                            placeholder="Link Title"
+                            style={{ width: "180px" }}
+                          />
+                        </Form.Item>
+
+                        <Form.Item name={[name, "url"]} noStyle>
                           <Input placeholder="https://vogue.com/article/your-feature" />
                         </Form.Item>
+
                         <Button
                           danger
                           icon={<DeleteOutlined />}
@@ -358,10 +553,16 @@ const CreateBusinessCard = () => {
                         />
                       </div>
                     ))}
+
                     <Button
                       type="dashed"
                       block
-                      onClick={() => add()}
+                      onClick={() =>
+                        add({
+                          title: "",
+                          url: "",
+                        })
+                      }
                       icon={<PlusOutlined />}
                     >
                       Add Link
@@ -375,17 +576,32 @@ const CreateBusinessCard = () => {
               <Col xs={24}>
                 <Form.Item
                   name="preferred_booking_method"
-                  label="Preferred Booking Method"
+                  label="Ways To Connect"
                 >
                   <Select
-                    placeholder="Select booking method..."
+                    mode="multiple"
+                    placeholder="Select booking methods..."
+                    onChange={(values) => {
+                      if (values.includes("GO_TO_BOOKING_LINK")) {
+                        form.setFieldValue(
+                          "booking_link",
+                          form.getFieldValue("website") || "",
+                        );
+                      }
+                    }}
                     options={[
                       {
                         label: "Go to Booking Link",
-                        value: "Go to Booking Link",
+                        value: "GO_TO_BOOKING_LINK",
                       },
-                      { label: "Call / Text", value: "Call / Text" },
-                      { label: "DM on Instagram", value: "DM on Instagram" },
+                      {
+                        label: "Call / Text",
+                        value: "CALL_TEXT",
+                      },
+                      {
+                        label: "DM on Instagram",
+                        value: "DM_INSTAGRAM",
+                      },
                     ]}
                   />
                 </Form.Item>
@@ -398,10 +614,14 @@ const CreateBusinessCard = () => {
                   noStyle
                 >
                   {({ getFieldValue }) =>
-                    getFieldValue("preferred_booking_method") ===
-                      "Go to Booking Link" && (
+                    (getFieldValue("preferred_booking_method") || []).includes(
+                      "GO_TO_BOOKING_LINK",
+                    ) && (
                       <Form.Item name="booking_link" label="Booking Link">
-                        <Input placeholder="https://..." />
+                        <Input
+                          placeholder="https://..."
+                          value={form.getFieldValue("website")}
+                        />
                       </Form.Item>
                     )
                   }
@@ -414,45 +634,18 @@ const CreateBusinessCard = () => {
 
       {/* SPECIALTIES & INFO */}
       <Card title="Services & Specialties" style={{ marginBottom: 24 }}>
-        <Form.Item
-          name="primary_specialty"
-          label="Primary Specialty"
-          rules={[{ required: true, message: "Primary Specialty is required" }]}
-        >
-          <Input placeholder="e.g. Hair Styling & Color" />
-        </Form.Item>
-
         <Row gutter={[24, 0]}>
           <Col xs={24} md={12}>
-            <Form.List name="specialties">
-              {(fields, { add, remove }) => (
-                <Form.Item label="Additional Specialties">
-                  {fields.map(({ key, name }) => (
-                    <div
-                      key={key}
-                      style={{ display: "flex", gap: 8, marginBottom: 8 }}
-                    >
-                      <Form.Item name={name} noStyle>
-                        <Input placeholder="e.g. Balayage, Extensions, Bridal Makeup" />
-                      </Form.Item>
-                      <Button
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => remove(name)}
-                      />
-                    </div>
-                  ))}
-                  <Button
-                    type="dashed"
-                    onClick={() => add()}
-                    block
-                    icon={<PlusOutlined />}
-                  >
-                    Add Specialty
-                  </Button>
-                </Form.Item>
-              )}
-            </Form.List>
+            <Form.Item label="Additional Specialties" name="specialties">
+              <Select
+                mode="tags"
+                placeholder="Select or type specialties"
+                options={specialtyOptions}
+                allowClear
+                showSearch
+                tokenSeparators={[","]}
+              />
+            </Form.Item>
           </Col>
 
           <Col xs={24} md={12}>
@@ -487,110 +680,6 @@ const CreateBusinessCard = () => {
             </Form.List>
           </Col>
         </Row>
-      </Card>
-
-      {/* GLAMLINK INTEGRATION QUESTIONS */}
-      <Card title="Glamlink Integration" style={{ marginBottom: 24 }}>
-        <Form.Item
-          name="excites_about_glamlink"
-          label="What excites you about Glamlink?"
-        >
-          <Checkbox.Group style={{ width: "100%" }}>
-            <Space direction="vertical">
-              <Checkbox value="Clients ability to discover pros nearby and check out their services, work, reviews, etc">
-                Discovery Nearby
-              </Checkbox>
-              <Checkbox value="Seamless booking inside Glamlink either in app or goes directly to your booking link">
-                Seamless Booking
-              </Checkbox>
-              <Checkbox value="Pro shops & e-commerce">
-                Pro shops & e-commerce
-              </Checkbox>
-              <Checkbox value="The Glamlink Edit magazine & spotlights">
-                Magazine & Spotlights
-              </Checkbox>
-              <Checkbox value="AI powered discovery & smart recommendations (coming soon)">
-                AI Discovery
-              </Checkbox>
-              <Checkbox value="Community & networking with other pros">
-                Community
-              </Checkbox>
-            </Space>
-          </Checkbox.Group>
-        </Form.Item>
-
-        <Form.Item name="biggest_pain_points" label="Biggest pain points">
-          <Checkbox.Group style={{ width: "100%" }}>
-            <Row gutter={[16, 12]}>
-              <Col xs={24} sm={12} md={6}>
-                <Checkbox value="Posting but no conversions">
-                  No conversions
-                </Checkbox>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Checkbox value="DMs - too much back and forth">
-                  Too many DMs
-                </Checkbox>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Checkbox value="No shows">No shows</Checkbox>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Checkbox value="Juggling too many platforms (booking, social media, e-commerce, etc)">
-                  Too many platforms
-                </Checkbox>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Checkbox value="Inventory not tied to treatments">
-                  Inventory management
-                </Checkbox>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Checkbox value="Client notes/consents all over the place">
-                  Client notes
-                </Checkbox>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Checkbox value="Finding new clients">Finding clients</Checkbox>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Checkbox value="None of the above">None</Checkbox>
-              </Col>
-            </Row>
-          </Checkbox.Group>
-        </Form.Item>
-
-        <Form.Item name="offer_promotion" valuePropName="checked">
-          <Checkbox>I would like to offer a promotion</Checkbox>
-        </Form.Item>
-        <Form.Item
-          shouldUpdate={(p, c) => p.offer_promotion !== c.offer_promotion}
-          noStyle
-        >
-          {({ getFieldValue }) =>
-            getFieldValue("offer_promotion") && (
-              <Form.Item
-                name="promotion_details"
-                label="Promotion Details"
-                rules={[
-                  { required: true, message: "Promotion details are required" },
-                ]}
-              >
-                <Input.TextArea
-                  rows={3}
-                  placeholder="Enter your promotion details..."
-                />
-              </Form.Item>
-            )
-          }
-        </Form.Item>
-
-        <Form.Item name="elite_setup" valuePropName="checked">
-          <Checkbox>
-            <strong>The Elite Setup:</strong> I agree to let Glamlink build my
-            profile.
-          </Checkbox>
-        </Form.Item>
       </Card>
 
       {/* BUSINESS LOCATIONS */}
@@ -683,7 +772,7 @@ const CreateBusinessCard = () => {
                                       label="State"
                                     >
                                       <Select
-                                      showSearch
+                                        showSearch
                                         optionFilterProp="label"
                                         size="large"
                                         placeholder="Search State"
@@ -817,57 +906,87 @@ const CreateBusinessCard = () => {
         </Form.List>
       </Card>
 
-      {/* MEDIA MEDIA */}
+      {/* MEDIA ASSETS */}
       <Card title="Media Assets" style={{ marginBottom: 32 }}>
         <Row gutter={[24, 16]}>
+          {/* ---- PROFILE IMAGE ---- */}
           <Col xs={24} md={8}>
             <Form.Item label="Profile Image">
-              <Upload
-                listType="picture-card"
-                fileList={profileImage}
-                customRequest={handleUpload(setProfileImage)}
-                onRemove={() => setProfileImage([])}
-                maxCount={1}
-              >
-                {profileImage.length < 1 && (
-                  <div>
-                    <PlusOutlined />
-                    <div style={{ marginTop: 8 }}>Upload</div>
-                  </div>
-                )}
-              </Upload>
+              <div className="gl-profile-upload">
+                <ImageCropModal
+                  fileList={profileImage}
+                  setFileList={setProfileImage}
+                  aspect={1}
+                  maxCount={1}
+                  accept=".jpg,.jpeg,.png,.webp"
+                  listType="picture-card"
+                  uploadText="Upload"
+                />
+              </div>
             </Form.Item>
           </Col>
 
+          {/* ---- GALLERY IMAGES ---- */}
           <Col xs={24} md={16}>
             <Form.Item label="Gallery Images">
-              <Upload
-                listType="picture-card"
-                fileList={images}
-                customRequest={handleUpload(setImages)}
-                multiple
-                onRemove={(file) =>
-                  setImages(images.filter((i) => i.uid !== file.uid))
-                }
-              >
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Upload</div>
-                </div>
-              </Upload>
+              <div className="gl-gallery-upload">
+                <ImageCropModal
+                  aspect={16 / 9}
+                  fileList={images}
+                  setFileList={setImages}
+                  multiple
+                  maxCount={20}
+                  accept=".jpg,.jpeg,.png,.webp"
+                  uploadText="Upload"
+                />
+              </div>
             </Form.Item>
           </Col>
 
+          {/* ---- VIDEOS ---- */}
           <Col span={24}>
             <Form.Item label="Videos">
               <Upload
-                fileList={videos}
-                customRequest={handleUpload(setVideos)}
-                multiple
+                accept=".mp4"
                 showUploadList={false}
+                multiple
+                customRequest={({ file, onSuccess }) => {
+                  setVideos((prev) => [
+                    ...prev,
+                    {
+                      uid: file.uid,
+                      video: {
+                        originFileObj: file,
+                        url: URL.createObjectURL(file),
+                      },
+                      thumbnail: null,
+                    },
+                  ]);
+
+                  onSuccess("ok");
+                }}
               >
                 <Button icon={<PlusOutlined />}>Select Video File</Button>
               </Upload>
+
+              <div
+                style={{
+                  marginTop: 12,
+                  marginBottom: 18,
+                  padding: "12px 16px",
+                  background: "#f6ffed",
+                  border: "1px solid #b7eb8f",
+                  borderRadius: 8,
+                  color: "#389e0d",
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                }}
+              >
+                <strong>Video Requirements</strong>
+                <br />• Upload only <strong>.mp4</strong> videos.
+                <br />• Video duration must be{" "}
+                <strong>less than 60 seconds</strong>.
+              </div>
 
               <div
                 style={{
@@ -877,33 +996,54 @@ const CreateBusinessCard = () => {
                   flexWrap: "wrap",
                 }}
               >
-                {videos.map((video) => (
+                {videos.map((item, index) => (
                   <Card
-                    key={video.uid}
+                    key={item.uid}
                     size="small"
+                    style={{ width: 260 }}
                     cover={
                       <video
                         width="100%"
                         height="120"
                         controls
-                        src={video.url}
-                        style={{ objectFit: "cover" }}
+                        src={item.video?.url}
                       />
                     }
-                    style={{ width: 200 }}
-                    actions={[
-                      <Button
-                        type="link"
-                        danger
-                        size="small"
-                        onClick={() =>
-                          setVideos(videos.filter((v) => v.uid !== video.uid))
-                        }
-                      >
-                        Remove Video
-                      </Button>,
-                    ]}
-                  />
+                  >
+                    <div
+                      className="gl-video-thumb-upload"
+                      style={{ marginBottom: 12 }}
+                    >
+                      <ImageCropModal
+                        aspect={16 / 9}
+                        fileList={item.thumbnail ? [item.thumbnail] : []}
+                        setFileList={(files) => {
+                          setVideos((prev) =>
+                            prev.map((video, i) =>
+                              i === index
+                                ? {
+                                    ...video,
+                                    thumbnail: files[0] || null,
+                                  }
+                                : video,
+                            ),
+                          );
+                        }}
+                        maxCount={1}
+                        uploadText="Thumbnail"
+                      />
+                    </div>
+
+                    <Button
+                      danger
+                      block
+                      onClick={() =>
+                        setVideos(videos.filter((v) => v.uid !== item.uid))
+                      }
+                    >
+                      Remove Video
+                    </Button>
+                  </Card>
                 ))}
               </div>
             </Form.Item>

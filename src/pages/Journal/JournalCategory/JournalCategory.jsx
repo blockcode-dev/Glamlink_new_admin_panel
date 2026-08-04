@@ -56,7 +56,7 @@ const JournalCategory = () => {
                         rounded
                         outlined
                         severity="danger"
-                        onClick={() => handleDelete([record.id])}
+                        onClick={() => handleDelete([record.id], record.title)}
                     />
                 </Space>
             ),
@@ -96,7 +96,56 @@ const JournalCategory = () => {
         setData(filtered);
     };
 
-    const handleDelete = (ids) => {
+    // ✅ Pulls the journal names out of the backend error string and
+    // shows them as a clean bullet list instead of one long raw sentence.
+    const showBlockedDeleteError = (rawMessage, fallbackCategoryTitle) => {
+        // Backend message looks like:
+        // Cannot delete category "undefined". The following journal(s) belong
+        // to this category: "UPCOMING EVENTS". Please move these journal(s)
+        // to another category before deleting this category.
+        const journalMatch = rawMessage.match(
+            /belong to this category:\s*(.+?)\.\s*Please move/i
+        );
+
+        const journalNames = journalMatch
+            ? journalMatch[1]
+                  .split(",")
+                  .map((name) => name.replace(/["“”]/g, "").trim())
+                  .filter(Boolean)
+            : [];
+
+        Modal.error({
+            title: "Can't Delete This Category",
+            width: 480,
+            content: (
+                <div>
+                    <p style={{ marginBottom: 8 }}>
+                        <strong>{fallbackCategoryTitle || "This category"}</strong>{" "}
+                        still has {journalNames.length > 1 ? "journals" : "a journal"}{" "}
+                        linked to it:
+                    </p>
+
+                    {journalNames.length > 0 ? (
+                        <ul style={{ paddingLeft: 20, marginBottom: 8 }}>
+                            {journalNames.map((name) => (
+                                <li key={name}>{name}</li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p style={{ marginBottom: 8 }}>{rawMessage}</p>
+                    )}
+
+                    <p style={{ marginBottom: 0 }}>
+                        Move {journalNames.length > 1 ? "these journals" : "this journal"}{" "}
+                        to another category first, then try deleting again.
+                    </p>
+                </div>
+            ),
+            okText: "Got it",
+        });
+    };
+
+    const handleDelete = (ids, categoryTitle) => {
         if (!ids.length) return;
 
         Modal.confirm({
@@ -110,11 +159,21 @@ const JournalCategory = () => {
                         ids,
                         localStorage.getItem("adminToken")
                     );
+
                     message.success("Journal Category deleted successfully");
                     setSelectedRowKeys([]);
                     getData();
-                } catch {
-                    message.error("Failed to delete Journal Category");
+                } catch (error) {
+                    const rawMessage =
+                        error?.response?.data?.message ||
+                        error?.message ||
+                        "Failed to delete Journal Category";
+
+                    if (/belong to this category/i.test(rawMessage)) {
+                        showBlockedDeleteError(rawMessage, categoryTitle);
+                    } else {
+                        message.error(rawMessage);
+                    }
                 }
             },
         });

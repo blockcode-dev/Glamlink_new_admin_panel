@@ -75,3 +75,108 @@ export const DeleteJournal = async (journal_id) => {
 export const CreateJournal = async (formData) => {
 	return await axios.post(BASE_URL + "journal", formData, {});
 };
+
+export const UpdateJournalSortOrder = async (data) => {
+  const res = await axios.post(BASE_URL + "journal/sort-order", data);
+  return res.data;
+};
+
+
+// ======================= EDUCATION API =======================
+
+export const GetAllEducation = async () => {
+  const res = await axios.get(BASE_URL + "discover/education/admin");
+  return res.data;
+};
+
+export const GetEducationById = async (id) => {
+  return await axios.get(BASE_URL + `discover/education/findById/${id}`);
+};
+
+export const UpdateEducation = async (id, formData) => {
+  return await axios.put(BASE_URL + `discover/education/${id}`, formData);
+};
+
+export const DeleteEducation = async (ids) => {
+  ids = Array.isArray(ids) ? ids : [ids];
+
+  return await axios.post(BASE_URL + "discover/education/delete", {
+    ids,
+  });
+};
+
+export const CreateEducation = async (formData) => {
+  return await axios.post(BASE_URL + "discover/education", formData);
+};
+
+export const UpdateEducationSortOrder = async (data) => {
+  const res = await axios.post(
+    BASE_URL + "discover/education/sort-order",
+    data,
+  );
+  return res.data;
+};
+
+// ======================= EVENT API =======================
+
+export const GetAllEvents = async () => {
+  const res = await axios.get(BASE_URL + "discover/event/admin");
+  return res.data;
+};
+
+export const GetEventById = async (id) => {
+  return await axios.get(BASE_URL + `discover/event/findById/${id}`);
+};
+
+export const UpdateEvent = async (id, formData) => {
+  return await axios.put(BASE_URL + `discover/event/${id}`, formData);
+};
+
+export const DeleteEvent = async (ids) => {
+  ids = Array.isArray(ids) ? ids : [ids];
+
+  return await axios.post(BASE_URL + "discover/event/delete", {
+    ids,
+  });
+};
+
+export const CreateEvent = async (formData) => {
+  return await axios.post(BASE_URL + "discover/event", formData);
+};
+
+export const UpdateEventSortOrder = async (data) => {
+  const res = await axios.post(BASE_URL + "discover/event/sort-order", data);
+  return res.data;
+};
+
+// ======================= SHOP API =======================
+
+export const GetAllShop = async () => {
+  const res = await axios.get(BASE_URL + "discover/shop/admin");
+  return res.data;
+};
+
+export const GetShopById = async (id) => {
+  return await axios.get(BASE_URL + `discover/shop/findById/${id}`);
+};
+
+export const UpdateShop = async (id, formData) => {
+  return await axios.put(BASE_URL + `discover/shop/${id}`, formData);
+};
+
+export const DeleteShop = async (ids) => {
+  ids = Array.isArray(ids) ? ids : [ids];
+
+  return await axios.post(BASE_URL + "discover/shop/delete", {
+    ids,
+  });
+};
+
+export const CreateShop = async (formData) => {
+  return await axios.post(BASE_URL + "discover/shop", formData);
+};
+
+export const UpdateShopSortOrder = async (data) => {
+  const res = await axios.post(BASE_URL + "discover/shop/sort-order", data);
+  return res.data;
+};

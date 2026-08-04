@@ -1,14 +1,92 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table, Space, message, Button, Input, Modal, Tag } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { Table, message, Button, Input, Modal, Tag, Tooltip } from "antd";
+import {
+  PlusOutlined,
+  HolderOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 import { Box } from "@material-ui/core";
 import { useNavigate } from "react-router-dom";
-import { DeleteJournal, GetAllJournal } from "../../../services/Api/JournalApi";
+import {
+  DeleteJournal,
+  GetAllJournal,
+  UpdateJournalSortOrder,
+} from "../../../services/Api/JournalApi";
 import moment from "moment";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import styles from "./JournalsList.module.scss";
 
 const { Search } = Input;
+
+// One draggable table row
+const DraggableRow = ({ children, "data-row-key": rowKey, ...restProps }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: rowKey });
+
+  const style = {
+    ...restProps.style,
+    transform: CSS.Transform.toString(
+      transform && { ...transform, scaleY: 1 },
+    ),
+    transition,
+    ...(isDragging
+      ? {
+          position: "relative",
+          zIndex: 999,
+          background: "#f0f9fa",
+          boxShadow: "0 4px 16px rgba(35, 184, 203, 0.25)",
+        }
+      : {}),
+  };
+
+  // Inject the drag handle listeners only into the "drag" cell
+  const injectedChildren = React.Children.map(children, (child) => {
+    if (child && child.key === "drag-handle") {
+      return React.cloneElement(child, {
+        children: (
+          <div
+            ref={setActivatorNodeRef}
+            {...listeners}
+            {...attributes}
+            className={styles.dragHandle}
+          >
+            <HolderOutlined style={{ fontSize: 18 }} />
+          </div>
+        ),
+      });
+    }
+    return child;
+  });
+
+  return (
+    <tr ref={setNodeRef} {...restProps} style={style}>
+      {injectedChildren}
+    </tr>
+  );
+};
 
 const Blogs = () => {
   const [data, setData] = useState([]);
@@ -16,174 +94,124 @@ const Blogs = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+  );
+
+  const persistOrder = async (newData) => {
+    try {
+      await UpdateJournalSortOrder({
+        journals: newData.map((item) => ({ id: item.id })),
+      });
+      message.success("Journal order updated");
+    } catch {
+      message.error("Failed to update journal order");
+      getData(); // rollback to server truth
+    }
+  };
+
   const columns = [
     {
-      title: "S.No.",
-      dataIndex: "index",
-      width: 70,
+      title: "",
+      key: "drag-handle",
+      dataIndex: "sort",
+      width: 36,
       align: "center",
+      render: () => null, // filled in by DraggableRow
     },
 
     {
       title: "Cover",
       dataIndex: "cover_image",
-      width: 100,
+      width: 66,
       align: "center",
 
       render: (img) =>
         img ? (
-          <img
-            src={img}
-            alt="cover"
-            style={{
-              width: 70,
-              height: 50,
-              objectFit: "cover",
-              borderRadius: 8,
-              border: "1px solid #f0f0f0",
-            }}
-          />
+          <img src={img} alt="cover" className={styles.coverThumb} />
         ) : (
-          <div
-            style={{
-              width: 70,
-              height: 50,
-              borderRadius: 8,
-              background: "#f5f5f5",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 12,
-              color: "#999",
-            }}
-          >
-            No Image
-          </div>
+          <div className={styles.coverEmpty}>No image</div>
         ),
     },
 
     {
       title: "Title",
       dataIndex: "title",
-      width: 260,
-
-      render: (text) => (
-        <div
-          style={{
-            fontWeight: 600,
-            color: "#1f1f1f",
-            lineHeight: "20px",
-          }}
-        >
-          {text}
-        </div>
-      ),
+      width: 200,
+      render: (text) => <div className={styles.titleCell}>{text}</div>,
     },
 
     {
-      title: "Author",
+      title: "Author / Category",
       dataIndex: "journal_author",
-      width: 180,
-
-      render: (author) => (
-        <div
-          style={{
-            fontWeight: 500,
-            color: "#1f1f1f",
-          }}
-        >
-          {author?.name || "-"}
-        </div>
-      ),
-    },
-
-    {
-      title: "Category",
-      dataIndex: "journal_category",
       width: 160,
-
-      render: (category) => (
-        <span
-          style={{
-            background: "#f0f5ff",
-            color: "#1677ff",
-            padding: "5px 12px",
-            borderRadius: 20,
-            fontSize: 12,
-            fontWeight: 500,
-            display: "inline-block",
-          }}
-        >
-          {category?.title || "-"}
-        </span>
+      render: (author, record) => (
+        <div>
+          <div className={styles.authorCell}>{author?.name || "-"}</div>
+          {record.journal_category?.title ? (
+            <Tag color="blue" style={{ borderRadius: 20, marginTop: 4 }}>
+              {record.journal_category.title}
+            </Tag>
+          ) : null}
+        </div>
       ),
     },
 
     {
       title: "Description",
       dataIndex: "short_description",
-      width: 320,
-
+      width: 220,
       render: (text) => (
-        <div
-          style={{
-            color: "#666",
-            fontSize: 13,
-            lineHeight: "20px",
-          }}
-        >
-          {text?.length > 100 ? text.substring(0, 100) + "..." : text || "-"}
+        <div className={styles.descriptionCell}>
+          {text?.length > 80 ? text.substring(0, 80) + "..." : text || "-"}
         </div>
       ),
     },
-    {
-	title: "Status",
-	dataIndex: "status",
-	width: 120,
-	align: "center",
 
-	render: (status) => (
-		<Tag
-			color={
-				status === "published"
-					? "green"
-					: "orange"
-			}
-			style={{
-				fontWeight: 600,
-				textTransform: "capitalize",
-				padding: "4px 12px",
-				borderRadius: 20,
-			}}
-		>
-			{status}
-		</Tag>
-	),
-},
+    {
+      title: "Status / Downloads",
+      dataIndex: "status",
+      width: 150,
+      align: "center",
+      render: (status, record) => (
+        <div>
+          <Tag
+            color={status === "published" ? "green" : "orange"}
+            style={{
+              fontWeight: 600,
+              textTransform: "capitalize",
+              padding: "2px 12px",
+              borderRadius: 20,
+            }}
+          >
+            {status}
+          </Tag>
+          <div style={{ marginTop: 4 }}>
+            {record.downloads?.length > 0 ? (
+              <Tag color="blue" style={{ borderRadius: 20 }}>
+                {record.downloads.length} Download
+                {record.downloads.length > 1 ? "s" : ""}
+              </Tag>
+            ) : (
+              <Tag style={{ borderRadius: 20 }}>No downloads</Tag>
+            )}
+          </div>
+        </div>
+      ),
+    },
 
     {
       title: "Published",
       dataIndex: "publish_date",
-      width: 180,
-
+      width: 110,
       render: (date) => (
         <div>
-          <div
-            style={{
-              fontWeight: 500,
-              color: "#1f1f1f",
-            }}
-          >
+          <div className={styles.publishedDate}>
             {moment(date, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY")}
           </div>
-
-          <div
-            style={{
-              fontSize: 12,
-              color: "#888",
-              marginTop: 2,
-            }}
-          >
+          <div className={styles.publishedTime}>
             {moment(date, "YYYY-MM-DD HH:mm:ss").format("hh:mm A")}
           </div>
         </div>
@@ -192,37 +220,51 @@ const Blogs = () => {
 
     {
       title: "Action",
-      width: 140,
+      key: "action",
+      width: 90,
       align: "center",
-
       render: (_, record) => (
-        <Space size="middle">
-          <Button
-            type="link"
-            style={{
-              padding: 0,
-              fontWeight: 500,
-            }}
-            onClick={() => navigate(`/edit-journal/${record.id}`)}
-          >
-            Edit
-          </Button>
+        <div className={styles.actionButtons}>
+          <Tooltip title="Edit Journal">
+            <button
+              type="button"
+              className={`${styles.iconButton} ${styles.iconButtonEdit}`}
+              onClick={() => navigate(`/edit-journal/${record.id}`)}
+            >
+              <EditOutlined />
+            </button>
+          </Tooltip>
 
-          <Button
-            type="link"
-            danger
-            style={{
-              padding: 0,
-              fontWeight: 500,
-            }}
-            onClick={() => handleDelete(record.id)}
-          >
-            Delete
-          </Button>
-        </Space>
+          <Tooltip title="Delete Journal">
+            <button
+              type="button"
+              className={`${styles.iconButton} ${styles.iconButtonDanger}`}
+              onClick={() => handleDelete(record.id)}
+            >
+              <DeleteOutlined />
+            </button>
+          </Tooltip>
+        </div>
       ),
     },
   ];
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setData((prev) => {
+      const oldIndex = prev.findIndex((item) => item.id === active.id);
+      const newIndex = prev.findIndex((item) => item.id === over.id);
+      const reordered = arrayMove(prev, oldIndex, newIndex).map(
+        (item, idx) => ({ ...item, index: idx + 1 }),
+      );
+
+      setBackupData(reordered);
+      persistOrder(reordered);
+      return reordered;
+    });
+  };
 
   const getData = async () => {
     try {
@@ -258,9 +300,11 @@ const Blogs = () => {
     Modal.confirm({
       title: "Delete Journal",
       content: "Are you sure you want to delete this journal?",
+      okText: "Delete",
+      okButtonProps: { danger: true },
       onOk: async () => {
         try {
-          await DeleteJournal([id]); // 👈 send as array
+          await DeleteJournal([id]); // send as array
           message.success("Journal deleted successfully");
           getData();
         } catch (err) {
@@ -271,14 +315,16 @@ const Blogs = () => {
   };
 
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" marginBottom="20px">
+    <Box className={styles.page}>
+      <div className={styles.headerCard}>
         <div>
-          <h3>JOURNALS</h3>
-          <p>Manage all journals</p>
+          <h3 className={styles.headerTitle}>Journals</h3>
+          <p className={styles.headerSubtitle}>
+            Manage all journals — drag the handle to reorder.
+          </p>
         </div>
 
-        <Space>
+        <div className={styles.headerActions}>
           <Search
             placeholder="Search journal..."
             allowClear
@@ -292,19 +338,38 @@ const Blogs = () => {
           >
             Add Journal
           </Button>
-        </Space>
-      </Box>
+        </div>
+      </div>
 
-      <Table
-        columns={columns}
-        dataSource={data}
-        rowKey="id"
-        loading={loading}
-		pagination={{
-		pageSize: 50,
-		showSizeChanger: false,
-	}}
-      />
+      <div className={styles.tableCard}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={data.map((i) => i.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <Table
+              columns={columns}
+              dataSource={data}
+              rowKey="id"
+              loading={loading}
+              components={{
+                body: {
+                  row: DraggableRow,
+                },
+              }}
+              scroll={{ x: "max-content" }}
+              pagination={{
+                pageSize: 50,
+                showSizeChanger: false,
+              }}
+            />
+          </SortableContext>
+        </DndContext>
+      </div>
     </Box>
   );
 };

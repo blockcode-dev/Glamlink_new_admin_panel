@@ -1,0 +1,26 @@
+.bc-status-select {
+  .ant-select-selector {
+    min-height: 28px !important;
+    height: 30px !important;
+    padding: 0 6px !important;
+    display: flex;
+    align-items: center;
+  }
+
+  .ant-select-selection-item {
+    display: flex;
+    align-items: center;
+    line-height: normal !important;
+
+    .ant-tag {
+      font-size: 11px;
+      line-height: 16px;
+      padding: 0 6px;
+      margin: 0;
+    }
+  }
+
+  .ant-select-arrow {
+    font-size: 10px;
+  }
+}

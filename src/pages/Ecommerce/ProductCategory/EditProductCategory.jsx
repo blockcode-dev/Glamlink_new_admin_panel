@@ -224,7 +224,7 @@ const EditProductCategory = () => {
 		if (csvData.length > 0) {
 			try {
 				const response = await fetch(
-					"https://node.glamlink.net:5000/api/v1/admin/create-service-list",
+					"https://node.glamlink.net/api/v1/admin/create-service-list",
 					{
 						method: "POST",
 						headers: {

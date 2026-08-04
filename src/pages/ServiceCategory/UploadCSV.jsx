@@ -26,7 +26,7 @@ const UploadCSV = ({ category_id }) => {
   const handleUploadClick = async () => {
     if (csvData.length > 0) {
       try {
-        const response = await fetch('https://node.glamlink.net:5000/api/v1/admin/create-service-list', {
+        const response = await fetch('https://node.glamlink.net/api/v1/admin/create-service-list', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

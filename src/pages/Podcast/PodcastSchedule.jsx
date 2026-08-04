@@ -8,166 +8,165 @@ import { PlusOutlined } from "@ant-design/icons";
 import { Box } from "@material-ui/core";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
-import { DeletePodcastSchedule, GetAllPodcastSchedule } from "../../services/Api/PodcastScheduleApi";
-
+import {
+  DeletePodcastSchedule,
+  GetAllPodcastSchedule,
+} from "../../services/Api/PodcastScheduleApi";
 
 const { Search } = Input;
 
 const PodcastSchedule = () => {
-	const [data, setData] = useState([]);
-	const [backupData, setBackupData] = useState([]);
-	const [loading, setLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [backupData, setBackupData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-	const navigate = useNavigate();
+  const navigate = useNavigate();
 
-	const columns = [
-		{
-			title: "S.No.",
-			dataIndex: "index",
-			width: "8%",
-		},
-		{
-			title: "Guest Name",
-			dataIndex: "name",
-			width: "25%",
-		},
-		{
-			title: "Description",
-			dataIndex: "short_description",
-			width: "35%",
-			render: (text) =>
-				text?.length > 80 ? text.substring(0, 80) + "..." : text,
-		},
-		{
-			title: "Schedule Date",
-			dataIndex: "schedule_date",
-			width: "20%",
-			render: (date) => {
-				const isPast = moment(date).isBefore(moment(), "day");
+  const columns = [
+    {
+      title: "S.No.",
+      dataIndex: "index",
+      width: "8%",
+    },
+    {
+      title: "Guest Name",
+      dataIndex: "name",
+      width: "25%",
+    },
+    {
+      title: "Description",
+      dataIndex: "short_description",
+      width: "35%",
+      render: (text) =>
+        text?.length > 80 ? text.substring(0, 80) + "..." : text,
+    },
+    {
+      title: "Schedule Date",
+      dataIndex: "schedule_date",
+      width: "20%",
+      render: (date) => {
+        const scheduleDate = moment(date, "YYYY-MM-DD", true);
+const isPast = scheduleDate.isBefore(moment().startOf("day"));
 
-				return (
-					<Space direction="vertical" size={0}>
-					<span>{moment(date).format("MM/DD/YYYY")}</span>
 
-						<Tag color={isPast ? "red" : "green"}>
-							{isPast ? "Past" : "Upcoming"}
-						</Tag>
-					</Space>
-				);
-			},
-		},
-		{
-			title: "Action",
-			render: (_, record) => (
-				<Space>
-					<Button
-						type="link"
-						onClick={() =>
-							navigate(`/edit-podcast-schedule/${record.id}`)
-						}
-					>
-						Edit
-					</Button>
 
-					<Button
-						type="link"
-						danger
-						onClick={() => handleDelete(record.id)}
-					>
-						Delete
-					</Button>
-				</Space>
-			),
-		},
-	];
+        return (
+          <Space direction="vertical" size={0}>
+            <span>{scheduleDate.format("MM/DD/YYYY")}</span>
 
-	const getData = async () => {
-		try {
-			setLoading(true);
+            <Tag color={isPast ? "red" : "green"}>
+              {isPast ? "Past" : "Upcoming"}
+            </Tag>
+          </Space>
+        );
+      },
+    },
+    {
+      title: "Action",
+      render: (_, record) => (
+        <Space>
+          <Button
+            type="link"
+            onClick={() => navigate(`/edit-podcast-schedule/${record.id}`)}
+          >
+            Edit
+          </Button>
 
-			const result = await GetAllPodcastSchedule(
-				localStorage.getItem("adminToken"),
-			);
+          <Button type="link" danger onClick={() => handleDelete(record.id)}>
+            Delete
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
-			const newData = result?.data?.data?.map((item, index) => ({
-				...item,
-				index: index + 1,
-			}));
+  const getData = async () => {
+    try {
+      setLoading(true);
 
-			setData(newData);
-			setBackupData(newData);
-		} catch (err) {
-			message.error("Failed to load podcast schedules");
-		} finally {
-			setLoading(false);
-		}
-	};
+      const result = await GetAllPodcastSchedule(
+        localStorage.getItem("adminToken"),
+      );
 
-	useEffect(() => {
-		getData();
-	}, []);
+      const newData = result?.data?.data?.map((item, index) => ({
+        ...item,
+        index: index + 1,
+      }));
 
-	const onSearch = (value) => {
-		const filtered = backupData.filter((item) =>
-			item.name.toLowerCase().includes(value.toLowerCase()),
-		);
+      setData(newData);
+      setBackupData(newData);
+    } catch (err) {
+      message.error("Failed to load podcast schedules");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-		setData(filtered);
-	};
+  useEffect(() => {
+    getData();
+  }, []);
 
-	const handleDelete = (id) => {
-		Modal.confirm({
-			title: "Delete Schedule",
-			content: "Are you sure you want to delete this schedule?",
+  const onSearch = (value) => {
+    const filtered = backupData.filter((item) =>
+      item.name.toLowerCase().includes(value.toLowerCase()),
+    );
 
-			onOk: async () => {
-				try {
-					await DeletePodcastSchedule([id]);
+    setData(filtered);
+  };
 
-					message.success("Schedule deleted successfully");
+  const handleDelete = (id) => {
+    Modal.confirm({
+      title: "Delete Schedule",
+      content: "Are you sure you want to delete this schedule?",
 
-					getData();
-				} catch (err) {
-					message.error("Failed to delete schedule");
-				}
-			},
-		});
-	};
+      onOk: async () => {
+        try {
+          await DeletePodcastSchedule([id]);
 
-	return (
-		<Box>
-			<Box display="flex" justifyContent="space-between" marginBottom="20px">
-				<div>
-					<h3>PODCAST SCHEDULES</h3>
-					<p>Manage all podcast schedules</p>
-				</div>
+          message.success("Schedule deleted successfully");
 
-				<Space>
-					<Search
-						placeholder="Search guest..."
-						allowClear
-						onChange={(e) => onSearch(e.target.value)}
-						style={{ width: 250 }}
-					/>
+          getData();
+        } catch (err) {
+          message.error("Failed to delete schedule");
+        }
+      },
+    });
+  };
 
-					<Button
-						type="primary"
-						icon={<PlusOutlined />}
-						onClick={() => navigate("/add-podcast-schedule")}
-					>
-						Add Schedule
-					</Button>
-				</Space>
-			</Box>
+  return (
+    <Box>
+      <Box display="flex" justifyContent="space-between" marginBottom="20px">
+        <div>
+          <h3>PODCAST SCHEDULES</h3>
+          <p>Manage all podcast schedules</p>
+        </div>
 
-			<Table
-				columns={columns}
-				dataSource={data}
-				rowKey="id"
-				loading={loading}
-			/>
-		</Box>
-	);
+        <Space>
+          <Search
+            placeholder="Search guest..."
+            allowClear
+            onChange={(e) => onSearch(e.target.value)}
+            style={{ width: 250 }}
+          />
+
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => navigate("/add-podcast-schedule")}
+          >
+            Add Schedule
+          </Button>
+        </Space>
+      </Box>
+
+      <Table
+        columns={columns}
+        dataSource={data}
+        rowKey="id"
+        loading={loading}
+      />
+    </Box>
+  );
 };
 
 export default PodcastSchedule;

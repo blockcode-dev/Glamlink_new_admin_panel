@@ -17,7 +17,7 @@ export const DeleteBusinessCard = async (category_id) => {
 };
 
 export const GenerateBusinessCard = async (formData) => {
-	return await axios.post(BASE_URL + "businessCard/", formData, {});
+	return await axios.post(BASE_URL + "businessCard/createBusinessCardByAdmin", formData, {});
 };
 
 export const GetBusinessCardById = async (id) => {
