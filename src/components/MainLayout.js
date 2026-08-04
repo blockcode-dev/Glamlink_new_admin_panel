@@ -6,14 +6,20 @@ import { AiOutlineDashboard } from "react-icons/ai";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
+import { ImPodcast } from "react-icons/im";
 import { Outlet } from "react-router-dom";
 import { FaUsers } from "react-icons/fa";
 import { FiUser } from "react-icons/fi";
 import { LuSettings } from "react-icons/lu";
 import { FaRegCircleUser } from "react-icons/fa6";
+import { IoIosPeople } from "react-icons/io";
+import { MdCategory } from "react-icons/md";
+import { FaAddressCard } from "react-icons/fa";
+import { GoFileDirectory } from "react-icons/go";
 import { FiActivity } from "react-icons/fi";
 import { CiLogin } from "react-icons/ci";
 import { Layout, theme, Menu } from "antd";
+import { IoIosJournal } from "react-icons/io";
 import { VscReferences } from "react-icons/vsc";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { FaPhotoVideo } from "react-icons/fa";
@@ -24,6 +30,7 @@ import { BiSolidCategoryAlt } from "react-icons/bi";
 import { PiFlagBannerBold } from "react-icons/pi";
 import { PiFilmReelFill } from "react-icons/pi";
 import { MdManageAccounts } from "react-icons/md";
+import { PiCoinsLight } from "react-icons/pi";
 import { FaSpeakerDeck } from "react-icons/fa";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { RiProductHuntLine } from "react-icons/ri";
@@ -216,32 +223,83 @@ const MainLayout = () => {
 									),
 								},
 								{
+									key: "/digital-card",
+									icon: <FaAddressCard className="fs-4" />,
+									label: "Digital Cards Request",
+								},
+								{
+									key: "/directory",
+									icon: <GoFileDirectory className="fs-4" />,
+									label: "Directory",
+								},
+								{
+									key: "/journals",
+									icon: <IoIosJournal className="fs-4" />,
+									label: "Journals",
+									children: [
+										{
+											key: "/authors",
+											icon: <IoIosPeople className="fs-4" />,
+											label: "Authors",
+										},
+										{
+											key: "/journal-categories",
+											icon: <MdCategory className="fs-4" />,
+											label: "Categories",
+										},
+										{
+											key: "/journals",
+											icon: <IoIosJournal className="fs-4" />,
+											label: "Journals",
+										},
+									],
+								},
+
+									{
+									key: "/podcast-schedule",
+									icon: <ImPodcast className="fs-4" />,
+									label: "Podcasts",
+									children: [
+										{
+											key: "/podcast-schedule",
+											icon: <ImPodcast className="fs-4" />,
+											label: "Podcast Schedule",
+										},
+										
+									],
+								},
+								{
 									key: "/referral",
 									icon: <VscReferences className="fs-4" />,
 									label: "Referrals",
+								},
+								{
+									key: "/reward-rules",
+									icon: <PiCoinsLight className="fs-4" />,
+									label: "Glam Rewards Rules",
 								},
 								{
 									key: "/service-categories",
 									icon: <BiSolidCategoryAlt className="fs-4" />,
 									label: "Services",
 								},
-								{
-									key: "/blogs",
-									icon: <TbBrandBooking className="fs-4" />,
-									label: "Blogs",
-									children: [
-										{
-											key: "/blogs",
-											icon: <TbBrandBooking className="fs-4" />,
-											label: "Blogs",
-										},
-										{
-											key: "/blogs-categories",
-											icon: <TbBrandBooking className="fs-4" />,
-											label: "Categories",
-										},
-									],
-								},
+								// {
+								// 	key: "/blogs",
+								// 	icon: <TbBrandBooking className="fs-4" />,
+								// 	label: "Blogs",
+								// 	children: [
+								// 		{
+								// 			key: "/blogs",
+								// 			icon: <TbBrandBooking className="fs-4" />,
+								// 			label: "Blogs",
+								// 		},
+								// 		{
+								// 			key: "/blogs-categories",
+								// 			icon: <TbBrandBooking className="fs-4" />,
+								// 			label: "Categories",
+								// 		},
+								// 	],
+								// },
 								{
 									key: "/specialities",
 									icon: <FaSpeakerDeck className="fs-4" />,

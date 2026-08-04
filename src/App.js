@@ -1,3 +1,5 @@
+/** @format */
+
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -78,7 +80,19 @@ import Faq from "./pages/Content/FAQ/Faq.jsx";
 import CreateFaq from "./pages/Content/FAQ/CreateFaq.jsx";
 import EditFaq from "./pages/Content/FAQ/EditFaq.jsx";
 import Referral from "./pages/Referral/Referral.jsx";
-
+import RewardRules from "./pages/RewardRules/RewardRules.jsx";
+import BusinessCard from "./pages/BusinessCard/BusinessCard.jsx";
+import JournalCategory from "./pages/Journal/JournalCategory/JournalCategory.jsx";
+import Authors from "./pages/Journal/Authors/Authors.jsx";
+import Journal from "./pages/Journal/Journal/Journal.jsx";
+import AddJournal from "./pages/Journal/Journal/AddJournal.jsx";
+import EditJournal from "./pages/Journal/Journal/EditJournal.jsx";
+import Directroy from "./pages/Directory/Directroy.jsx";
+import CreateBusinessCard from "./pages/BusinessCard/CreateBusinessCard.jsx";
+import EditBusinessCard from "./pages/BusinessCard/EditBusinessCard.jsx";
+import PodcastSchedule from "./pages/Podcast/PodcastSchedule.jsx";
+import AddPodcastSchedule from "./pages/Podcast/AddPodcastSchedule.jsx";
+import EditPodcastSchedule from "./pages/Podcast/EditPodcastSchedule.jsx";
 
 function App() {
 	return (
@@ -92,7 +106,10 @@ function App() {
 					<Route path="/reset-password" element={<ChangePassword />} />
 					<Route path="/users" element={<User />} />
 					<Route path="/professionals" element={<Professionals />} />
-					<Route path="/viewProfessionals/:id" element={<ViewProfessionals />} />
+					<Route
+						path="/viewProfessionals/:id"
+						element={<ViewProfessionals />}
+					/>
 					<Route path="/addUser" element={<AddUser />} />
 					<Route path="/viewUser/:id" element={<ViewCustomer />} />
 					<Route path="adminUser" element={<AdminList />} />
@@ -107,17 +124,32 @@ function App() {
 					<Route path="/editService/:id" element={<EditService />} />
 					<Route path="/viewService/:id" element={<ViewService />} />
 					<Route path="/service-categories" element={<ServiceCategory />} />
-					<Route path="/add-service-categories" element={<AddServiceCategory />} />
-					<Route path="/edit-service-categories/:id" element={<EditServiceCategory />} />
-					<Route path="/view-service-categories/:id" element={<ViewSericeCategory />} />
+					<Route
+						path="/add-service-categories"
+						element={<AddServiceCategory />}
+					/>
+					<Route
+						path="/edit-service-categories/:id"
+						element={<EditServiceCategory />}
+					/>
+					<Route
+						path="/view-service-categories/:id"
+						element={<ViewSericeCategory />}
+					/>
 					<Route path="/blogs" element={<Blogs />} />
 					<Route path="/add-blogs" element={<AddBlog />} />
 					<Route path="/view-blog/:id" element={<ViewBlog />} />
 					<Route path="/edit-blog/:id" element={<EditBlog />} />
 					<Route path="/blogs-categories" element={<BlogCategory />} />
 					<Route path="/add-blogs-categories" element={<AddBlogCategory />} />
-					<Route path="/edit-blogs-categories/:id" element={<EditBlogCategory />} />
-					<Route path="/edit-blogs-categories/:id" element={<EditBlogCategory />} />
+					<Route
+						path="/edit-blogs-categories/:id"
+						element={<EditBlogCategory />}
+					/>
+					<Route
+						path="/edit-blogs-categories/:id"
+						element={<EditBlogCategory />}
+					/>
 					<Route path="/specialities" element={<Specialities />} />
 					<Route path="/add-specialities" element={<AddSpecialities />} />
 					<Route path="/edit-specialities/:id" element={<EditSpecialities />} />
@@ -147,16 +179,28 @@ function App() {
 					<Route path="/viewUserPostLikes/:id" element={<PostLiked />} />
 					<Route path="/viewUserPostComment/:id" element={<PostComment />} />
 					<Route path="/viewUserClipsLiked/:id" element={<ClipsLiked />} />
-					<Route path="/viewUserClipsCommented/:id" element={<ClipsCommented />} />
+					<Route
+						path="/viewUserClipsCommented/:id"
+						element={<ClipsCommented />}
+					/>
 					<Route path="/viewUserReviewsGiven/:id" element={<ReviewsGiven />} />
 					<Route path="/viewUserReviewsTaken/:id" element={<ReviewsTaken />} />
 					<Route path="/viewUserBookings/:id" element={<UserBookings />} />
-					<Route path="/viewProfessionalBooking/:id" element={<ProfessionalBooking />} />
+					<Route
+						path="/viewProfessionalBooking/:id"
+						element={<ProfessionalBooking />}
+					/>
 					<Route path="/viewUserService/:id" element={<UserService />} />
 					<Route path="/viewAvailability/:id" element={<Availability />} />
 					<Route path="/product-category" element={<ProductCategory />} />
-					<Route path="/edit-product-category/:id" element={<EditProductCategory />} />
-					<Route path="/add-product-category" element={<AddProductCategory />} />
+					<Route
+						path="/edit-product-category/:id"
+						element={<EditProductCategory />}
+					/>
+					<Route
+						path="/add-product-category"
+						element={<AddProductCategory />}
+					/>
 					<Route path="/product-list" element={<Product />} />
 					<Route path="/view-product/:id" element={<ViewProduct />} />
 					<Route path="/product-rating/:id" element={<Ratings />} />
@@ -169,6 +213,19 @@ function App() {
 					<Route path="/createFaq" element={<CreateFaq />} />
 					<Route path="/editFaq/:id" element={<EditFaq />} />
 					<Route path="/referral" element={<Referral />} />
+					<Route path="/reward-rules" element={<RewardRules />} />
+					<Route path="/digital-card" element={<BusinessCard />} />
+					<Route path="/addBusinessCard" element={<CreateBusinessCard />} />
+					<Route path="/editBusinessCard/:id" element={<EditBusinessCard />} />
+					<Route path="/journal-categories" element={<JournalCategory />} />
+					<Route path="/authors" element={<Authors />} />
+					<Route path="/journals" element={<Journal />} />
+					<Route path="/add-journal" element={<AddJournal />} />
+					<Route path="/edit-journal/:id" element={<EditJournal />} />
+					<Route path="/directory" element={<Directroy />} />
+					<Route path="/podcast-schedule" element={<PodcastSchedule />} />
+					<Route path="/add-podcast-schedule" element={<AddPodcastSchedule />} />
+					<Route path="/edit-podcast-schedule/:id" element={<EditPodcastSchedule />} />
 				</Route>
 			</Routes>
 		</Router>

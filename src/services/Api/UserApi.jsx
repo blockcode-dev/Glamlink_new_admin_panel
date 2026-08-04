@@ -273,3 +273,16 @@ export const GetAllReferralByBeauticianId = async (id) => {
 export const GetAllReferral = async () => {
 	return await axios.get(BASE_URL + `admin/getAllReferral`);
 };
+
+export const GetAllRewardRules = async () => {
+	return await axios.get(BASE_URL + `admin/getAllGlamCoinRules`);
+};
+
+export const UpdateGlamCoinRules = async (formData,id) => {
+	return await axios.put(BASE_URL + `admin/editGlamCoinRules/${id}`, formData, {
+		headers: {
+			"x-access-token": `${localStorage.getItem("adminToken")}`,
+			"Content-Type": "multipart/form-data",
+		},
+	});
+};

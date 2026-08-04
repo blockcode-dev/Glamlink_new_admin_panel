@@ -175,7 +175,7 @@ const Professionals = () => {
 		},
 		{
 			title: "Referral",
-			width: "10%",
+			width: "5%",
 			dataIndex: "referral_code",
 			render: (referral_code, record) => {
 				const referrals = record.referrals || []; // list of referral details
@@ -203,12 +203,12 @@ const Professionals = () => {
 			},
 		},
 
-		{
-			title: "Account Created On",
-			dataIndex: "created_at",
-			width: "30%",
-			render: (date) => moment(date).format("YYYY-MM-DD HH:mm:ss"),
-		},
+		// {
+		// 	title: "Account Created On",
+		// 	dataIndex: "created_at",
+		// 	width: "30%",
+		// 	render: (date) => moment(date).format("YYYY-MM-DD HH:mm:ss"),
+		// },
 		{
 			title: "Promotion",
 			dataIndex: "promotion",

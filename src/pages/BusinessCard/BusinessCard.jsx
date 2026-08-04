@@ -1,0 +1,612 @@
+/** @format */
+
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  Space,
+  Modal,
+  message,
+  Select,
+  Tag,
+  Card,
+  Divider,
+  Avatar,
+  Image,
+  Row,
+  Col,
+} from "antd";
+import { Button } from "primereact/button";
+import {
+  EyeOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  GlobalOutlined,
+  CalendarOutlined,
+  EnvironmentOutlined,
+  ClockCircleOutlined,
+  PictureOutlined,
+  StarOutlined,
+  InfoCircleOutlined,
+  TrophyOutlined,
+  HeartOutlined,
+  GiftOutlined,
+  InstagramOutlined,
+  VideoCameraOutlined,
+} from "@ant-design/icons";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primeicons/primeicons.css";
+import { useNavigate } from "react-router";
+import { InputText } from "primereact/inputtext";
+import { Box } from "@material-ui/core";
+import moment from "moment";
+import {
+  DeleteBusinessCard,
+  GetAllBusinessCards,
+  UpdateStatus,
+} from "../../services/Api/BusinessCardApi";
+
+const BusinessCard = () => {
+  const navigate = useNavigate();
+  const [data, setData] = useState([]);
+  const [userBackupData, setUserBackupData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(null);
+
+  const openViewModal = (record) => {
+    setSelectedCard(record);
+    setViewModalOpen(true);
+  };
+
+  const [tableParams, setTableParams] = useState({
+    pagination: {
+      current: 1,
+      pageSize: 100,
+    },
+    sortField: null,
+    sortOrder: null,
+  });
+
+  // Fetch list of users who submitted the form
+  const getData = async () => {
+    try {
+      setLoading(true);
+      let result = await GetAllBusinessCards(
+        localStorage.getItem("adminToken"),
+      );
+      const newData = result.data.data.map((item, index) => ({
+        ...item,
+        index: index + 1,
+      }));
+      setData(newData);
+      setUserBackupData(newData);
+    } catch (e) {
+      console.log(e);
+      if (e.response && e.response.status === 403) {
+        navigate("/error401");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  const handleTableChange = (pagination, filters, sorter) => {
+    setTableParams({
+      pagination,
+      filters,
+      sortField: sorter.field,
+      sortOrder: sorter.order,
+    });
+  };
+
+  const onSearch = (value) => {
+    const searchText = value?.toLowerCase().trim();
+
+    if (!searchText) {
+      setData(userBackupData);
+      return;
+    }
+
+    const searchList = userBackupData.filter((item) => {
+      return (
+        item.name?.toLowerCase().includes(searchText) ||
+        item.email?.toLowerCase().includes(searchText) ||
+        item.business_name?.toLowerCase().includes(searchText) ||
+        item.professional_title?.toLowerCase().includes(searchText) ||
+        item.primary_specialty?.toLowerCase().includes(searchText) ||
+        item.status?.toLowerCase().includes(searchText)
+      );
+    });
+
+    setData(searchList);
+  };
+
+  const handleStatusChange = async (cardId, status) => {
+    try {
+      const formData = new FormData();
+      formData.append("cardId", cardId);
+      formData.append("status", status); // accepted | rejected
+
+      await UpdateStatus(formData);
+
+      message.success(`Marked as ${status.toUpperCase()}`);
+      getData();
+    } catch (error) {
+      message.error("Failed to update status");
+    }
+  };
+
+  const columns = [
+    {
+      title: "S.No.",
+      dataIndex: "index",
+      width: "5%",
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      width: "15%",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      width: "15%",
+    },
+    {
+      title: "Business Card",
+      dataIndex: "business_card_link",
+      width: "20%",
+      render: (link) =>
+        link ? (
+          <a href={link} target="_blank" rel="noreferrer" style={{ color: "#ff4d8d", fontWeight: 500 }}>
+            View Card
+          </a>
+        ) : (
+          <span style={{ color: "#999" }}>N/A</span>
+        ),
+    },
+    {
+      title: "Submitted On",
+      dataIndex: "created_at",
+      width: "20%",
+      render: (date) => moment(date).format("YYYY-MM-DD HH:mm"),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      width: "15%",
+      render: (status, record) => (
+        <Select
+          value={status}
+          style={{
+            width: 140,
+            fontWeight: "bold",
+          }}
+          onChange={(value) => handleStatusChange(record.id, value)}
+        >
+          <Select.Option value="pending">
+            <span style={{ color: "orange" }}>PENDING</span>
+          </Select.Option>
+          <Select.Option value="accepted">
+            <span style={{ color: "green" }}>ACCEPTED</span>
+          </Select.Option>
+          <Select.Option value="rejected">
+            <span style={{ color: "red" }}>REJECTED</span>
+          </Select.Option>
+        </Select>
+      ),
+    },
+
+    {
+      title: "Action",
+      render: (_, record) => (
+        <Space>
+          <Button
+            size="small"
+            icon="pi pi-eye"
+            rounded
+            outlined
+            severity="success"
+            onClick={() => openViewModal(record)}
+            style={{ borderRadius: "50px " }}
+          />
+          <Button
+            size="small"
+            icon="pi pi-pencil"
+            rounded
+            severity="info"
+            outlined
+            onClick={() => navigate(`/editBusinessCard/${record.id}`)}
+            style={{ borderRadius: "50px" }}
+          />
+
+          <Button
+            icon="pi pi-trash"
+            size="small"
+            rounded
+            outlined
+            severity="danger"
+            onClick={() => handleDelete([record.id])}
+            style={{ borderRadius: "50px" }}
+          />
+        </Space>
+      ),
+    },
+  ];
+  const handleDelete = (ids) => {
+    if (!ids.length) return;
+
+    Modal.confirm({
+      title: "Delete Business Card",
+      content: `Are you sure you want to delete ${
+        ids.length > 1 ? "these business cards" : "this business card"
+      }?`,
+      onOk: async () => {
+        try {
+          await DeleteBusinessCard(ids, localStorage.getItem("adminToken"));
+          message.success("Business Card deleted successfully");
+
+          getData();
+        } catch {
+          message.error("Failed to delete Business Card");
+        }
+      },
+    });
+  };
+
+  const safeParse = (value) => {
+    if (!value) return [];
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    try {
+      return JSON.parse(value);
+    } catch {
+      return [];
+    }
+  };
+  const socialMedia = (() => {
+    try {
+      return selectedCard?.social_media
+        ? JSON.parse(selectedCard.social_media)
+        : {};
+    } catch {
+      return {};
+    }
+  })();
+
+  const renderTagsList = (items, color = "default") => {
+    if (!Array.isArray(items) || !items.length) {
+      return <span style={{ color: '#999', fontSize: '13px' }}>Not provided</span>;
+    }
+
+    return (
+      <Space wrap style={{ marginTop: 4 }}>
+        {items.map((item, idx) => {
+          const val = typeof item === "object" ? item.note || JSON.stringify(item) : item;
+          return (
+            <Tag key={idx} color={color} style={{ padding: '4px 12px', fontSize: '13px', borderRadius: '4px' }}>
+              {val}
+            </Tag>
+          );
+        })}
+      </Space>
+    );
+  };
+
+const galleryImages =
+  selectedCard?.images?.filter((x) => x.file_type === "image") || [];
+
+const galleryVideos =
+  selectedCard?.images?.filter((x) => x.file_type === "video") || [];
+
+  const InfoSection = ({ icon, title, children, noDivider }) => (
+    <>
+      <div style={{ marginBottom: 24 }}>
+        <h4
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            color: "#ff4d8d",
+            marginBottom: 16,
+            fontSize: 15,
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}
+        >
+          {icon} {title}
+        </h4>
+        <div style={{ paddingLeft: 4 }}>{children}</div>
+      </div>
+      {!noDivider && <Divider style={{ margin: "20px 0", borderColor: '#f0f0f0' }} />}
+    </>
+  );
+
+  return (
+    <Box>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        marginBottom="24px"
+      >
+        <div>
+          <h3 className="page-title" style={{ margin: 0, fontWeight: 700 }}>Digital Business Cards</h3>
+          <p className="page-sub-title" style={{ margin: '4px 0 0 0', color: '#666' }}>
+            Review, manage, and approve submitted digital business cards.
+          </p>
+        </div>
+
+        <Box display="flex" alignItems="center" gap="12px">
+          <span className="p-input-icon-left">
+            <InputText
+              type="search"
+              onChange={(e) => onSearch(e.target.value)}
+              placeholder="Search Business Card..."
+              style={{ height: '42px', borderRadius: '6px' }}
+            />
+          </span>
+
+          <Button
+            icon="pi pi-plus"
+            style={{ height: "42px", borderRadius: "6px", background: '#23b8cb', borderColor: '#23b8cb',marginLeft: '8px' }}
+            onClick={() => navigate("/addBusinessCard")}
+          />
+        </Box>
+      </Box>
+
+      <Card bodyStyle={{ padding: 0 }} style={{ borderRadius: 8, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+        <Table
+          columns={columns}
+          rowKey={(record) => record.id}
+          dataSource={data}
+          pagination={tableParams.pagination}
+          loading={loading}
+          onChange={handleTableChange}
+        />
+      </Card>
+
+      <Modal
+        title={null}
+        open={viewModalOpen}
+        onCancel={() => setViewModalOpen(false)}
+        width={1000}
+        footer={null}
+        bodyStyle={{ padding: 0 }}
+        centered
+        style={{ borderRadius: '12px', overflow: 'hidden' }}
+      >
+        {selectedCard && (
+          <div>
+            {/* Elegant Header Panel */}
+            <div
+              style={{
+                background: "linear-gradient(135deg, #111111 0%, #2c3e50 100%)",
+                padding: "32px",
+                position: 'relative'
+              }}
+            >
+              <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+                <Avatar
+                  size={90}
+                  src={selectedCard?.profile_image}
+                  style={{
+                    border: "3px solid rgba(255, 255, 255, 0.2)",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+                    backgroundColor: '#fff'
+                  }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                    <h2 style={{ margin: 0, color: "white", fontSize: 26, fontWeight: 700, letterSpacing: '-0.5px' }}>
+                      {selectedCard?.name}
+                    </h2>
+                    <Space size={4}>
+                      <Tag
+                        color={
+                          selectedCard.status === "approved" || selectedCard.status === "accepted"
+                            ? "success"
+                            : selectedCard.status === "rejected"
+                              ? "error"
+                              : "warning"
+                        }
+                        style={{ fontSize: 11, padding: "2px 10px", fontWeight: 700, borderRadius: '4px', border: 'none' }}
+                      >
+                        {selectedCard?.status?.toUpperCase()}
+                      </Tag>
+                      {selectedCard?.elite_setup && (
+                        <Tag color="gold" style={{ fontSize: 11, padding: "2px 10px", fontWeight: 700, borderRadius: '4px', border: 'none' }}>
+                          ELITE SETUP
+                        </Tag>
+                      )}
+                    </Space>
+                  </div>
+                  
+                  <p style={{ margin: "4px 0", color: "#ff4d8d", fontSize: 15, fontWeight: 600 }}>
+                    {selectedCard?.professional_title}
+                  </p>
+                  
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.75)", fontSize: 13 }}>
+                    {selectedCard?.business_name || "Independent"} {selectedCard?.custom_handle && `• @${selectedCard.custom_handle}`}
+                  </p>
+
+                  {selectedCard.business_card_link && (
+                    <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                      <GlobalOutlined style={{ color: "rgba(255,255,255,0.5)" }} />
+                      <a href={selectedCard?.business_card_link} target="_blank" rel="noreferrer" style={{ color: "rgba(255,255,255,0.85)", textDecoration: 'underline' }}>
+                        Live Digital Card Link
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Split Grid Content Layout */}
+            <div style={{ padding: '24px 32px', maxHeight: "65vh", overflowY: "auto", backgroundColor: '#fcfcfc' }}>
+              <Row gutter={32}>
+                {/* Main Content Fields */}
+                <Col span={15}>
+                  <InfoSection icon={<MailOutlined />} title="Contact details">
+                    <Row gutter={[16, 12]}>
+                      <Col span={12}>
+                        <div style={{ fontSize: '12px', color: '#888' }}>Email Address</div>
+                        <a href={`mailto:${selectedCard.email}`} style={{ color: '#222', fontWeight: 500 }}>{selectedCard.email}</a>
+                      </Col>
+                      <Col span={12} style={{ borderLeft: '1px solid #eee', paddingLeft: 16 }}>
+                        <div style={{ fontSize: '12px', color: '#888' }}>Phone Number</div>
+                        <a href={`tel:${selectedCard.phone}`} style={{ color: '#222', fontWeight: 500 }}>{selectedCard.phone}</a>
+                      </Col>
+                      {selectedCard.website && (
+                        <Col span={24} style={{ marginTop: 4 }}>
+                          <div style={{ fontSize: '12px', color: '#888' }}>Website</div>
+                          <a href={selectedCard.website} target="_blank" rel="noreferrer" style={{ color: '#ff4d8d', fontWeight: 500 }}>{selectedCard.website}</a>
+                        </Col>
+                      )}
+                    </Row>
+                  </InfoSection>
+
+                  <InfoSection icon={<CalendarOutlined />} title="Booking & Integration">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div><span style={{ color: '#777' }}>Method:</span> <strong>{selectedCard.preferred_booking_method || "N/A"}</strong></div>
+                      {selectedCard.booking_link && (
+                        <div><span style={{ color: '#777' }}>Link:</span> <a href={selectedCard.booking_link} target="_blank" rel="noreferrer" style={{ color: '#ff4d8d' }}>{selectedCard.booking_link}</a></div>
+                      )}
+                    </div>
+                  </InfoSection>
+
+                  {(socialMedia.instagram || socialMedia.tiktok || socialMedia.linkedin || socialMedia.youtube || socialMedia.facebook) && (
+                    <InfoSection icon={<InstagramOutlined />} title="Social networks">
+                      <Space wrap size="small">
+                        {socialMedia.instagram && <Tag color="purple" style={{ cursor: 'pointer' }} onClick={() => window.open(socialMedia.instagram, '_blank')}>Instagram</Tag>}
+                        {socialMedia.tiktok && <Tag color="cyan" style={{ cursor: 'pointer' }} onClick={() => window.open(socialMedia.tiktok, '_blank')}>TikTok</Tag>}
+                        {socialMedia.linkedin && <Tag color="blue" style={{ cursor: 'pointer' }} onClick={() => window.open(socialMedia.linkedin, '_blank')}>LinkedIn</Tag>}
+                        {socialMedia.youtube && <Tag color="red" style={{ cursor: 'pointer' }} onClick={() => window.open(socialMedia.youtube, '_blank')}>YouTube</Tag>}
+                        {socialMedia.facebook && <Tag color="geekblue" style={{ cursor: 'pointer' }} onClick={() => window.open(socialMedia.facebook, '_blank')}>Facebook</Tag>}
+                      </Space>
+                    </InfoSection>
+                  )}
+
+                  {safeParse(selectedCard?.other_links)?.length > 0 && (
+                    <InfoSection icon={<GlobalOutlined />} title="Press & external links">
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {safeParse(selectedCard.other_links).map((link, i) => (
+                          <a key={i} href={link} target="_blank" rel="noreferrer" style={{ color: '#444', fontSize: '13px', textDecoration: 'underline' }}>{link}</a>
+                        ))}
+                      </div>
+                    </InfoSection>
+                  )}
+
+                  {selectedCard.bio && (
+                    <InfoSection icon={<InfoCircleOutlined />} title="Professional Overview">
+                      <div style={{ color: '#333', lineHeight: 1.6, fontSize: '14px' }} dangerouslySetInnerHTML={{ __html: selectedCard.bio }} />
+                    </InfoSection>
+                  )}
+
+                  <InfoSection icon={<StarOutlined />} title="Specialties & Focus">
+                    {selectedCard.primary_specialty && (
+                      <div style={{ marginBottom: 10 }}>
+                        <span style={{ fontSize: '12px', color: '#888', display: 'block', marginBottom: 2 }}>Primary Area</span>
+                        <Tag color="magenta" style={{ padding: '3px 10px', fontWeight: 600 }}>{selectedCard.primary_specialty}</Tag>
+                      </div>
+                    )}
+                    <span style={{ fontSize: '12px', color: '#888', display: 'block', marginBottom: 4 }}>Additional Scope</span>
+                    {renderTagsList(safeParse(selectedCard.specialties), "blue")}
+                  </InfoSection>
+
+                  <InfoSection icon={<TrophyOutlined />} title="Platform Insights">
+                    <div style={{ marginBottom: 12 }}>
+                      <span style={{ fontSize: '13px', color: '#777', fontWeight: 500 }}>Key business complications:</span>
+                      <div style={{ marginTop: 4 }}>{renderTagsList(safeParse(selectedCard.biggest_pain_points), "volcano")}</div>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '13px', color: '#777', fontWeight: 500 }}>Key expectations from platform:</span>
+                      <div style={{ marginTop: 4 }}>{renderTagsList(safeParse(selectedCard.excites_about_glamlink), "green")}</div>
+                    </div>
+                  </InfoSection>
+
+                  {selectedCard.offer_promotion && (
+                    <InfoSection icon={<GiftOutlined />} title="Special promotion campaign" noDivider>
+                      <div style={{ background: "#fff0f6", border: "1px dashed #ffadd2", padding: '14px', borderRadius: '8px' }}>
+                        <p style={{ margin: 0, fontSize: '13px', color: '#c41d7f', fontWeight: 500 }}>
+                          {selectedCard.promotion_details}
+                        </p>
+                      </div>
+                    </InfoSection>
+                  )}
+                </Col>
+
+                {/* Meta Configuration Sidebar */}
+                <Col span={9} style={{ borderLeft: '1px solid #f0f0f0' }}>
+                  <InfoSection icon={<EnvironmentOutlined />} title="Active addresses">
+                    <Space direction="vertical" style={{ width: "100%" }} size="small">
+                      {selectedCard.locations?.map((loc) => (
+                        <div key={loc.id} style={{ background: '#f5f5f5', padding: '10px 14px', borderRadius: '6px', borderLeft: '3px solid #ff4d8d' }}>
+                          <div style={{ fontWeight: 600, fontSize: '13px', color: '#222' }}>{loc.label || "Branch Hub"}</div>
+                          <div style={{ fontSize: '12px', color: '#666', marginTop: 2 }}>
+                            {loc.location_type === "city_only" ? `${loc.city}${loc.state ? `, ${loc.state}` : ""}` : loc.address}
+                          </div>
+                        </div>
+                      ))}
+                    </Space>
+                  </InfoSection>
+
+                  <InfoSection icon={<ClockCircleOutlined />} title="Operating schedule">
+                    <Space direction="vertical" style={{ width: "100%" }} size="4px">
+                      {selectedCard.business_hour?.map((h) => (
+                        <div key={h.id} style={{ padding: "6px 12px", background: "#f9f9f9", borderRadius: 4, display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                          {h.note ? <span style={{ fontStyle: 'italic', color: '#666' }}>{h.note}</span> : (
+                            <>
+                              <span style={{ fontWeight: 600 }}>{h.day}</span>
+                              <span style={{ color: '#555' }}>{h.open_time} - {h.close_time}</span>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </Space>
+                  </InfoSection>
+
+                  <InfoSection icon={<PictureOutlined />} title="Media parameters" noDivider>
+                    {galleryImages.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#777', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}><PictureOutlined /> Showcase Cards</div>
+                        <Image.PreviewGroup>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+                            {galleryImages.map((img) => (
+                              <Image key={img.id} src={img.file_uri} alt="Gallery Portfolio" width="100%" style={{ borderRadius: 4, objectFit: "cover", height: '70px' }} />
+                            ))}
+                          </div>
+                        </Image.PreviewGroup>
+                      </div>
+                    )}
+
+                    {galleryVideos.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#777', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}><VideoCameraOutlined /> Production Material</div>
+                        {galleryVideos.map((video) => (
+                          <video key={video.id} controls width="100%" style={{ borderRadius: 6, marginBottom: 6, maxHeight: '110px', background: '#000' }}>
+                            <source src={video.file_uri} type="video/mp4" />
+                          </video>
+                        ))}
+                      </div>
+                    )}
+                  </InfoSection>
+                </Col>
+              </Row>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </Box>
+  );
+};
+
+export default BusinessCard;

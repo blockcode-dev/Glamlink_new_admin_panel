@@ -49,11 +49,11 @@ const User = () => {
 			width: "20%",
 		},
 
-		{
-			title: "No. Of Post",
-			dataIndex: ["user_profile", "no_of_post_posted"],
-			width: "10%",
-		},
+		// {
+		// 	title: "No. Of Post",
+		// 	dataIndex: ["user_profile", "no_of_post_posted"],
+		// 	width: "10%",
+		// },
 
 		{
 			title: "Account Created On",
