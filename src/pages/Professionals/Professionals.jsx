@@ -291,6 +291,7 @@ const Professionals = () => {
               ...smallIconBtnStyle,
               color: "red",
               borderColor: "red",
+            
             }}
             onClick={() => handleDelete([record.id])}
           />
@@ -648,7 +649,7 @@ const Professionals = () => {
                 onSearch(e.target.value);
               }}
               placeholder="Search..."
-              style={{ height: "42px", borderRadius: "6px" }}
+              style={{ height: "42px", borderRadius: "6px", }}
             />
           </span>
 
@@ -658,6 +659,7 @@ const Professionals = () => {
             style={{
               height: "42px",
               borderRadius: "6px",
+              margin:"10px"
             }}
             onClick={exportToCSV}
           />

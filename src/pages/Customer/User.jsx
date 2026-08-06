@@ -43,11 +43,21 @@ const User = () => {
 			dataIndex: "user_name",
 			width: "20%",
 		},
-		{
-			title: "Email",
-			dataIndex: "email",
-			width: "20%",
-		},
+	   {
+      title: "Email",
+      dataIndex: "email",
+      width: 190,
+      render: (email, record) => (
+        <span>
+          {email}{" "}
+          {record.status === "PENDING" && (
+            <span style={{ color: "red", fontStyle: "italic" }}>
+              (Unverified)
+            </span>
+          )}
+        </span>
+      ),
+    },
 
 		// {
 		// 	title: "No. Of Post",
