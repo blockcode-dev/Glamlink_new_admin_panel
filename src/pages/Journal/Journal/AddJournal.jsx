@@ -273,7 +273,7 @@ const AddBlog = () => {
           hint="Full journal body, images and video"
         >
           <Editor
-            apiKey="984sn99khgad1wgf4btfw7jil4n458arpqkfgqgxc550lb9m"
+            apiKey="0w662c96u34p1ur1y0abs6rw1cnlf5heqps96wvj4806wsdo"
             value={content}
             init={{
               height: 500,
