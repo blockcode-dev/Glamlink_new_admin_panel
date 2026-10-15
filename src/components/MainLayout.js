@@ -8,12 +8,20 @@ import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
 import { ImPodcast } from "react-icons/im";
 import { Outlet } from "react-router-dom";
-import { FaUsers } from "react-icons/fa";
+import { FaTruck, FaUsers } from "react-icons/fa";
 import { FiUser } from "react-icons/fi";
 import { LuSettings } from "react-icons/lu";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { IoIosPeople } from "react-icons/io";
-import { MdCategory, MdEvent, MdSchool, MdShoppingBag } from "react-icons/md";
+import {
+  MdCampaign,
+  MdCategory,
+  MdEvent,
+  MdQuestionAnswer,
+  MdSchool,
+  MdShoppingBag,
+  MdTopic,
+} from "react-icons/md";
 import { FaAddressCard } from "react-icons/fa";
 import { GoFileDirectory } from "react-icons/go";
 import { FiActivity } from "react-icons/fi";
@@ -25,7 +33,7 @@ import { FaRegCalendarAlt } from "react-icons/fa";
 import { FaPhotoVideo } from "react-icons/fa";
 import { LuLayers } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
-import { FaUsersGear } from "react-icons/fa6";
+import { FaUsersGear, FaHandshake } from "react-icons/fa6";
 import { BiSolidCategoryAlt } from "react-icons/bi";
 import { PiFlagBannerBold } from "react-icons/pi";
 import { PiFilmReelFill } from "react-icons/pi";
@@ -222,10 +230,33 @@ const MainLayout = () => {
                     </span>
                   ),
                 },
+
                 {
-                  key: "/digital-card",
+                  key: "/partner-inquiries",
+                  icon: <FaHandshake className="fs-4" />,
+                  label: "Partner With Us",
+                },
+                {
+                  key: "access-cards",
                   icon: <FaAddressCard className="fs-4" />,
-                  label: "Digital Cards Request",
+                  label: "Access Cards",
+                  children: [
+                    {
+                      key: "/digital-card",
+                      icon: <FaAddressCard className="fs-4" />,
+                      label: "Card Requests",
+                    },
+                    {
+                      key: "/access-orders",
+                      icon: <FaTruck className="fs-4" />,
+                      label: "Access Orders",
+                    },
+                    {
+                      key: "/access-analytics",
+                      icon: <BsGraphUpArrow className="fs-4" />,
+                      label: "Analytics",
+                    },
+                  ],
                 },
                 {
                   key: "/directory",
@@ -267,7 +298,23 @@ const MainLayout = () => {
                       icon: <MdShoppingBag className="fs-4" />,
                       label: "Shop",
                     },
+
+                    {
+                      key: "/journal-topics",
+                      icon: <MdTopic className="fs-4" />,
+                      label: "Topics",
+                    },
+                    {
+                      key: "/journal-faqs",
+                      icon: <MdQuestionAnswer className="fs-4" />,
+                      label: "FAQs",
+                    },
                   ],
+                },
+                {
+                  key: "/ads",
+                  icon: <MdCampaign className="fs-4" />,
+                  label: "Ads",
                 },
 
                 {

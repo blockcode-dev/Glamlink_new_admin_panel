@@ -1,0 +1,1047 @@
+/** @format */
+
+$border: #eef0f3;
+$text-primary: #1a1f27;
+$text-secondary: #8a94a3;
+$bg-page: #f6f7f9;
+$radius: 10px;
+$shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
+$brand: #1a9aab;
+$brand-soft: #eaf7f8;
+
+.page {
+  background: $bg-page;
+  min-height: 100%;
+  padding-bottom: 32px;
+}
+
+/* ── Header ───────────────────────── */
+.headerCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  box-shadow: $shadow-card;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.headerSubtitle {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: $text-secondary;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Table card (list page) ──────────── */
+.tableCard {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.topicName {
+  display: flex;
+  align-items: center;
+
+  :global(.ant-tag) {
+    margin: 0;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-weight: 600;
+  }
+}
+
+.slug {
+  display: inline-block;
+  padding: 5px 9px;
+  background: #f6f7f9;
+  border: 1px solid $border;
+  border-radius: 6px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.iconButton {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.iconButtonEdit {
+  color: $brand;
+  background: $brand-soft;
+
+  &:hover {
+    background: darken($brand-soft, 4%);
+  }
+}
+
+.iconButtonDanger {
+  color: #ef4444;
+  background: #fff1f2;
+
+  &:hover {
+    background: #ffe4e6;
+  }
+}
+
+/* ── Form sections (Add/Edit pages, and Topic Details below) ──────────── */
+.sectionCard {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-card;
+  padding: 22px 24px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid $border;
+}
+
+.sectionIcon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: $brand-soft;
+  color: $brand;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
+
+.sectionHeaderText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.sectionHint {
+  font-size: 12.5px;
+  color: $text-secondary;
+  margin-top: 2px;
+}
+
+// Right-aligned action slot in a section header (e.g. "Manage professionals")
+.sectionExtra {
+  margin-left: auto;
+
+  :global(.ant-btn) {
+    border-radius: 7px;
+  }
+
+  :global(.ant-btn-primary) {
+    background: $brand;
+    border-color: $brand;
+
+    &:hover {
+      background: darken($brand, 6%);
+      border-color: darken($brand, 6%);
+    }
+  }
+}
+
+.sectionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+
+  :global(.ant-form-item) {
+    width: 100%;
+  }
+
+  :global(.ant-input),
+  :global(.ant-input-affix-wrapper),
+  :global(textarea.ant-input) {
+    width: 100%;
+  }
+}
+
+/* ── Image upload area ──────────── */
+.coverUploadArea {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.coverPreview {
+  width: 260px;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px dashed $border;
+  background: $bg-page;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.coverEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: $text-secondary;
+  font-size: 12.5px;
+}
+
+.coverActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 4px;
+
+  :global(.ant-btn) {
+    border-radius: 7px;
+  }
+}
+
+.coverHelp {
+  font-size: 12px;
+  color: $text-secondary;
+}
+
+/* ── Footer / action bar ──────────── */
+.footerBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+
+  :global(.ant-btn) {
+    border-radius: 7px;
+  }
+
+  :global(.ant-btn-primary) {
+    background: $brand;
+    border-color: $brand;
+
+    &:hover {
+      background: darken($brand, 6%);
+      border-color: darken($brand, 6%);
+    }
+  }
+}
+
+.footerHint {
+  font-size: 12.5px;
+  color: $text-secondary;
+  margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  .headerCard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .headerActions {
+    width: 100%;
+
+    :global(.ant-input-search) {
+      width: 100% !important;
+    }
+  }
+
+  .coverUploadArea {
+    flex-direction: column;
+  }
+
+  .footerBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .footerHint {
+    margin-right: 0;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   TOPIC DETAILS PAGE — added for JournalTopicDetails.jsx
+   Reuses all the tokens and .sectionCard/.sectionHeader/... shell above.
+   NOTE: this page's big heading uses .topicHeading, NOT .topicName —
+   .topicName above is a different, unrelated style (flex + tag wrapper)
+   already used on the Topics list page, so it's kept separate to avoid
+   the two clashing.
+════════════════════════════════════════════════════════════════════ */
+
+.topicOverview {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.topicCover {
+  width: 220px;
+  height: 160px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: $bg-page;
+  border: 1px solid $border;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.topicInfo {
+  flex: 1;
+  min-width: 260px;
+}
+
+.topicMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.topicHeading {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.slugTag {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  border-radius: 999px;
+  background: $bg-page;
+  border: 1px solid $border;
+  color: $text-secondary;
+}
+
+.topicDatesRow {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.dateChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: $text-secondary;
+
+  :global(.anticon) {
+    color: $brand;
+  }
+}
+
+// Renders rich-text (topic description, business card bio) safely — it's
+// raw HTML coming from the backend, not plain text.
+.prose {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.75;
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: $text-primary;
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  p {
+    margin: 0 0 10px;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  a {
+    color: $brand;
+    text-decoration: underline;
+  }
+
+  strong {
+    font-weight: 600;
+    color: $text-primary;
+  }
+
+  ul,
+  ol {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+}
+
+// ---- Shared empty / loading states ----
+.emptyWrap {
+  border: 1px dashed $border;
+  border-radius: 8px;
+  background: $bg-page;
+  padding: 32px;
+}
+
+.centerLoading {
+  display: flex;
+  justify-content: center;
+  padding: 30px;
+}
+
+// ---- Card grid (paragraphs / shops / podcasts / professionals) ----
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+// ---- Paragraph card ----
+.paragraphCard {
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #fff;
+
+  &:hover {
+    border-color: $brand;
+    box-shadow: 0 4px 14px rgba(26, 154, 171, 0.12);
+  }
+}
+
+.paragraphCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.paragraphCardTitleWrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.paragraphCardTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: $text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paragraphCardMeta {
+  font-size: 11.5px;
+  color: $text-secondary;
+  margin-top: 2px;
+}
+
+.paragraphSnippet {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ---- Shop card ----
+.shopCard {
+  border: 1px solid $border;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    border-color: $brand;
+    box-shadow: 0 4px 14px rgba(26, 154, 171, 0.12);
+  }
+}
+
+.shopCover {
+  position: relative;
+  height: 160px;
+  background: $bg-page;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.shopCoverEmpty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-secondary;
+  font-size: 24px;
+}
+
+.shopStatusTag {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  text-transform: capitalize;
+}
+
+.shopBody {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.shopTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.shopTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: $text-primary;
+  line-height: 1.4;
+}
+
+.shopPrice {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: $brand;
+  flex-shrink: 0;
+}
+
+.shopBrand {
+  font-size: 11.5px;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.shopDescription {
+  font-size: 12.5px;
+  color: #666;
+  line-height: 1.6;
+  margin: 6px 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.shopActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  border-top: 1px solid $border;
+  padding-top: 8px;
+
+  :global(.ant-btn) {
+    border-radius: 7px;
+  }
+}
+
+// ---- Podcast card ----
+.podcastCard {
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #fff;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  &:hover {
+    border-color: $brand;
+    box-shadow: 0 4px 14px rgba(26, 154, 171, 0.12);
+  }
+}
+
+.podcastIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: $brand-soft;
+  color: $brand;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.podcastBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.podcastName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.podcastDescription {
+  font-size: 12.5px;
+  color: $text-secondary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podcastDateTag {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 11.5px;
+  background: $bg-page;
+  border: 1px solid $border;
+  color: $text-secondary;
+}
+
+// ---- Professional card (assigned list, shown on the page itself) ----
+// The remove button (.professionalRemoveBtn) is a SIBLING of the
+// clickable area (.professionalClickable), not a descendant of it — this
+// is what actually prevents a remove-click from ever triggering the view
+// modal, structurally, rather than relying only on stopPropagation.
+.professionalCard {
+  position: relative;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 16px 14px;
+  background: #fff;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: $brand;
+    box-shadow: 0 4px 14px rgba(26, 154, 171, 0.12);
+
+    .professionalRemoveBtn {
+      opacity: 1;
+    }
+  }
+}
+
+.professionalClickable {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.professionalAvatar {
+  background: $brand-soft;
+  color: $brand;
+}
+
+.professionalRemoveBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  color: $text-secondary;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 2;
+
+  &:hover {
+    color: #ef4444;
+    background: #fff1f2;
+  }
+}
+
+.professionalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  width: 100%;
+}
+
+.professionalName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: $text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.professionalEmail {
+  font-size: 11.5px;
+  color: $text-secondary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ---- Manage-professionals modal & View-professional modal share this
+// wrapper for consistent button styling ----
+.professionalsModal {
+  :global(.ant-modal-footer) {
+    .ant-btn {
+      border-radius: 7px;
+      height: 36px;
+      padding: 0 18px;
+    }
+
+    .ant-btn-primary {
+      background: $brand;
+      border-color: $brand;
+
+      &:hover {
+        background: darken($brand, 6%);
+        border-color: darken($brand, 6%);
+      }
+    }
+  }
+}
+
+.professionalSearchInput {
+  margin-bottom: 14px;
+  border-radius: 8px;
+}
+
+.professionalPickerList {
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid $border;
+  border-radius: 8px;
+}
+
+.professionalPickerEmpty {
+  padding: 32px 16px;
+  text-align: center;
+  color: $text-secondary;
+  font-size: 13px;
+}
+
+.professionalPickerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid $border;
+  transition: background 0.12s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: $bg-page;
+  }
+}
+
+.professionalPickerRowChecked {
+  background: $brand-soft;
+
+  &:hover {
+    background: darken($brand-soft, 2%);
+  }
+}
+
+.professionalPickerAvatar {
+  background: #fff;
+  color: $brand;
+  border: 1px solid $border;
+  flex-shrink: 0;
+}
+
+.professionalPickerInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.professionalPickerName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: $text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.professionalPickerEmail {
+  font-size: 12px;
+  color: $text-secondary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ---- View professional (business card) modal ----
+.viewModalHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid $border;
+}
+
+.viewModalName {
+  font-size: 17px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.viewModalMeta {
+  font-size: 13px;
+  color: $text-secondary;
+  margin-top: 2px;
+}
+
+.viewModalSection {
+  margin-bottom: 18px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.viewModalSectionTitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tagWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.specialtyTag {
+  border-radius: 999px;
+  background: $brand-soft;
+  border-color: transparent;
+  color: $brand;
+  font-weight: 500;
+}
+
+.locationChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: $text-primary;
+  background: $bg-page;
+  border: 1px solid $border;
+  border-radius: 999px;
+  padding: 4px 12px;
+
+  :global(.anticon) {
+    color: $brand;
+  }
+}
+
+.featuredLinkGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.featuredLinkCard {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid $border;
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: $brand;
+    box-shadow: 0 4px 12px rgba(26, 154, 171, 0.12);
+  }
+
+  img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    display: block;
+  }
+
+  span {
+    padding: 6px 8px;
+    font-size: 11.5px;
+    color: $text-primary;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.featuredLinkImageEmpty {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $bg-page;
+  color: $text-secondary;
+}
+
+.otherLinksList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  a {
+    font-size: 13px;
+    color: $brand;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.imageGalleryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.imageGalleryThumb {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid $border;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .topicOverview {
+    flex-direction: column;
+  }
+
+  .topicCover {
+    width: 100%;
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .viewModalHeader {
+    flex-direction: column;
+    text-align: center;
+  }
+}

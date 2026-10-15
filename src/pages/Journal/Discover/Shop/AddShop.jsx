@@ -1,6 +1,6 @@
 /** @format */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -11,16 +11,63 @@ import {
   Card,
   Space,
 } from "antd";
-import { UploadOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  ArrowLeftOutlined,
+  TagsOutlined,
+} from "@ant-design/icons";
 import { Box } from "@material-ui/core";
 import { useNavigate } from "react-router-dom";
 import ImgCrop from "antd-img-crop";
-import { CreateShop } from "../../../../services/Api/JournalApi";
+
+import {
+  CreateShop,
+  GetAllJournalTopics,
+  GetJournalTopicById,
+  UpdateJournalTopicShops,
+} from "../../../../services/Api/JournalApi";
 
 const AddShop = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+
   const [fileList, setFileList] = useState([]);
+
+  // ==========================
+  // Topics
+  // ==========================
+
+  const [topics, setTopics] = useState([]);
+  const [selectedTopicIds, setSelectedTopicIds] = useState([]);
+
+  // ==========================
+  // Fetch Topics
+  // ==========================
+
+  const fetchTopics = async () => {
+    try {
+      const result = await GetAllJournalTopics();
+
+      const topicList = Array.isArray(result?.data?.data)
+        ? result.data.data
+        : result?.data?.data?.rows ||
+          result?.data?.rows ||
+          [];
+
+      setTopics(topicList);
+    } catch (error) {
+      console.error(error);
+      message.error("Failed to load topics");
+    }
+  };
+
+  useEffect(() => {
+    fetchTopics();
+  }, []);
+
+  // ==========================
+  // Submit
+  // ==========================
 
   const handleSubmit = async (status) => {
     try {
@@ -29,17 +76,71 @@ const AddShop = () => {
       const formData = new FormData();
 
       formData.append("title", values.title);
-      formData.append("short_description", values.short_description);
-      formData.append("brand", values.brand);
-      formData.append("price", values.price);
+      formData.append(
+        "short_description",
+        values.short_description,
+      );
+      formData.append("brand", values.brand || "");
+      if (values.price !== undefined && values.price !== null && values.price !== "") {
+  formData.append("price", values.price);
+}
       formData.append("link", values.link);
       formData.append("status", status);
 
       if (fileList.length) {
-        formData.append("images", fileList[0].originFileObj);
+        formData.append(
+          "images",
+          fileList[0].originFileObj,
+        );
       }
 
-      await CreateShop(formData);
+      // ==========================
+      // Create Shop
+      // ==========================
+
+      const result = await CreateShop(formData);
+
+      const shopId =
+        result?.data?.data?.id ||
+        result?.data?.id;
+
+      if (!shopId) {
+        throw new Error("Shop ID was not returned");
+      }
+
+      // ==========================
+      // Assign Shop To Topics
+      // ==========================
+
+      for (const topicId of selectedTopicIds) {
+        const topicResult = await GetJournalTopicById(
+          topicId,
+        );
+
+        const topic = topicResult?.data?.data;
+
+        if (!topic) {
+          continue;
+        }
+
+        const topicShops = Array.isArray(topic.shops)
+          ? topic.shops
+          : [];
+
+        // Preserve existing shops
+        const shopIds = topicShops
+          .map((shop) => Number(shop.id))
+          .filter(Boolean);
+
+        // Add newly created shop
+        if (!shopIds.includes(Number(shopId))) {
+          shopIds.push(Number(shopId));
+        }
+
+        await UpdateJournalTopicShops(topicId, {
+          shop_ids: shopIds,
+        });
+      }
 
       message.success(
         status === "draft"
@@ -48,8 +149,13 @@ const AddShop = () => {
       );
 
       navigate("/shop");
-    } catch {
-      message.error("Failed");
+    } catch (error) {
+      console.error(error);
+
+      message.error(
+        error?.response?.data?.message ||
+          "Failed to create Shop",
+      );
     }
   };
 
@@ -64,10 +170,13 @@ const AddShop = () => {
       >
         <div>
           <h3>SHOP</h3>
-          <p>Manage shop artices</p>
+          <p>Manage shop articles</p>
         </div>
 
-        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/shop")}>
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/shop")}
+        >
           Return to Shop Articles
         </Button>
       </Box>
@@ -78,7 +187,12 @@ const AddShop = () => {
           <Form.Item
             name="title"
             label="Title"
-            rules={[{ required: true, message: "Title is required" }]}
+            rules={[
+              {
+                required: true,
+                message: "Title is required",
+              },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -87,7 +201,10 @@ const AddShop = () => {
             name="short_description"
             label="Short Description"
             rules={[
-              { required: true, message: "Short description is required" },
+              {
+                required: true,
+                message: "Short description is required",
+              },
             ]}
           >
             <Input.TextArea rows={3} />
@@ -96,12 +213,6 @@ const AddShop = () => {
           <Form.Item
             name="brand"
             label="Brand"
-            // rules={[
-            //   {
-            //     required: true,
-            //     message: "Brand is required",
-            //   },
-            // ]}
           >
             <Input placeholder="Enter brand name" />
           </Form.Item>
@@ -109,12 +220,6 @@ const AddShop = () => {
           <Form.Item
             name="price"
             label="Price"
-            // rules={[
-            //   {
-            //     required: true,
-            //     message: "Price is required",
-            //   },
-            // ]}
           >
             <Input
               type="number"
@@ -137,9 +242,66 @@ const AddShop = () => {
             <Input placeholder="https://..." />
           </Form.Item>
 
+          <Form.Item
+            name="status"
+            label="Status"
+          >
+            <Select
+              placeholder="Select Status"
+              defaultValue="draft"
+            >
+              <Select.Option value="draft">
+                Draft
+              </Select.Option>
+
+              <Select.Option value="published">
+                Published
+              </Select.Option>
+            </Select>
+          </Form.Item>
+
+          {/* ==========================
+              TOPICS
+          ========================== */}
+
+          <Card
+            title={
+              <Space>
+                <TagsOutlined />
+                <span>Topics</span>
+              </Space>
+            }
+            size="small"
+            style={{ marginBottom: 24 }}
+          >
+            <Form.Item
+              label="Shop Topics"
+              style={{ marginBottom: 0 }}
+              extra="Select one or more reusable topics for this shop"
+            >
+              <Select
+                mode="multiple"
+                value={selectedTopicIds}
+                onChange={setSelectedTopicIds}
+                placeholder="Select topics"
+                showSearch
+                optionFilterProp="label"
+                allowClear
+                options={topics.map((topic) => ({
+                  value: Number(topic.id),
+                  label: topic.name,
+                }))}
+              />
+            </Form.Item>
+          </Card>
+
+          {/* ==========================
+              COVER IMAGE
+          ========================== */}
+
           <Form.Item label="Cover Image">
             <ImgCrop
-              aspect={16 / 9}
+              aspect={5 / 5.5}
               quality={1}
               showGrid
               rotationSlider
@@ -157,6 +319,7 @@ const AddShop = () => {
                       originFileObj: file,
                     },
                   ]);
+
                   return false;
                 }}
                 fileList={fileList}
@@ -164,21 +327,37 @@ const AddShop = () => {
                 maxCount={1}
                 listType="picture"
               >
-                <Button icon={<UploadOutlined />}>Upload Image</Button>
+                <Button icon={<UploadOutlined />}>
+                  Upload Image
+                </Button>
               </Upload>
             </ImgCrop>
           </Form.Item>
 
+          {/* ==========================
+              ACTIONS
+          ========================== */}
+
           <Space>
-            <Button type="default" onClick={() => handleSubmit("draft")}>
+            <Button
+              type="default"
+              onClick={() => handleSubmit("draft")}
+            >
               Save Draft
             </Button>
 
-            <Button type="primary" onClick={() => handleSubmit("published")}>
+            <Button
+              type="primary"
+              onClick={() => handleSubmit("published")}
+            >
               Publish Shop
             </Button>
 
-            <Button onClick={() => navigate("/shop")}>Cancel</Button>
+            <Button
+              onClick={() => navigate("/shop")}
+            >
+              Cancel
+            </Button>
           </Space>
         </Form>
       </Card>

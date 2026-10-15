@@ -1,0 +1,279 @@
+/** Access Orders — page styles */
+
+$brand: #1a9aab;
+$brand-soft: #e8f6f8;
+$text-dark: #1f1f1f;
+$text-muted: #888;
+$border: #eef0f3;
+
+.ao-page {
+  .ao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid $border;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  }
+
+  .ao-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 20px;
+    color: $text-dark;
+  }
+
+  .ao-subtitle {
+    margin: 4px 0 0;
+    color: $text-muted;
+    font-size: 13px;
+  }
+
+  .ao-search {
+    input {
+      height: 42px;
+      width: 260px;
+      border-radius: 8px;
+    }
+  }
+
+  .ao-table-card {
+    border-radius: 12px;
+    border: 1px solid $border;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    overflow: hidden;
+
+    .ant-table-thead > tr > th {
+      background: #fafbfc;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: $text-muted;
+    }
+
+    .ant-table-tbody > tr:hover > td {
+      background: $brand-soft;
+    }
+  }
+
+  // ---- status pills ----
+  .ao-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+
+  .ao-pill-paid {
+    background: #e9f9f1;
+    color: #17915f;
+  }
+
+  .ao-pill-failed {
+    background: #fdecec;
+    color: #d64545;
+  }
+
+  .ao-pill-refunded {
+    background: #fff6e6;
+    color: #b9800f;
+  }
+
+  .ao-pill-pending {
+    background: #f1f2f4;
+    color: #666;
+  }
+
+  .ao-pill-processing {
+    background: #fff6e6;
+    color: #b9800f;
+  }
+
+  .ao-pill-shipped {
+    background: #eaf2fe;
+    color: #2464d9;
+  }
+
+  .ao-pill-delivered {
+    background: #e9f9f1;
+    color: #17915f;
+  }
+
+  .ao-fulfillment-select {
+    .ant-select-selector {
+      border-radius: 8px !important;
+      font-size: 12px !important;
+    }
+  }
+
+  .ao-action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $border;
+    background: #fafbfc;
+    color: $text-muted;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s ease;
+
+    &:hover {
+      border-color: $brand;
+      color: $brand;
+      background: $brand-soft;
+    }
+  }
+}
+
+// ---- shared modal styling (order details + access card) ----
+.ao-modal {
+  .ao-modal-header {
+    padding: 26px 30px;
+    background: linear-gradient(135deg, #16232e 0%, $brand 130%);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .ao-modal-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.65);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .ao-modal-heading {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 700;
+  }
+
+  .ao-modal-subheading {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .ao-modal-body {
+    padding: 26px 30px;
+    max-height: 62vh;
+    overflow-y: auto;
+  }
+
+  .ao-section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: $brand;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 12px;
+  }
+
+  .ao-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+    margin-bottom: 22px;
+  }
+
+  .ao-info-item {
+    .label {
+      font-size: 11px;
+      color: $text-muted;
+      margin-bottom: 2px;
+    }
+    .value {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: $text-dark;
+    }
+  }
+
+  .ao-box {
+    background: #f9fafb;
+    border: 1px solid $border;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 22px;
+  }
+
+  .ao-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: $brand;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .ao-save-btn {
+    background: $brand !important;
+    border-color: $brand !important;
+    border-radius: 8px !important;
+    padding: 10px 26px !important;
+    font-weight: 600 !important;
+  }
+}
+
+// ---- Access Card modal specific ----
+.ao-card-modal-header {
+  padding: 26px 30px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  background: #fff;
+  border-bottom: 3px solid $brand;
+}
+
+.ao-card-name {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.ao-card-title {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: $brand;
+}
+
+.ao-card-link {
+  font-size: 12px;
+  color: $text-muted;
+  text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+
+  &:hover {
+    color: $brand;
+  }
+}

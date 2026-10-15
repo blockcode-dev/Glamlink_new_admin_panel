@@ -1,0 +1,192 @@
+.page {
+  padding: 20px;
+}
+
+.headerCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.headerSubtitle {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.tableCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- table cells ---------- */
+
+.primaryCell {
+  font-weight: 600;
+}
+
+.subText {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.linkText {
+  color: #2563eb;
+  font-size: 13px;
+  word-break: break-all;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.subLink {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+  cursor: pointer;
+  word-break: break-all;
+
+  &:hover {
+    color: #2563eb;
+  }
+}
+
+.pagesCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.messageCell {
+  font-size: 13px;
+  color: #475569;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.scheduleDate {
+  font-size: 12px;
+  color: #475569;
+}
+
+/* ---------- actions ---------- */
+
+.actionButtons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.iconButton {
+  border: none;
+  background: #f1f5f9;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.iconButtonView:hover {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.iconButtonDanger:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* ---------- view page ---------- */
+
+.detailCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detailLabel {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.detailValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.messageBox {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #334155;
+  white-space: pre-wrap;
+}
+
+.centerBox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 160px;
+  color: #94a3b8;
+}

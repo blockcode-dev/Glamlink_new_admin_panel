@@ -1,0 +1,141 @@
+.page {
+  padding: 20px;
+}
+
+.headerCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.headerSubtitle {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.tableCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.adThumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.adThumbEmpty {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.slotCell {
+  font-weight: 600;
+}
+
+.sizeText {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.stackTags {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.pagesCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.scheduleDate {
+  font-size: 12px;
+  color: #475569;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.iconButton {
+  border: none;
+  background: #f1f5f9;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.iconButtonView:hover {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.iconButtonEdit:hover {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.iconButtonDanger:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.viewModalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.viewModalImage {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #f8fafc;
+  margin-bottom: 6px;
+}
+
+.viewRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.viewLabel {
+  color: #64748b;
+  font-weight: 600;
+  min-width: 90px;
+}

@@ -202,21 +202,29 @@ const Blogs = () => {
       ),
     },
 
-    {
-      title: "Published",
-      dataIndex: "publish_date",
-      width: 110,
-      render: (date) => (
-        <div>
-          <div className={styles.publishedDate}>
-            {moment(date, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY")}
-          </div>
-          <div className={styles.publishedTime}>
-            {moment(date, "YYYY-MM-DD HH:mm:ss").format("hh:mm A")}
-          </div>
+   {
+  title: "Published",
+  dataIndex: "publish_date",
+  width: 110,
+  render: (date) =>
+    date ? (
+      <div>
+        <div className={styles.publishedDate}>
+          {moment(date, "YYYY-MM-DD HH:mm:ss").format(
+            "DD/MM/YYYY",
+          )}
         </div>
-      ),
-    },
+
+        <div className={styles.publishedTime}>
+          {moment(date, "YYYY-MM-DD HH:mm:ss").format(
+            "hh:mm A",
+          )}
+        </div>
+      </div>
+    ) : (
+      <div>-</div>
+    ),
+},
 
     {
       title: "Action",

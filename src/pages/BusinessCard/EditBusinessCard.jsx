@@ -13,7 +13,10 @@ import {
   Space,
   Checkbox,
   Radio,
+  Row,
+  Col,
   Typography,
+  ColorPicker,
 } from "antd";
 import ImageCropModal from "../../components/ImageCropModal";
 import {
@@ -21,6 +24,7 @@ import {
   MinusCircleOutlined,
   SaveOutlined,
   ArrowLeftOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -29,6 +33,7 @@ import { Box } from "@material-ui/core";
 import {
   UpdateBusinessCard,
   GetBusinessCardById,
+  ReorderFeaturedLinks,
 } from "../../services/Api/BusinessCardApi";
 import LocationAutocomplete from "../../utils/LocationAutocomplete";
 import { getAllState, getAllCityByStateId } from "../../services/Api/UserApi";
@@ -98,6 +103,175 @@ const safeParse = (val) => {
   }
 };
 
+/* =========================================================
+   Stable id generator + key helper — used to key featured-link
+   images so drag-reordering / adding / removing never
+   mismatches an image to the wrong link.
+   ========================================================= */
+const generateUid = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `uid_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+const getFeaturedKey = (link) =>
+  link?.id !== undefined && link?.id !== null ? `id-${link.id}` : link?._uid;
+
+/* =========================================================
+   Access Card color — the accent color used on the client's
+   rendered Access Card. Falls back to the GlamLink brand teal
+   whenever the backend has nothing saved yet or the admin
+   never changes it.
+   ========================================================= */
+const DEFAULT_BRAND_COLOR = "#23B9CD";
+
+// Analogous/complementary swatches around the brand teal, offered
+// as quick picks before the admin reaches for the full picker.
+const COLOR_PRESETS = [
+  { hex: "#23B9CD", label: "GlamLink Teal (Default)" },
+  { hex: "#1A9AAB", label: "Deep Teal" },
+  { hex: "#0E7490", label: "Cyan Blue" },
+  { hex: "#2DD4BF", label: "Turquoise" },
+  { hex: "#38BDF8", label: "Sky Blue" },
+  { hex: "#A78BFA", label: "Lavender" },
+  { hex: "#F472B6", label: "Pink" },
+  { hex: "#F97362", label: "Coral" },
+];
+
+const featuredLinksCSS = `
+  /* ---- Featured link image upload (4:3) ---- */
+  .gl-featured-upload .ant-upload.ant-upload-select,
+  .gl-featured-upload .ant-upload-list-picture-card-container {
+    width: 140px !important;
+    height: 105px !important;
+  }
+
+  .gl-featured-upload .ant-upload-list-item-thumbnail,
+  .gl-featured-upload .ant-upload-list-item-image {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .gl-featured-upload .ant-upload-list-item-thumbnail img,
+  .gl-featured-upload .ant-upload-list-item-image img {
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* ---- Featured link card polish ---- */
+  .fl-card {
+    position: relative;
+    border-radius: 14px !important;
+    border: 1px solid #eef0f2 !important;
+    background: #fff !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .fl-card:hover {
+    box-shadow: 0 4px 16px rgba(16, 24, 40, 0.06);
+    border-color: #dfe3e6 !important;
+  }
+  .fl-card.is-dragging {
+    opacity: 0.5;
+  }
+  .fl-drag-handle {
+    cursor: grab;
+    color: #b0b6bd;
+    font-size: 18px;
+    line-height: 1;
+    padding-top: 6px;
+    user-select: none;
+  }
+  .fl-drag-handle:active {
+    cursor: grabbing;
+  }
+  .fl-index-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: #eafbfc;
+    color: #0f8a9a;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .fl-featured-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 999px;
+    padding: 2px 10px;
+    background: #fff2e8;
+    color: #d4380d;
+    border: 1px solid #ffd8bf;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ---- Color swatch picker ---- */
+  .gl-color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #e5e7eb;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    transition: transform 0.12s ease, border-color 0.12s ease;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .gl-color-swatch:hover {
+    transform: scale(1.08);
+  }
+  .gl-color-swatch.is-selected {
+    border-color: #23b9cd;
+    box-shadow: 0 0 0 2px #fff inset, 0 0 0 4px rgba(35, 185, 205, 0.35);
+  }
+  .gl-color-swatch.is-selected::after {
+    content: "✓";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.45);
+  }
+`;
+
+const getCityCoordinates = (city, state) => {
+  return new Promise((resolve, reject) => {
+    if (!window.google?.maps?.Geocoder) {
+      reject(new Error("Google Maps is not loaded."));
+      return;
+    }
+
+    const geocoder = new window.google.maps.Geocoder();
+
+    geocoder.geocode(
+      {
+        address: `${city}, ${state}`,
+      },
+      (results, status) => {
+        if (status === "OK" && results?.[0]) {
+          const location = results[0].geometry.location;
+          console.log("Geocoded location:", location.lat(), location.lng());
+          resolve({
+            latitude: location.lat(),
+            longitude: location.lng(),
+          });
+        } else {
+          reject(new Error("Unable to find city coordinates."));
+        }
+      },
+    );
+  });
+};
+
 const EditBusinessCard = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -111,6 +285,10 @@ const EditBusinessCard = () => {
   const [citiesByLocation, setCitiesByLocation] = useState({});
   const [states, setStates] = useState([]);
   const [specialtyOptions, setSpecialtyOptions] = useState([]);
+
+  const [featuredLinks, setFeaturedLinks] = useState([]);
+  const [featuredLinkImages, setFeaturedLinkImages] = useState({});
+  const [draggedFeaturedIndex, setDraggedFeaturedIndex] = useState(null);
 
   useEffect(() => {
     loadSpecialties();
@@ -190,6 +368,31 @@ const EditBusinessCard = () => {
       const res = await GetBusinessCardById(id);
       const data = res.data?.data;
       const cityMap = {};
+      const existingFeaturedLinks = safeParse(data.featured_links);
+
+      const normalizedFeaturedLinks = existingFeaturedLinks
+        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+        .map((link, index) => ({
+          ...link,
+          _uid: link.id ? undefined : generateUid(),
+          sort_order: index + 1,
+          is_featured: !!link.is_featured,
+        }));
+
+      setFeaturedLinks(normalizedFeaturedLinks);
+
+      // Seed the image state so each ImageCropModal shows the existing
+      // image already saved for that link (keyed by a stable id, not
+      // by array position, so reordering never mixes images up).
+      const seededImages = {};
+      normalizedFeaturedLinks.forEach((link) => {
+        if (link.image) {
+          seededImages[getFeaturedKey(link)] = [
+            { uid: "-1", url: link.image, status: "done" },
+          ];
+        }
+      });
+      setFeaturedLinkImages(seededImages);
 
       const locations = await Promise.all(
         (data.locations || []).map(async (loc, index) => {
@@ -256,6 +459,13 @@ const EditBusinessCard = () => {
             value: h.note || "",
           })) || [],
       });
+
+      // Access Card color — whatever the backend has saved, uppercased,
+      // falling back to the GlamLink brand teal if nothing was saved yet.
+      form.setFieldValue(
+        "color_code",
+        (data.color_code || DEFAULT_BRAND_COLOR).toString().toUpperCase(),
+      );
 
       if (data.profile_image) {
         setProfileImage([
@@ -372,12 +582,74 @@ const EditBusinessCard = () => {
         "biggest_pain_points",
         JSON.stringify(values.biggest_pain_points || []),
       );
-      formData.append("locations", JSON.stringify(values.locations || []));
+      const formattedLocations = (values.locations || []).map((loc, index) => {
+        const location = {
+          ...loc,
+          sort_order: index + 1,
+          is_primary: !!loc.is_primary,
+        };
+
+        // City-only locations must NOT contain an exact address
+        if (location.location_type === "city_only") {
+          delete location.address;
+        }
+
+        return location;
+      });
+
+      formData.append("locations", JSON.stringify(formattedLocations));
       const otherLinks = (values.other_links || []).filter((item) =>
         item?.url?.trim(),
       );
 
       formData.append("other_links", JSON.stringify(otherLinks));
+
+      /* ================= FEATURED LINKS ================= */
+      // Each link is matched to its image via a stable key
+      // (`id-<id>` for saved links, `_uid` for new ones) instead of
+      // array index, so drag-reordering never swaps images between links.
+      const updatedFeaturedLinksRaw = featuredLinks
+        .filter((item) => item?.url?.trim())
+        .map((item, index) => {
+          const key = getFeaturedKey(item);
+          const imgState = featuredLinkImages[key] || [];
+          const hasNewFile = !!imgState[0]?.originFileObj;
+          const keptExistingImage =
+            !hasNewFile && imgState.length > 0 ? item.image || null : null;
+
+          return {
+            id: item.id || undefined,
+            title: item?.title?.trim() || "",
+            url: item.url.trim(),
+            image: hasNewFile ? null : keptExistingImage,
+            image_index: null,
+            sort_order: index + 1,
+            is_featured: item?.is_featured === true,
+            _key: key,
+          };
+        });
+
+      let featuredImageIndex = 0;
+
+      updatedFeaturedLinksRaw.forEach((link) => {
+        const imgState = featuredLinkImages[link._key] || [];
+        const imageFile = imgState[0]?.originFileObj;
+
+        if (imageFile) {
+          formData.append("featured_link_images", imageFile);
+          link.image_index = featuredImageIndex;
+          featuredImageIndex++;
+        }
+      });
+
+      const updatedFeaturedLinks = updatedFeaturedLinksRaw.map(
+        ({ _key, ...rest }) => rest,
+      );
+
+      formData.append(
+        "featured_links",
+        JSON.stringify(updatedFeaturedLinks),
+      );
 
       const existingImageIds = images
         .filter((img) => !img.originFileObj)
@@ -436,6 +708,15 @@ const EditBusinessCard = () => {
         }
       });
 
+      /* ================= ACCESS CARD COLOR ================= */
+      // Always send a value — falls back to the GlamLink brand teal
+      // whenever the field somehow came back empty.
+      const colorCode = (values.color_code || DEFAULT_BRAND_COLOR)
+        .toString()
+        .toUpperCase();
+
+      formData.append("color_code", colorCode);
+
       formData.append(
         "preferred_booking_method",
         JSON.stringify(values.preferred_booking_method || []),
@@ -453,6 +734,60 @@ const EditBusinessCard = () => {
       message.error("Failed to update business card");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFeaturedDragStart = (index) => {
+    setDraggedFeaturedIndex(index);
+  };
+
+  const handleFeaturedDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleFeaturedDrop = async (dropIndex) => {
+    if (draggedFeaturedIndex === null || draggedFeaturedIndex === dropIndex) {
+      setDraggedFeaturedIndex(null);
+      return;
+    }
+
+    const updatedLinks = [...featuredLinks];
+
+    const [draggedItem] = updatedLinks.splice(draggedFeaturedIndex, 1);
+
+    updatedLinks.splice(dropIndex, 0, draggedItem);
+
+    const reorderedLinks = updatedLinks.map((link, index) => ({
+      ...link,
+      sort_order: index + 1,
+    }));
+
+    // No image remapping needed — images are keyed by stable id
+    // (link.id / _uid), not by position, so they move with their link.
+    setFeaturedLinks(reorderedLinks);
+    setDraggedFeaturedIndex(null);
+
+    try {
+      await ReorderFeaturedLinks(
+        id,
+        reorderedLinks.map((link) => ({
+          id: link.id,
+          title: link.title,
+          url: link.url,
+          image: link.image || null,
+          sort_order: link.sort_order,
+          is_featured: link.is_featured === true,
+        })),
+      );
+
+      message.success("Featured Links order updated.");
+    } catch (error) {
+      console.error("FEATURED LINK REORDER ERROR:", error);
+
+      message.error("Failed to update Featured Links order.");
+
+      // Reload original order if API fails
+      await fetchData();
     }
   };
 
@@ -488,6 +823,8 @@ const EditBusinessCard = () => {
       </Box>
 
       <Form form={form} layout="vertical">
+        <style>{featuredLinksCSS}</style>
+
         <div
           style={{
             display: "grid",
@@ -758,6 +1095,101 @@ const EditBusinessCard = () => {
           </Card>
         </div>
 
+        {/* ACCESS CARD DESIGN / COLOR */}
+        <Card
+          title="Card Design"
+          style={{
+            marginBottom: 24,
+            borderRadius: 8,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+          }}
+        >
+          <p style={{ color: "#666", marginTop: -4, marginBottom: 16, fontSize: 13 }}>
+            Accent color used on this client's Access Card. Shows whatever is
+            currently saved on their profile — leave it on the default and
+            we'll always use GlamLink teal ({DEFAULT_BRAND_COLOR}).
+          </p>
+
+          {/* Hidden field holds the actual form value; fetchData() seeds it
+              from the backend's color_code, and the swatches/picker below
+              just write to it. */}
+          <Form.Item
+            name="color_code"
+            initialValue={DEFAULT_BRAND_COLOR}
+            hidden
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item shouldUpdate noStyle>
+            {({ getFieldValue, setFieldValue }) => {
+              const selected = (
+                getFieldValue("color_code") || DEFAULT_BRAND_COLOR
+              ).toUpperCase();
+
+              return (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 18,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Space size={10} wrap>
+                    {COLOR_PRESETS.map(({ hex, label }) => (
+                      <div
+                        key={hex}
+                        title={`${label} — ${hex}`}
+                        className={`gl-color-swatch${
+                          selected === hex.toUpperCase() ? " is-selected" : ""
+                        }`}
+                        style={{ background: hex }}
+                        onClick={() => setFieldValue("color_code", hex)}
+                      />
+                    ))}
+                  </Space>
+
+                  <div
+                    style={{
+                      width: 1,
+                      height: 32,
+                      background: "#e5e7eb",
+                    }}
+                  />
+
+                  <ColorPicker
+                    value={selected}
+                    onChange={(color) =>
+                      setFieldValue(
+                        "color_code",
+                        color.toHexString().toUpperCase(),
+                      )
+                    }
+                    showText={(color) => (
+                      <span style={{ fontSize: 13, color: "#555" }}>
+                        {color.toHexString().toUpperCase()}
+                      </span>
+                    )}
+                  />
+
+                  {selected !== DEFAULT_BRAND_COLOR && (
+                    <Button
+                      size="small"
+                      type="link"
+                      onClick={() =>
+                        setFieldValue("color_code", DEFAULT_BRAND_COLOR)
+                      }
+                    >
+                      Reset to Default
+                    </Button>
+                  )}
+                </div>
+              );
+            }}
+          </Form.Item>
+        </Card>
+
         <Card
           title="Specialties & Info"
           style={{
@@ -831,102 +1263,238 @@ const EditBusinessCard = () => {
           </Form.List>
         </Card>
 
-        {/* <Card
-          title="Glamlink Integration"
+        {/* FEATURED LINKS */}
+        <Card
+          title="Featured Links"
+          extra={
+            <span style={{ color: "#999", fontSize: 12 }}>
+              Drag <span style={{ fontWeight: 700 }}>⠿</span> to reorder
+            </span>
+          }
           style={{
             marginBottom: 24,
             borderRadius: 8,
             boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
           }}
         >
-          <Form.Item
-            name="excites_about_glamlink"
-            label="What excites you about Glamlink?"
-          >
-            <Checkbox.Group style={{ width: "100%" }}>
-              <Space direction="vertical">
-                <Checkbox value="Clients ability to discover pros nearby and check out their services, work, reviews, etc">
-                  Discovery Nearby
-                </Checkbox>
-                <Checkbox value="Seamless booking inside Glamlink either in app or goes directly to your booking link">
-                  Seamless Booking
-                </Checkbox>
-                <Checkbox value="Pro shops & e-commerce">
-                  Pro shops & e-commerce
-                </Checkbox>
-                <Checkbox value="The Glamlink Edit magazine & spotlights">
-                  Magazine & Spotlights
-                </Checkbox>
-                <Checkbox value="AI powered discovery & smart recommendations (coming soon)">
-                  AI Discovery
-                </Checkbox>
-                <Checkbox value="Community & networking with other pros">
-                  Community
-                </Checkbox>
-              </Space>
-            </Checkbox.Group>
-          </Form.Item>
+          {featuredLinks.map((link, index) => {
+            const key = getFeaturedKey(link);
 
-          <Form.Item name="biggest_pain_points" label="Biggest pain points">
-            <Checkbox.Group style={{ width: "100%" }}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 12,
-                }}
+            return (
+              <Card
+                key={key}
+                size="small"
+                className={`fl-card${
+                  draggedFeaturedIndex === index ? " is-dragging" : ""
+                }`}
+                draggable
+                onDragStart={() => handleFeaturedDragStart(index)}
+                onDragOver={handleFeaturedDragOver}
+                onDrop={() => handleFeaturedDrop(index)}
+                onDragEnd={() => setDraggedFeaturedIndex(null)}
+                style={{ marginBottom: 16 }}
               >
-                <Checkbox value="Posting but no conversions">
-                  No conversions
-                </Checkbox>
-                <Checkbox value="DMs - too much back and forth">
-                  Too many DMs
-                </Checkbox>
-                <Checkbox value="No shows">No shows</Checkbox>
-                <Checkbox value="Juggling too many platforms (booking, social media, e-commerce, etc)">
-                  Too many platforms
-                </Checkbox>
-                <Checkbox value="Inventory not tied to treatments">
-                  Inventory management
-                </Checkbox>
-                <Checkbox value="Client notes/consents all over the place the place">
-                  Disorganized notes
-                </Checkbox>
-                <Checkbox value="Finding new clients">Finding clients</Checkbox>
-                <Checkbox value="None of the above">None</Checkbox>
-              </div>
-            </Checkbox.Group>
-          </Form.Item>
+                <div style={{ display: "flex", gap: 14 }}>
+                  {/* DRAG HANDLE */}
+                  <div className="fl-drag-handle" title="Drag to reorder">
+                    ⠿
+                  </div>
 
-          <Form.Item
-            name="offer_promotion"
-            valuePropName="checked"
-            style={{ marginTop: "24px" }}
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: 12,
+                      }}
+                    >
+                      <span className="fl-index-badge">{index + 1}</span>
+                      <span style={{ fontWeight: 600, color: "#333" }}>
+                        Featured Link
+                      </span>
+                      <Button
+                        danger
+                        type="text"
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        style={{ marginLeft: "auto" }}
+                        onClick={() => {
+                          setFeaturedLinks((prev) =>
+                            prev
+                              .filter((_, i) => i !== index)
+                              .map((item, i) => ({
+                                ...item,
+                                sort_order: i + 1,
+                              })),
+                          );
+
+                          setFeaturedLinkImages((prev) => {
+                            const updated = { ...prev };
+                            delete updated[key];
+                            return updated;
+                          });
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+
+                    <Row gutter={[16, 12]}>
+                      <Col xs={24} md={10}>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: 6,
+                            fontWeight: 500,
+                          }}
+                        >
+                          Link Title
+                        </label>
+                        <Input
+                          value={link.title || ""}
+                          placeholder="Shop My Skincare Favorites"
+                          style={{ borderRadius: "6px", height: "40px" }}
+                          onChange={(e) => {
+                            const value = e.target.value;
+
+                            setFeaturedLinks((prev) =>
+                              prev.map((item, i) =>
+                                i === index
+                                  ? {
+                                      ...item,
+                                      title: value,
+                                    }
+                                  : item,
+                              ),
+                            );
+                          }}
+                        />
+                      </Col>
+
+                      <Col xs={24} md={14}>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: 6,
+                            fontWeight: 500,
+                          }}
+                        >
+                          URL
+                        </label>
+                        <Input
+                          value={link.url || ""}
+                          placeholder="https://example.com/product"
+                          style={{ borderRadius: "6px", height: "40px" }}
+                          onChange={(e) => {
+                            const value = e.target.value;
+
+                            setFeaturedLinks((prev) =>
+                              prev.map((item, i) =>
+                                i === index
+                                  ? {
+                                      ...item,
+                                      url: value,
+                                    }
+                                  : item,
+                              ),
+                            );
+                          }}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Row align="middle" gutter={[16, 12]} style={{ marginTop: 12 }}>
+                      <Col>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 500,
+                            marginBottom: 6,
+                            color: "#555",
+                          }}
+                        >
+                          Thumbnail / Image
+                        </div>
+                        <div className="gl-featured-upload">
+                          <ImageCropModal
+                            fileList={featuredLinkImages[key] || []}
+                            setFileList={(files) =>
+                              setFeaturedLinkImages((prev) => ({
+                                ...prev,
+                                [key]: files,
+                              }))
+                            }
+                            aspect={4 / 3}
+                            maxCount={1}
+                            accept=".jpg,.jpeg,.png,.webp,.avif"
+                            listType="picture-card"
+                            uploadText="Upload"
+                          />
+                        </div>
+                      </Col>
+
+                      <Col flex="auto">
+                        <Checkbox
+                          checked={link.is_featured === true}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+
+                            setFeaturedLinks((prev) =>
+                              prev.map((item, i) => ({
+                                ...item,
+                                is_featured: checked
+                                  ? i === index
+                                  : i === index
+                                    ? false
+                                    : item.is_featured,
+                              })),
+                            );
+                          }}
+                        >
+                          <span className="fl-featured-chip">
+                            ★ Feature this link
+                          </span>
+                        </Checkbox>
+
+                        <div
+                          style={{
+                            color: "#888",
+                            fontSize: 12,
+                            marginTop: 8,
+                          }}
+                        >
+                          Position: {index + 1}
+                        </div>
+                      </Col>
+                    </Row>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+
+          <Button
+            type="dashed"
+            block
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setFeaturedLinks((prev) => [
+                ...prev,
+                {
+                  _uid: generateUid(),
+                  title: "",
+                  url: "",
+                  image: null,
+                  sort_order: prev.length + 1,
+                  is_featured: false,
+                },
+              ]);
+            }}
           >
-            <Checkbox>I would like to offer a promotion</Checkbox>
-          </Form.Item>
-          <Form.Item
-            shouldUpdate={(p, c) => p.offer_promotion !== c.offer_promotion}
-            noStyle
-          >
-            {({ getFieldValue }) =>
-              getFieldValue("offer_promotion") && (
-                <Form.Item name="promotion_details" label="Promotion Details">
-                  <Input.TextArea
-                    placeholder="Enter details..."
-                    rows={4}
-                    style={{ borderRadius: "6px" }}
-                  />
-                </Form.Item>
-              )
-            }
-          </Form.Item>
-          <Form.Item name="elite_setup" valuePropName="checked">
-            <Checkbox>
-              <strong>The Elite Setup</strong>: Let the team build my profile.
-            </Checkbox>
-          </Form.Item>
-        </Card> */}
+            Add Featured Link
+          </Button>
+        </Card>
 
         <Card
           title="Locations"
@@ -1036,32 +1604,66 @@ const EditBusinessCard = () => {
                                     >
                                       <Select
                                         showSearch
-                                        placeholder="Search State"
-                                        placeholder="Search State"
-                                        style={{ height: "40px" }}
+                                        optionFilterProp="label"
                                         placeholder="Select State"
+                                        style={{ height: "40px" }}
                                         onChange={async (stateId) => {
-                                          const res =
-                                            await getAllCityByStateId(stateId);
-                                          const cities =
-                                            res?.data?.data?.all_city || [];
+                                          try {
+                                            const res =
+                                              await getAllCityByStateId(
+                                                stateId,
+                                              );
 
-                                          setCitiesByLocation((prev) => ({
-                                            ...prev,
-                                            [name]: cities,
-                                          }));
+                                            const cities =
+                                              res?.data?.data?.all_city || [];
 
-                                          const selectedState = states.find(
-                                            (s) => s.id === stateId,
-                                          );
-                                          form.setFieldValue(
-                                            ["locations", name, "state"],
-                                            selectedState?.name,
-                                          );
-                                          form.setFieldValue(
-                                            ["locations", name, "city"],
-                                            undefined,
-                                          );
+                                            setCitiesByLocation((prev) => ({
+                                              ...prev,
+                                              [name]: cities,
+                                            }));
+
+                                            const selectedState = states.find(
+                                              (s) => s.id === stateId,
+                                            );
+
+                                            // Save state name
+                                            form.setFieldValue(
+                                              ["locations", name, "state"],
+                                              selectedState?.name || "",
+                                            );
+
+                                            // Reset city
+                                            form.setFieldValue(
+                                              ["locations", name, "city"],
+                                              undefined,
+                                            );
+
+                                            // Reset coordinates
+                                            form.setFieldValue(
+                                              ["locations", name, "latitude"],
+                                              undefined,
+                                            );
+
+                                            form.setFieldValue(
+                                              ["locations", name, "longitude"],
+                                              undefined,
+                                            );
+
+                                            // Make sure city_only never keeps an old address
+                                            form.setFieldValue(
+                                              ["locations", name, "address"],
+                                              undefined,
+                                            );
+                                          } catch (error) {
+                                            console.error(
+                                              "STATE/CITY ERROR:",
+                                              error,
+                                            );
+
+                                            message.error(
+                                              "Failed to load cities.",
+                                            );
+                                          }
                                         }}
                                         options={states.map((state) => ({
                                           label: state.name,
@@ -1077,6 +1679,7 @@ const EditBusinessCard = () => {
                                     >
                                       <Select
                                         showSearch
+                                        optionFilterProp="label"
                                         style={{ height: "40px" }}
                                         placeholder="Select City"
                                         options={(
@@ -1085,21 +1688,55 @@ const EditBusinessCard = () => {
                                           label: city.name,
                                           value: city.name,
                                         }))}
+                                        onChange={async (city) => {
+                                          const state = form.getFieldValue([
+                                            "locations",
+                                            name,
+                                            "state",
+                                          ]);
+
+                                          if (!city || !state) {
+                                            return;
+                                          }
+
+                                          try {
+                                            const coordinates =
+                                              await getCityCoordinates(
+                                                city,
+                                                state,
+                                              );
+
+                                            form.setFieldValue(
+                                              ["locations", name, "latitude"],
+                                              coordinates.latitude,
+                                            );
+
+                                            form.setFieldValue(
+                                              ["locations", name, "longitude"],
+                                              coordinates.longitude,
+                                            );
+
+                                            // city_only should NEVER have an address
+                                            form.setFieldValue(
+                                              ["locations", name, "address"],
+                                              undefined,
+                                            );
+                                          } catch (error) {
+                                            console.error(
+                                              "CITY COORDINATES ERROR:",
+                                              error,
+                                            );
+
+                                            message.error(
+                                              "Unable to get coordinates for this city.",
+                                            );
+                                          }
+                                        }}
                                       />
                                     </Form.Item>
                                   </div>
 
-                                  <Form.Item
-                                    name={[name, "address"]}
-                                    label="Address"
-                                    style={{ marginBottom: 4 }}
-                                  >
-                                    <LocationAutocomplete
-                                      form={form}
-                                      locationIndex={name}
-                                    />
-                                  </Form.Item>
-
+                                  {/* Coordinates are stored but hidden */}
                                   <Form.Item name={[name, "latitude"]} hidden>
                                     <Input />
                                   </Form.Item>
@@ -1108,6 +1745,7 @@ const EditBusinessCard = () => {
                                     <Input />
                                   </Form.Item>
 
+                                  {/* State name is stored but hidden */}
                                   <Form.Item name={[name, "state"]} hidden>
                                     <Input />
                                   </Form.Item>
@@ -1215,7 +1853,7 @@ const EditBusinessCard = () => {
         >
           <Form.Item label="Profile Image">
             <ImageCropModal
-              aspect={1}
+              aspect={4 / 3}
               fileList={profileImage}
               setFileList={setProfileImage}
               maxCount={1}
@@ -1226,7 +1864,7 @@ const EditBusinessCard = () => {
           </Form.Item>
           <Form.Item label="Images Gallery">
             <ImageCropModal
-              aspect={16 / 9}
+              aspect={4 / 3}
               fileList={images}
               setFileList={setImages}
               multiple
@@ -1363,24 +2001,24 @@ const EditBusinessCard = () => {
                   </div>
 
                   {item.video?.originFileObj && (
-                   <ImageCropModal
-  aspect={16 / 9}
-  fileList={item.thumbnail ? [item.thumbnail] : []}
-  setFileList={(files) => {
-    setVideos((prev) =>
-      prev.map((video, i) =>
-        i === index
-          ? {
-              ...video,
-              thumbnail: files[0] || null,
-            }
-          : video,
-      ),
-    );
-  }}
-  maxCount={1}
-  uploadText="Thumbnail"
-/>
+                    <ImageCropModal
+                      aspect={4 / 3}
+                      fileList={item.thumbnail ? [item.thumbnail] : []}
+                      setFileList={(files) => {
+                        setVideos((prev) =>
+                          prev.map((video, i) =>
+                            i === index
+                              ? {
+                                  ...video,
+                                  thumbnail: files[0] || null,
+                                }
+                              : video,
+                          ),
+                        );
+                      }}
+                      maxCount={1}
+                      uploadText="Thumbnail"
+                    />
                   )}
 
                   <Button

@@ -180,3 +180,271 @@ export const UpdateShopSortOrder = async (data) => {
   const res = await axios.post(BASE_URL + "discover/shop/sort-order", data);
   return res.data;
 };
+
+export const BulkUploadShopCsv = async (formData) => {
+  return await axios.post(BASE_URL + "discover/shop/csv-upload", formData, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+// ==============================
+// Journal Topic Shop Mapping
+// ==============================
+
+export const UpdateJournalTopicShops = async (topicId, data) => {
+  return axios.put(
+    `${BASE_URL}/journal/topic/${topicId}/shops`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+// ==============================
+// Journal Topic Podcast Mapping
+// ==============================
+
+export const UpdateJournalTopicPodcasts = async (topicId, data) => {
+  return axios.put(
+    `${BASE_URL}/journal/topic/${topicId}/podcasts`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+// ==============================
+// Journal FAQ
+// ==============================
+
+export const CreateJournalFaq = async (data) => {
+  return axios.post(
+    `${BASE_URL}/journal/faq`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const GetAllJournalFaqs = async () => {
+  return axios.get(
+    `${BASE_URL}/journal/faq`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const GetJournalFaqById = async (id) => {
+  return axios.get(
+    `${BASE_URL}/journal/faq/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const UpdateJournalFaq = async (id, data) => {
+  return axios.put(
+    `${BASE_URL}/journal/faq/${id}`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const DeleteJournalFaq = async (ids) => {
+  return axios.post(
+    `${BASE_URL}/journal/faq/delete`,
+    {
+      faq_id: ids,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+
+// ==============================
+// Journal Topics
+// ==============================
+
+export const CreateJournalTopic = async (data) => {
+  return axios.post(
+    `${BASE_URL}/journal/topic`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const GetAllJournalTopics = async () => {
+  return axios.get(
+    `${BASE_URL}/journal/topic`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const GetJournalTopicById = async (id) => {
+  return axios.get(
+    `${BASE_URL}/journal/topic/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const UpdateJournalTopic = async (id, data) => {
+  return axios.put(
+    `${BASE_URL}/journal/topic/${id}`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const DeleteJournalTopic = async (ids) => {
+  return axios.post(
+    `${BASE_URL}/journal/topic/delete`,
+    {
+      topic_id: ids,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+// ==============================
+// Journal Topic Mapping
+// ==============================
+
+export const GetJournalTopicMappings = async (journalId) => {
+  return axios.get(
+    `${BASE_URL}/journal/${journalId}/topics`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const UpdateJournalTopicMappings = async (journalId, data) => {
+  return axios.post(
+    `${BASE_URL}/journal/${journalId}/topics`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+// ==============================
+// Journal FAQ Mapping
+// ==============================
+
+export const GetJournalFaqMappings = async (journalId) => {
+  return axios.get(
+    `${BASE_URL}/journal/${journalId}/faqs`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const UpdateJournalFaqMappings = async (journalId, data) => {
+  return axios.post(
+    `${BASE_URL}/journal/${journalId}/faqs`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+
+// ==============================
+// Journal Topic Paragraph Mapping
+// ==============================
+
+export const GetJournalTopicParagraphs = async (topicId) => {
+  return axios.get(
+    `${BASE_URL}/journal/topic/${topicId}/paragraphs`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+export const UpdateJournalTopicParagraphs = async (topicId, data) => {
+  return axios.put(
+    `${BASE_URL}/journal/topic/${topicId}/paragraphs`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};
+
+// ==============================
+// Journal Topic Professional Mapping
+// ==============================
+
+export const UpdateJournalTopicProfessionals = async (topicId, data) => {
+  return axios.put(
+    `${BASE_URL}/journal/topic/${topicId}/professionals`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    },
+  );
+};

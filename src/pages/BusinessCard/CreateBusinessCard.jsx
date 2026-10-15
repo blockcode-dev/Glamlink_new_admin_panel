@@ -15,6 +15,7 @@ import {
   Row,
   Col,
   Divider,
+  ColorPicker,
 } from "antd";
 import {
   PlusOutlined,
@@ -31,6 +32,35 @@ import LocationAutocomplete from "../../utils/LocationAutocomplete";
 import { getAllCityByStateId, getAllState } from "../../services/Api/UserApi";
 import { GetSpecialities } from "../../services/Api/SpecialitiesApi";
 import ImageCropModal from "../../components/ImageCropModal";
+
+/* =========================================================
+   Stable id generator — used to key featured-link images so
+   drag-reordering never mismatches an image to the wrong link.
+   ========================================================= */
+const generateUid = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `uid_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+/* =========================================================
+   Access Card color — the accent color used on the client's
+   rendered Access Card. Falls back to the GlamLink brand teal
+   whenever the admin hasn't picked one.
+   ========================================================= */
+const DEFAULT_BRAND_COLOR = "#23B9CD";
+
+// Analogous/complementary swatches around the brand teal, offered
+// as quick picks before the admin reaches for the full picker.
+const COLOR_PRESETS = [
+  { hex: "#23B9CD", label: "GlamLink Teal (Default)" },
+  { hex: "#1A9AAB", label: "Deep Teal" },
+  { hex: "#0E7490", label: "Cyan Blue" },
+  { hex: "#2DD4BF", label: "Turquoise" },
+  { hex: "#38BDF8", label: "Sky Blue" },
+  { hex: "#A78BFA", label: "Lavender" },
+  { hex: "#F472B6", label: "Pink" },
+  { hex: "#F97362", label: "Coral" },
+];
 
 /* =========================================================
    Scoped CSS for the media upload boxes.
@@ -79,6 +109,110 @@ const mediaUploadCSS = `
     width: 100% !important;
     height: 100% !important;
   }
+
+  /* ---- Featured link image upload (4:3) ---- */
+  .gl-featured-upload .ant-upload.ant-upload-select,
+  .gl-featured-upload .ant-upload-list-picture-card-container {
+    width: 140px !important;
+    height: 105px !important;
+  }
+
+  .gl-featured-upload .ant-upload-list-item-thumbnail,
+  .gl-featured-upload .ant-upload-list-item-image {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .gl-featured-upload .ant-upload-list-item-thumbnail img,
+  .gl-featured-upload .ant-upload-list-item-image img {
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* ---- Featured link card polish ---- */
+  .fl-card {
+    position: relative;
+    border-radius: 14px !important;
+    border: 1px solid #eef0f2 !important;
+    background: #fff !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .fl-card:hover {
+    box-shadow: 0 4px 16px rgba(16, 24, 40, 0.06);
+    border-color: #dfe3e6 !important;
+  }
+  .fl-card.is-dragging {
+    opacity: 0.5;
+  }
+  .fl-drag-handle {
+    cursor: grab;
+    color: #b0b6bd;
+    font-size: 18px;
+    line-height: 1;
+    padding-top: 6px;
+    user-select: none;
+  }
+  .fl-drag-handle:active {
+    cursor: grabbing;
+  }
+  .fl-index-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: #eafbfc;
+    color: #0f8a9a;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .fl-featured-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 999px;
+    padding: 2px 10px;
+    background: #fff2e8;
+    color: #d4380d;
+    border: 1px solid #ffd8bf;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ---- Color swatch picker ---- */
+  .gl-color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #e5e7eb;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    transition: transform 0.12s ease, border-color 0.12s ease;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .gl-color-swatch:hover {
+    transform: scale(1.08);
+  }
+  .gl-color-swatch.is-selected {
+    border-color: #23b9cd;
+    box-shadow: 0 0 0 2px #fff inset, 0 0 0 4px rgba(35, 185, 205, 0.35);
+  }
+  .gl-color-swatch.is-selected::after {
+    content: "✓";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.45);
+  }
 `;
 
 const CreateBusinessCard = () => {
@@ -92,6 +226,8 @@ const CreateBusinessCard = () => {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
   const [specialtyOptions, setSpecialtyOptions] = useState([]);
+  const [featuredLinkImages, setFeaturedLinkImages] = useState({});
+  const [draggedFeaturedIndex, setDraggedFeaturedIndex] = useState(null);
 
   useEffect(() => {
     loadSpecialties();
@@ -224,6 +360,38 @@ const CreateBusinessCard = () => {
 
       formData.append("other_links", JSON.stringify(otherLinks));
 
+      /* ================= FEATURED LINKS ================= */
+      // Each item carries a stable `_uid` (set when the row was added) so
+      // the correct image is matched up regardless of reorder position.
+      const featuredLinksRaw = (values.featured_links || [])
+        .filter((item) => item?.url?.trim())
+        .map((item, index) => ({
+          title: item?.title?.trim() || "",
+          url: item.url.trim(),
+          image_index: null,
+          sort_order: index + 1,
+          is_featured: item?.is_featured === true,
+          _uid: item._uid,
+        }));
+
+      let featuredImageIndex = 0;
+
+      featuredLinksRaw.forEach((link) => {
+        const imageFile = featuredLinkImages[link._uid]?.[0]?.originFileObj;
+
+        if (imageFile) {
+          formData.append("featured_link_images", imageFile);
+
+          link.image_index = featuredImageIndex;
+          featuredImageIndex++;
+        }
+      });
+
+      // Strip the internal `_uid` before sending to the backend.
+      const featuredLinks = featuredLinksRaw.map(({ _uid, ...rest }) => rest);
+
+      formData.append("featured_links", JSON.stringify(featuredLinks));
+
       const bookingLink =
         values.booking_link?.trim() || values.website?.trim() || "";
 
@@ -252,6 +420,15 @@ const CreateBusinessCard = () => {
       });
 
       formData.append("is_phone_visible", values.is_phone_visible !== false);
+
+      /* ================= ACCESS CARD COLOR ================= */
+      // Always send a value — falls back to the GlamLink brand teal
+      // whenever the admin hasn't touched the picker.
+      const colorCode = (values.color_code || DEFAULT_BRAND_COLOR)
+        .toString()
+        .toUpperCase();
+
+      formData.append("color_code", colorCode);
 
       formData.append(
         "preferred_booking_method",
@@ -298,12 +475,45 @@ const CreateBusinessCard = () => {
       navigate("/digital-card");
     } catch (err) {
       console.error("SUBMIT ERROR:", err);
+
       const errorMsg =
-        err?.errorFields?.[0]?.errors?.[0] || "Something went wrong";
+        err?.errorFields?.[0]?.errors?.[0] ||
+        err?.response?.data?.message ||
+        err?.data?.message ||
+        err?.message ||
+        "Something went wrong";
+
       message.error(errorMsg);
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const getCityCoordinates = (city, state) => {
+    return new Promise((resolve, reject) => {
+      if (!window.google?.maps?.Geocoder) {
+        reject(new Error("Google Maps is not loaded."));
+        return;
+      }
+
+      const geocoder = new window.google.maps.Geocoder();
+
+      geocoder.geocode(
+        {
+          address: `${city}, ${state}`,
+        },
+        (results, status) => {
+          if (status === "OK" && results?.[0]) {
+            const location = results[0].geometry.location;
+
+            resolve({
+              latitude: location.lat(),
+              longitude: location.lng(),
+            });
+          } else {
+            reject(new Error("Unable to find city coordinates."));
+          }
+        },
+      );
+    });
   };
 
   return (
@@ -632,6 +842,290 @@ const CreateBusinessCard = () => {
         </Col>
       </Row>
 
+      {/* ACCESS CARD DESIGN / COLOR */}
+      <Card title="Card Design" style={{ marginBottom: 24 }}>
+        <p style={{ color: "#666", marginTop: -4, marginBottom: 16, fontSize: 13 }}>
+          Choose the accent color used on this client's Access Card. Leave it
+          on the default and we'll always use GlamLink teal ({DEFAULT_BRAND_COLOR}).
+        </p>
+
+        {/* Hidden field holds the actual form value; the swatches/picker below just write to it */}
+        <Form.Item
+          name="color_code"
+          initialValue={DEFAULT_BRAND_COLOR}
+          hidden
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item shouldUpdate noStyle>
+          {({ getFieldValue, setFieldValue }) => {
+            const selected = (
+              getFieldValue("color_code") || DEFAULT_BRAND_COLOR
+            ).toUpperCase();
+
+            return (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 18,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Space size={10} wrap>
+                  {COLOR_PRESETS.map(({ hex, label }) => (
+                    <div
+                      key={hex}
+                      title={`${label} — ${hex}`}
+                      className={`gl-color-swatch${
+                        selected === hex.toUpperCase() ? " is-selected" : ""
+                      }`}
+                      style={{ background: hex }}
+                      onClick={() => setFieldValue("color_code", hex)}
+                    />
+                  ))}
+                </Space>
+
+                <Divider type="vertical" style={{ height: 32, margin: 0 }} />
+
+                <ColorPicker
+                  value={selected}
+                  onChange={(color) =>
+                    setFieldValue("color_code", color.toHexString().toUpperCase())
+                  }
+                  showText={(color) => (
+                    <span style={{ fontSize: 13, color: "#555" }}>
+                      {color.toHexString().toUpperCase()}
+                    </span>
+                  )}
+                />
+
+                {selected !== DEFAULT_BRAND_COLOR && (
+                  <Button
+                    size="small"
+                    type="link"
+                    onClick={() =>
+                      setFieldValue("color_code", DEFAULT_BRAND_COLOR)
+                    }
+                  >
+                    Reset to Default
+                  </Button>
+                )}
+              </div>
+            );
+          }}
+        </Form.Item>
+      </Card>
+
+      {/* FEATURED LINKS */}
+      <Card
+        title="Featured Links"
+        style={{ marginBottom: 24 }}
+        extra={
+          <span style={{ color: "#999", fontSize: 12 }}>
+            Drag <span style={{ fontWeight: 700 }}>⠿</span> to reorder
+          </span>
+        }
+      >
+        <Form.List name="featured_links">
+          {(fields, { add, remove, move }) => (
+            <>
+              {fields.map((field, index) => {
+                const { key, name } = field;
+                const fieldUid =
+                  form.getFieldValue(["featured_links", name, "_uid"]) ||
+                  `fallback-${key}`;
+
+                return (
+                  <Card
+                    key={key}
+                    size="small"
+                    className={`fl-card${
+                      draggedFeaturedIndex === index ? " is-dragging" : ""
+                    }`}
+                    style={{ marginBottom: 16 }}
+                    draggable
+                    onDragStart={() => setDraggedFeaturedIndex(index)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => {
+                      if (
+                        draggedFeaturedIndex !== null &&
+                        draggedFeaturedIndex !== index
+                      ) {
+                        move(draggedFeaturedIndex, index);
+                      }
+                      setDraggedFeaturedIndex(null);
+                    }}
+                    onDragEnd={() => setDraggedFeaturedIndex(null)}
+                  >
+                    {/* stable id so images survive reordering */}
+                    <Form.Item
+                      name={[name, "_uid"]}
+                      initialValue={fieldUid}
+                      hidden
+                    >
+                      <Input />
+                    </Form.Item>
+
+                    <div style={{ display: "flex", gap: 14 }}>
+                      <div className="fl-drag-handle" title="Drag to reorder">
+                        ⠿
+                      </div>
+
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            marginBottom: 12,
+                          }}
+                        >
+                          <span className="fl-index-badge">{index + 1}</span>
+                          <span style={{ fontWeight: 600, color: "#333" }}>
+                            Featured Link
+                          </span>
+                          <Button
+                            danger
+                            type="text"
+                            size="small"
+                            icon={<DeleteOutlined />}
+                            style={{ marginLeft: "auto" }}
+                            onClick={() => {
+                              remove(name);
+                              setFeaturedLinkImages((prev) => {
+                                const updated = { ...prev };
+                                delete updated[fieldUid];
+                                return updated;
+                              });
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+
+                        <Row gutter={[16, 12]}>
+                          <Col xs={24} md={10}>
+                            <Form.Item
+                              name={[name, "title"]}
+                              label="Link Title"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Link title is required",
+                                },
+                              ]}
+                              style={{ marginBottom: 12 }}
+                            >
+                              <Input placeholder="Shop My Skincare Favorites" />
+                            </Form.Item>
+                          </Col>
+
+                          <Col xs={24} md={14}>
+                            <Form.Item
+                              name={[name, "url"]}
+                              label="URL"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "URL is required",
+                                },
+                              ]}
+                              style={{ marginBottom: 12 }}
+                            >
+                              <Input placeholder="https://example.com/product" />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+
+                        <Row align="middle" gutter={[16, 12]}>
+                          <Col>
+                            <div
+                              style={{
+                                fontSize: 13,
+                                fontWeight: 500,
+                                marginBottom: 6,
+                                color: "#555",
+                              }}
+                            >
+                              Thumbnail / Image
+                            </div>
+                            <div className="gl-featured-upload">
+                              <ImageCropModal
+                                fileList={featuredLinkImages[fieldUid] || []}
+                                setFileList={(files) =>
+                                  setFeaturedLinkImages((prev) => ({
+                                    ...prev,
+                                    [fieldUid]: files,
+                                  }))
+                                }
+                                aspect={4 / 3}
+                                maxCount={1}
+                                accept=".jpg,.jpeg,.png,.webp,.avif"
+                                listType="picture-card"
+                                uploadText="Upload"
+                              />
+                            </div>
+                          </Col>
+
+                          <Col flex="auto">
+                            <Form.Item
+                              name={[name, "is_featured"]}
+                              valuePropName="checked"
+                              style={{ marginBottom: 0 }}
+                            >
+                              <Checkbox
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    const currentLinks =
+                                      form.getFieldValue("featured_links") ||
+                                      [];
+
+                                    form.setFieldsValue({
+                                      featured_links: currentLinks.map(
+                                        (link, i) => ({
+                                          ...link,
+                                          is_featured: i === name,
+                                        }),
+                                      ),
+                                    });
+                                  }
+                                }}
+                              >
+                                <span className="fl-featured-chip">
+                                  ★ Feature this link
+                                </span>
+                              </Checkbox>
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+
+              <Button
+                type="dashed"
+                block
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  add({
+                    title: "",
+                    url: "",
+                    is_featured: false,
+                    _uid: generateUid(),
+                  });
+                }}
+              >
+                Add Featured Link
+              </Button>
+            </>
+          )}
+        </Form.List>
+      </Card>
+
       {/* SPECIALTIES & INFO */}
       <Card title="Services & Specialties" style={{ marginBottom: 24 }}>
         <Row gutter={[24, 0]}>
@@ -779,15 +1273,34 @@ const CreateBusinessCard = () => {
                                         onChange={async (stateId) => {
                                           const res =
                                             await getAllCityByStateId(stateId);
+
                                           setCities(
                                             res?.data?.data?.all_city || [],
                                           );
+
                                           const selectedState = states.find(
                                             (s) => s.id === stateId,
                                           );
+
                                           form.setFieldValue(
                                             ["locations", name, "state"],
                                             selectedState?.name,
+                                          );
+
+                                          // Reset city + coordinates when state changes
+                                          form.setFieldValue(
+                                            ["locations", name, "city"],
+                                            undefined,
+                                          );
+
+                                          form.setFieldValue(
+                                            ["locations", name, "latitude"],
+                                            undefined,
+                                          );
+
+                                          form.setFieldValue(
+                                            ["locations", name, "longitude"],
+                                            undefined,
                                           );
                                         }}
                                         options={states.map((state) => ({
@@ -797,6 +1310,7 @@ const CreateBusinessCard = () => {
                                       />
                                     </Form.Item>
                                   </Col>
+
                                   <Col span={12}>
                                     <Form.Item
                                       name={[name, "city"]}
@@ -807,6 +1321,48 @@ const CreateBusinessCard = () => {
                                         optionFilterProp="label"
                                         size="large"
                                         placeholder="Search City"
+                                        onChange={async (city) => {
+                                          const state = form.getFieldValue([
+                                            "locations",
+                                            name,
+                                            "state",
+                                          ]);
+
+                                          if (!city || !state) return;
+
+                                          try {
+                                            const coordinates =
+                                              await getCityCoordinates(
+                                                city,
+                                                state,
+                                              );
+
+                                            form.setFieldsValue({
+                                              locations: form
+                                                .getFieldValue("locations")
+                                                .map((location, index) =>
+                                                  index === name
+                                                    ? {
+                                                        ...location,
+                                                        latitude:
+                                                          coordinates.latitude,
+                                                        longitude:
+                                                          coordinates.longitude,
+                                                      }
+                                                    : location,
+                                                ),
+                                            });
+                                          } catch (error) {
+                                            console.error(
+                                              "CITY COORDINATES ERROR:",
+                                              error,
+                                            );
+
+                                            message.error(
+                                              "Unable to get coordinates for this city.",
+                                            );
+                                          }
+                                        }}
                                         options={cities.map((city) => ({
                                           label: city.name,
                                           value: city.name,
@@ -816,21 +1372,15 @@ const CreateBusinessCard = () => {
                                   </Col>
                                 </Row>
 
-                                <Form.Item
-                                  name={[name, "address"]}
-                                  label="Exact Address"
-                                >
-                                  <LocationAutocomplete
-                                    form={form}
-                                    locationIndex={name}
-                                  />
-                                </Form.Item>
+                                {/* Coordinates are stored but not displayed */}
                                 <Form.Item name={[name, "latitude"]} hidden>
                                   <Input />
                                 </Form.Item>
+
                                 <Form.Item name={[name, "longitude"]} hidden>
                                   <Input />
                                 </Form.Item>
+
                                 <Form.Item name={[name, "state"]} hidden>
                                   <Input />
                                 </Form.Item>
@@ -916,7 +1466,7 @@ const CreateBusinessCard = () => {
                 <ImageCropModal
                   fileList={profileImage}
                   setFileList={setProfileImage}
-                  aspect={1}
+                  aspect={4 / 3}
                   maxCount={1}
                   accept=".jpg,.jpeg,.png,.webp"
                   listType="picture-card"
@@ -931,7 +1481,7 @@ const CreateBusinessCard = () => {
             <Form.Item label="Gallery Images">
               <div className="gl-gallery-upload">
                 <ImageCropModal
-                  aspect={16 / 9}
+                  aspect={4 / 3}
                   fileList={images}
                   setFileList={setImages}
                   multiple
@@ -1015,7 +1565,7 @@ const CreateBusinessCard = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <ImageCropModal
-                        aspect={16 / 9}
+                        aspect={4 / 3}
                         fileList={item.thumbnail ? [item.thumbnail] : []}
                         setFileList={(files) => {
                           setVideos((prev) =>

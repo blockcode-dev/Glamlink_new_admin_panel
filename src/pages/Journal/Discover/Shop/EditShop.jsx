@@ -11,22 +11,50 @@ import {
   Card,
   Space,
 } from "antd";
-import { UploadOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
 import { Box } from "@material-ui/core";
 import { useParams, useNavigate } from "react-router-dom";
 import ImgCrop from "antd-img-crop";
-import { GetShopById, UpdateShop } from "../../../../services/Api/JournalApi";
+
+import {
+  GetShopById,
+  UpdateShop,
+  GetAllJournalTopics,
+  GetJournalTopicById,
+  UpdateJournalTopicShops,
+} from "../../../../services/Api/JournalApi";
 
 const EditShop = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [form] = Form.useForm();
+
   const [fileList, setFileList] = useState([]);
+
+  // ==========================
+  // Topics
+  // ==========================
+
+  const [topics, setTopics] = useState([]);
+  const [selectedTopicIds, setSelectedTopicIds] = useState([]);
+  const [initialTopicIds, setInitialTopicIds] = useState([]);
+
+  // ==========================
+  // Fetch Shop
+  // ==========================
 
   const fetchShop = async () => {
     try {
       const result = await GetShopById(id);
       const shop = result.data?.data;
+
+      if (!shop) {
+        message.error("Shop not found");
+        return;
+      }
 
       form.setFieldsValue({
         title: shop.title,
@@ -47,40 +75,172 @@ const EditShop = () => {
           },
         ]);
       }
-    } catch {
+
+      // ==========================
+      // Topics directly from Shop API
+      // ==========================
+
+      const assignedTopicIds = Array.isArray(
+        shop.journal_topics,
+      )
+        ? shop.journal_topics.map((topic) =>
+            Number(topic.id),
+          )
+        : [];
+
+      setSelectedTopicIds(assignedTopicIds);
+      setInitialTopicIds(assignedTopicIds);
+    } catch (error) {
+      console.error(error);
       message.error("Failed to load shop");
+    }
+  };
+
+  // ==========================
+  // Fetch Topics
+  // ==========================
+
+  const fetchTopics = async () => {
+    try {
+      const result = await GetAllJournalTopics();
+
+      const topicList = Array.isArray(result?.data?.data)
+        ? result.data.data
+        : result?.data?.data?.rows ||
+          result?.data?.rows ||
+          [];
+
+      setTopics(topicList);
+    } catch (error) {
+      console.error(error);
+      message.error("Failed to load topics");
     }
   };
 
   useEffect(() => {
     fetchShop();
-  }, []);
+    fetchTopics();
+  }, [id]);
 
-  /* ================= SUBMIT ================= */
+  // ==========================
+  // Submit
+  // ==========================
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
 
+      // ==========================
+      // Update Shop
+      // ==========================
+
       const formData = new FormData();
+
       formData.append("title", values.title);
-      formData.append("short_description", values.short_description);
-      formData.append("brand", values.brand);
-      formData.append("price", values.price);
+      formData.append(
+        "short_description",
+        values.short_description,
+      );
+      formData.append("brand", values.brand || "");
+
+      if (
+        values.price !== undefined &&
+        values.price !== null &&
+        values.price !== ""
+      ) {
+        formData.append("price", values.price);
+      }
+
       formData.append("link", values.link);
       formData.append("status", values.status);
 
-      // Only append new image if changed
       if (fileList[0]?.originFileObj) {
-        formData.append("images", fileList[0].originFileObj);
+        formData.append(
+          "images",
+          fileList[0].originFileObj,
+        );
       }
 
       await UpdateShop(id, formData);
 
-      message.success("Shop updated successfully");
+      // ==========================
+      // Update Topic Mappings
+      // ==========================
+
+      const currentTopicIds =
+        selectedTopicIds.map(Number);
+
+      const previousTopicIds =
+        initialTopicIds.map(Number);
+
+      const affectedTopicIds = [
+        ...new Set([
+          ...currentTopicIds,
+          ...previousTopicIds,
+        ]),
+      ];
+
+      for (const topicId of affectedTopicIds) {
+        /*
+         * UpdateJournalTopicShops replaces all shops
+         * for the topic, so first get the current
+         * shops to preserve the other shops.
+         */
+        const topicResult =
+          await GetJournalTopicById(topicId);
+
+        const topic = topicResult?.data?.data;
+
+        if (!topic) {
+          continue;
+        }
+
+        const topicShops = Array.isArray(
+          topic.shops,
+        )
+          ? topic.shops
+          : [];
+
+        const isSelected =
+          currentTopicIds.includes(
+            Number(topicId),
+          );
+
+        let shopIds = topicShops
+          .map((shop) => Number(shop.id))
+          .filter(Boolean);
+
+        if (isSelected) {
+          if (!shopIds.includes(Number(id))) {
+            shopIds.push(Number(id));
+          }
+        } else {
+          shopIds = shopIds.filter(
+            (shopId) =>
+              shopId !== Number(id),
+          );
+        }
+
+        await UpdateJournalTopicShops(
+          topicId,
+          {
+            shop_ids: shopIds,
+          },
+        );
+      }
+
+      message.success(
+        "Shop updated successfully",
+      );
+
       navigate("/shop");
-    } catch {
-      message.error("Failed to update Shop");
+    } catch (error) {
+      console.error(error);
+
+      message.error(
+        error?.response?.data?.message ||
+          "Failed to update Shop",
+      );
     }
   };
 
@@ -98,18 +258,29 @@ const EditShop = () => {
           <p>Manage Shop</p>
         </div>
 
-        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/shop")}>
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/shop")}
+        >
           Return to Shop Articles
         </Button>
       </Box>
 
       {/* CARD */}
       <Card title="Edit Shop" bordered>
-        <Form form={form} layout="vertical">
+        <Form
+          form={form}
+          layout="vertical"
+        >
           <Form.Item
             name="title"
             label="Title"
-            rules={[{ required: true, message: "Title is required" }]}
+            rules={[
+              {
+                required: true,
+                message: "Title is required",
+              },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -117,7 +288,13 @@ const EditShop = () => {
           <Form.Item
             name="short_description"
             label="Short Description"
-            rules={[{ required: true, message: "Short description required" }]}
+            rules={[
+              {
+                required: true,
+                message:
+                  "Short description required",
+              },
+            ]}
           >
             <Input.TextArea rows={3} />
           </Form.Item>
@@ -125,12 +302,6 @@ const EditShop = () => {
           <Form.Item
             name="brand"
             label="Brand"
-            // rules={[
-            //   {
-            //     required: true,
-            //     message: "Brand is required",
-            //   },
-            // ]}
           >
             <Input placeholder="Enter brand name" />
           </Form.Item>
@@ -138,12 +309,6 @@ const EditShop = () => {
           <Form.Item
             name="price"
             label="Price"
-            // rules={[
-            //   {
-            //     required: true,
-            //     message: "Price is required",
-            //   },
-            // ]}
           >
             <Input
               type="number"
@@ -156,7 +321,12 @@ const EditShop = () => {
           <Form.Item
             name="link"
             label="Link"
-            rules={[{ required: true, message: "Link is required" }]}
+            rules={[
+              {
+                required: true,
+                message: "Link is required",
+              },
+            ]}
           >
             <Input placeholder="https://..." />
           </Form.Item>
@@ -172,15 +342,57 @@ const EditShop = () => {
             ]}
           >
             <Select placeholder="Select Status">
-              <Select.Option value="draft">Draft</Select.Option>
+              <Select.Option value="draft">
+                Draft
+              </Select.Option>
 
-              <Select.Option value="published">Published</Select.Option>
+              <Select.Option value="published">
+                Published
+              </Select.Option>
             </Select>
           </Form.Item>
 
+          {/* ==========================
+              TOPICS
+          ========================== */}
+
+          <Card
+            title="Topics"
+            size="small"
+            style={{
+              marginBottom: 24,
+            }}
+          >
+            <Form.Item
+              label="Shop Topics"
+              style={{
+                marginBottom: 0,
+              }}
+              extra="Select one or more reusable topics for this shop"
+            >
+              <Select
+                mode="multiple"
+                value={selectedTopicIds}
+                onChange={setSelectedTopicIds}
+                placeholder="Select topics"
+                showSearch
+                optionFilterProp="label"
+                allowClear
+                options={topics.map(
+                  (topic) => ({
+                    value: Number(topic.id),
+                    label: topic.name,
+                  }),
+                )}
+              />
+            </Form.Item>
+          </Card>
+
+          {/* COVER IMAGE */}
+
           <Form.Item label="Cover Image">
             <ImgCrop
-              aspect={16 / 9}
+              aspect={5 / 5.5}
               quality={1}
               showGrid
               rotationSlider
@@ -190,35 +402,51 @@ const EditShop = () => {
             >
               <Upload
                 beforeUpload={(file) => {
-                  // ✅ store cropped file
                   setFileList([
                     {
                       uid: file.uid,
                       name: file.name,
                       status: "done",
-                      originFileObj: file, // 🔥 cropped file
-                      url: URL.createObjectURL(file), // preview
+                      originFileObj: file,
+                      url: URL.createObjectURL(
+                        file,
+                      ),
                     },
                   ]);
 
                   return false;
                 }}
                 fileList={fileList}
-                onRemove={() => setFileList([])}
+                onRemove={() =>
+                  setFileList([])
+                }
                 maxCount={1}
                 listType="picture"
               >
-                <Button icon={<UploadOutlined />}>Update Cover Image</Button>
+                <Button
+                  icon={<UploadOutlined />}
+                >
+                  Update Cover Image
+                </Button>
               </Upload>
             </ImgCrop>
           </Form.Item>
 
           <Space>
-            <Button type="primary" onClick={handleSubmit}>
+            <Button
+              type="primary"
+              onClick={handleSubmit}
+            >
               Update Shop
             </Button>
 
-            <Button onClick={() => navigate("/shop")}>Cancel</Button>
+            <Button
+              onClick={() =>
+                navigate("/shop")
+              }
+            >
+              Cancel
+            </Button>
           </Space>
         </Form>
       </Card>

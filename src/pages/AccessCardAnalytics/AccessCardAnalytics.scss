@@ -1,0 +1,948 @@
+/** @format */
+
+$brand: #25b8cb;
+$brand-dark: #178a99;
+$brand-soft: #e9f8fa;
+$click: #f2866b;
+$text: #1c2b31;
+$muted: #7b8c93;
+$line: #e8eff1;
+$bg: #f5f9fa;
+
+.aca {
+  margin: -24px;
+  padding: 24px;
+  min-height: calc(100vh - 112px);
+  background: $bg;
+  color: $text;
+  font-variant-numeric: tabular-nums;
+
+  h2,
+  h3 {
+    margin: 0;
+    color: $text;
+  }
+}
+
+.aca-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.aca-muted {
+  color: $muted;
+}
+
+.aca-avatar {
+  background: linear-gradient(135deg, #3fcadb, $brand-dark) !important;
+  color: #fff;
+  font-weight: 600;
+  flex-shrink: 0;
+
+  &--lg {
+    font-size: 26px !important;
+    box-shadow: 0 0 0 4px #fff, 0 0 0 6px rgba($brand, 0.35);
+  }
+}
+
+// ------------------------------------------------------------
+// TITLE (overview)
+// ------------------------------------------------------------
+
+.aca-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #fff;
+    background: linear-gradient(135deg, #3fcadb, $brand-dark);
+    box-shadow: 0 8px 18px -6px rgba($brand, 0.6);
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 2px 0 0;
+    color: $muted;
+    font-size: 14px;
+  }
+}
+
+// ------------------------------------------------------------
+// PROFILE (single card)
+// ------------------------------------------------------------
+
+.aca-back {
+  border: 0;
+  background: none;
+  padding: 0;
+  margin-bottom: 12px;
+  color: $muted;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    color: $brand-dark;
+  }
+}
+
+.aca-profile {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 24px 26px;
+  margin-bottom: 16px;
+  border-radius: 18px;
+  border: 1px solid #d4f0f4;
+  background: linear-gradient(120deg, #ffffff 0%, $brand-soft 100%);
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: -60px;
+    bottom: -90px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba($brand, 0.08);
+    pointer-events: none;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+    z-index: 1;
+
+    h2 {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+  }
+
+  &__business {
+    margin-top: 2px;
+    color: $muted;
+    font-size: 14px;
+  }
+
+  &__link {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 6px 5px 12px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid $line;
+    font-size: 13px;
+    color: $brand-dark;
+    max-width: 100%;
+
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    button {
+      border: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: $brand-soft;
+      color: $brand-dark;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background: $brand;
+        color: #fff;
+      }
+    }
+  }
+
+  &__cta {
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 8px 18px -8px rgba($brand, 0.8);
+  }
+}
+
+// ------------------------------------------------------------
+// DATE BAR
+// ------------------------------------------------------------
+
+.aca-datebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 14px 12px 18px;
+  margin-bottom: 18px;
+  background: #fff;
+  border: 1px solid $line;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(16, 40, 48, 0.04);
+
+  &__current {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    > .anticon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: $brand-soft;
+      color: $brand-dark;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+    }
+
+    small {
+      display: block;
+      font-size: 12px;
+      color: $muted;
+    }
+
+    b {
+      font-size: 15px;
+    }
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+
+    .ant-segmented {
+      background: #eef4f5;
+      padding: 3px;
+    }
+
+    .ant-segmented-item-selected {
+      background: $brand;
+      color: #fff;
+      font-weight: 600;
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// STATS
+// ------------------------------------------------------------
+
+.aca-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.aca-stat {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid $line;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(16, 40, 48, 0.04);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 18px;
+    bottom: 18px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: var(--c);
+  }
+
+  &__icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 12%, white);
+  }
+
+  &__value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
+
+    small {
+      font-size: 14px;
+      font-weight: 500;
+      color: $muted;
+    }
+  }
+
+  &__label {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: $muted;
+  }
+}
+
+// ------------------------------------------------------------
+// BOXES
+// ------------------------------------------------------------
+
+.aca-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  gap: 18px;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.aca-box {
+  background: #fff;
+  border: 1px solid $line;
+  border-radius: 16px;
+  padding: 20px 22px;
+  min-width: 0;
+  box-shadow: 0 1px 2px rgba(16, 40, 48, 0.04);
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    p {
+      margin: 2px 0 0;
+      font-size: 13px;
+      color: $muted;
+    }
+  }
+}
+
+.aca-nodata {
+  padding: 26px 0;
+}
+
+.aca-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: $muted;
+  white-space: nowrap;
+}
+
+.aca-tools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.aca-search {
+  width: 260px;
+  max-width: 100%;
+}
+
+.aca-track {
+  height: 6px;
+  border-radius: 99px;
+  background: #eef4f5;
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+}
+
+// ------------------------------------------------------------
+// CHART
+// ------------------------------------------------------------
+
+.aca-chart {
+  &__legend {
+    display: flex;
+    gap: 18px;
+    margin: -6px 0 14px;
+    font-size: 12px;
+    color: $muted;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    i {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+  }
+
+  &__body {
+    display: flex;
+    gap: 10px;
+  }
+
+  &__y {
+    height: 220px;
+    min-width: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: right;
+    font-size: 11px;
+    color: #a3b1b6;
+    transform: translateY(-7px);
+  }
+
+  &__main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__plot {
+    position: relative;
+    height: 220px;
+  }
+
+  &__grid {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    div {
+      border-top: 1px dashed $line;
+    }
+
+    div:last-child {
+      border-top: 1px solid #d9e5e8;
+    }
+  }
+
+  &__cols {
+    position: absolute;
+    inset: 0;
+    display: flex;
+  }
+
+  &__col {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    border-radius: 10px 10px 0 0;
+    transition: background 0.15s ease;
+
+    &.is-hover {
+      background: rgba($brand, 0.07);
+    }
+  }
+
+  &__bars {
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 14%;
+
+    span {
+      flex: 1;
+      max-width: 26px;
+      border-radius: 6px 6px 2px 2px;
+      transition: height 0.4s ease;
+
+      &.is-views {
+        background: linear-gradient(180deg, #4fd2e1, $brand-dark);
+      }
+
+      &.is-clicks {
+        background: linear-gradient(180deg, #f7a68f, #e86e51);
+      }
+    }
+  }
+
+  &__x {
+    display: flex;
+    margin-top: 8px;
+
+    span {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      font-size: 11px;
+      color: #a3b1b6;
+      white-space: nowrap;
+    }
+  }
+}
+
+.aca-tip {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(10px);
+  z-index: 3;
+  min-width: 140px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: $text;
+  color: #fff;
+  font-size: 12px;
+  box-shadow: 0 10px 24px rgba(16, 40, 48, 0.22);
+  pointer-events: none;
+
+  &--left {
+    transform: translateX(calc(-100% - 10px));
+  }
+
+  &__date {
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.7;
+
+    i {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+
+    b {
+      margin-left: auto;
+      color: #fff;
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// TOP CARDS
+// ------------------------------------------------------------
+
+.aca-top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease;
+
+    &:hover {
+      background: $brand-soft;
+      border-color: #d4f0f4;
+    }
+  }
+
+  &__rank {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #eef4f5;
+    color: $muted;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &.is-first {
+      background: #fff4dc;
+      color: #e2a93b;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    font-size: 12px;
+    color: $muted;
+  }
+
+  &__views {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    b {
+      font-size: 18px;
+      color: $brand-dark;
+      line-height: 1.1;
+    }
+
+    small {
+      font-size: 11px;
+      color: $muted;
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// DEVICES
+// ------------------------------------------------------------
+
+.aca-devices {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.aca-device-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  &__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 12%, white);
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+
+    small {
+      font-size: 12px;
+      color: $muted;
+    }
+  }
+
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+// ------------------------------------------------------------
+// BUTTON TILES
+// ------------------------------------------------------------
+
+.aca-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.aca-btn-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid $line;
+  border-radius: 14px;
+  background: #fbfdfd;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--c) 40%, white);
+    background: #fff;
+  }
+
+  &.is-zero {
+    opacity: 0.55;
+  }
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 12%, white);
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+
+    small {
+      display: block;
+      margin-top: 5px;
+      font-size: 11px;
+      color: $muted;
+    }
+  }
+
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 500;
+
+    b {
+      font-size: 18px;
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// TABLES
+// ------------------------------------------------------------
+
+.aca-table {
+  .ant-table-thead > tr > th {
+    background: #f7fafb;
+    color: $muted;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .ant-table-tbody > tr {
+    cursor: pointer;
+  }
+
+  .ant-table-tbody > tr:hover > td {
+    background: #f4fbfc !important;
+  }
+
+  &--static .ant-table-tbody > tr {
+    cursor: default;
+  }
+}
+
+.aca-cardcell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+
+  &__text {
+    min-width: 0;
+  }
+
+  &__name {
+    font-weight: 600;
+  }
+
+  &__meta {
+    font-size: 12px;
+    color: $muted;
+    max-width: 260px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.aca-pill {
+  display: inline-block;
+  min-width: 42px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+
+  &--views {
+    background: $brand-soft;
+    color: $brand-dark;
+  }
+
+  &--visitors {
+    background: #f1edff;
+    color: #6b4fd8;
+  }
+
+  &--clicks {
+    background: #fff0eb;
+    color: #d9603f;
+  }
+}
+
+.aca-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aca-view-btn {
+  border-color: #cdeef3;
+  color: $brand-dark;
+  font-weight: 500;
+
+  .anticon {
+    font-size: 10px;
+  }
+}
+
+.aca-event {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 12%, white);
+  }
+
+  &__label {
+    font-weight: 500;
+  }
+}
+
+.aca-link {
+  color: $brand-dark;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.aca-device {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $muted;
+}
+
+.aca-when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  b {
+    font-weight: 600;
+  }
+
+  span {
+    font-size: 12px;
+    color: $muted;
+  }
+}
+
+.aca-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+// ------------------------------------------------------------
+// MOBILE
+// ------------------------------------------------------------
+
+@media (max-width: 640px) {
+  .aca {
+    margin: -16px;
+    padding: 16px;
+  }
+
+  .aca-profile {
+    padding: 18px;
+  }
+
+  .aca-profile__cta {
+    width: 100%;
+  }
+}

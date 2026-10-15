@@ -213,10 +213,10 @@ const Professionals = () => {
     },
 
     {
-    	title: "Account Created On",
-    	dataIndex: "created_at",
-    	width: "30%",
-    	render: (date) => moment(date).format("YYYY-MM-DD HH:mm:ss"),
+      title: "Account Created On",
+      dataIndex: "created_at",
+      width: "30%",
+      render: (date) => moment(date).format("YYYY-MM-DD HH:mm:ss"),
     },
     {
       title: "Promotion",
@@ -291,7 +291,6 @@ const Professionals = () => {
               ...smallIconBtnStyle,
               color: "red",
               borderColor: "red",
-            
             }}
             onClick={() => handleDelete([record.id])}
           />
@@ -443,14 +442,72 @@ const Professionals = () => {
       content: `Are you sure you want to delete ${
         userIds.length > 1 ? "these users" : "this user"
       }?`,
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+
       onOk: async () => {
         try {
           await DeleteUser(userIds, localStorage.getItem("adminToken"));
-          message.success("Employee(s) deleted successfully");
+
+          message.success(
+            `${userIds.length > 1 ? "Users" : "User"} deleted successfully`,
+          );
+
+          setSelectedRowKeys([]);
           getData();
         } catch (error) {
           console.error("Error deleting employee(s):", error);
-          message.error("Error deleting employee(s)");
+
+          const rawMessage =
+            error?.response?.data?.message ||
+            error?.response?.data?.error ||
+            error?.message ||
+            "";
+
+          // Detect the "user still has an Access Card" conflict from the backend
+          const isAccessCardConflict =
+            /access\s*card|business\s*card/i.test(rawMessage) ||
+            error?.response?.status === 409;
+
+          if (isAccessCardConflict) {
+            Modal.error({
+              title: "Can't Delete This Account",
+              centered: true,
+              okText: "Got it",
+              width: 460,
+              content: (
+                <div style={{ paddingTop: 6 }}>
+                  <p style={{ marginBottom: 10 }}>
+                    This account still has an{" "}
+                    <strong>active Access Card</strong> linked to it, so it
+                    can't be deleted yet.
+                  </p>
+                  <div
+                    style={{
+                      background: "#fff7e6",
+                      border: "1px solid #ffe1a8",
+                      borderRadius: 8,
+                      padding: "10px 12px",
+                      fontSize: 13,
+                      color: "#8a6d3b",
+                    }}
+                  >
+                    Please delete the user's <strong>Access Card</strong> first,
+                    then try deleting the account again.
+                  </div>
+                </div>
+              ),
+            });
+          } else {
+            Modal.error({
+              title: "Unable to Delete User",
+              content:
+                rawMessage || "Unable to delete user(s). Please try again.",
+              okText: "OK",
+              centered: true,
+            });
+          }
         }
       },
     });
@@ -649,7 +706,7 @@ const Professionals = () => {
                 onSearch(e.target.value);
               }}
               placeholder="Search..."
-              style={{ height: "42px", borderRadius: "6px", }}
+              style={{ height: "42px", borderRadius: "6px" }}
             />
           </span>
 
@@ -659,7 +716,7 @@ const Professionals = () => {
             style={{
               height: "42px",
               borderRadius: "6px",
-              margin:"10px"
+              margin: "10px",
             }}
             onClick={exportToCSV}
           />

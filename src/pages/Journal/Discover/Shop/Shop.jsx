@@ -1,14 +1,31 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table, Space, message, Button, Input, Modal, Tag } from "antd";
-import { PlusOutlined, HolderOutlined } from "@ant-design/icons";
+import {
+  Table,
+  Space,
+  message,
+  notification,
+  Button,
+  Input,
+  Modal,
+  Tag,
+  Upload,
+} from "antd";
+import {
+  PlusOutlined,
+  HolderOutlined,
+  UploadOutlined,
+  InboxOutlined,
+  DownloadOutlined,
+} from "@ant-design/icons";
 import { Box } from "@material-ui/core";
 import { useNavigate } from "react-router-dom";
 import {
   UpdateShopSortOrder,
   GetAllShop,
   DeleteShop,
+  BulkUploadShopCsv,
 } from "../../../../services/Api/JournalApi";
 import {
   DndContext,
@@ -26,6 +43,27 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const { Search } = Input;
+
+const REQUIRED_CSV_COLUMNS = ["product_name", "search_price"];
+
+// Reads just the header line client-side to reject bad CSVs before upload
+const validateCsvHeaders = (file) =>
+  new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const firstLine = (e.target.result || "").split(/\r?\n/)[0] || "";
+      const headers = firstLine
+        .split(",")
+        .map((h) => h.trim().replace(/^"|"$/g, ""));
+      const missing = REQUIRED_CSV_COLUMNS.filter(
+        (col) => !headers.includes(col),
+      );
+      resolve({ valid: missing.length === 0, missing });
+    };
+    reader.onerror = () =>
+      resolve({ valid: false, missing: REQUIRED_CSV_COLUMNS });
+    reader.readAsText(file.slice(0, 4000));
+  });
 
 // One draggable table row
 const DraggableRow = ({ children, "data-row-key": rowKey, ...restProps }) => {
@@ -53,7 +91,6 @@ const DraggableRow = ({ children, "data-row-key": rowKey, ...restProps }) => {
       : {}),
   };
 
-  // Inject the drag handle listeners only into the "drag" cell
   const injectedChildren = React.Children.map(children, (child) => {
     if (child && child.key === "drag-handle") {
       return React.cloneElement(child, {
@@ -95,6 +132,10 @@ const Shop = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [fileList, setFileList] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 5 },
@@ -104,9 +145,7 @@ const Shop = () => {
   const persistOrder = async (newData) => {
     try {
       await UpdateShopSortOrder({
-        items: newData.map((item) => ({
-          id: item.id,
-        })),
+        items: newData.map((item) => ({ id: item.id })),
       });
       message.success("Event order updated");
     } catch {
@@ -122,7 +161,7 @@ const Shop = () => {
       dataIndex: "sort",
       width: 50,
       align: "center",
-      render: () => null, // filled in by DraggableRow
+      render: () => null,
     },
     {
       title: "S.No.",
@@ -135,7 +174,6 @@ const Shop = () => {
       dataIndex: "cover_image",
       width: 100,
       align: "center",
-
       render: (img) =>
         img ? (
           <img
@@ -171,15 +209,8 @@ const Shop = () => {
       title: "Title",
       dataIndex: "title",
       width: 260,
-
       render: (text) => (
-        <div
-          style={{
-            fontWeight: 600,
-            color: "#1f1f1f",
-            lineHeight: "20px",
-          }}
-        >
+        <div style={{ fontWeight: 600, color: "#1f1f1f", lineHeight: "20px" }}>
           {text}
         </div>
       ),
@@ -197,7 +228,6 @@ const Shop = () => {
       align: "center",
       render: (price) => `$${Number(price).toFixed(2)}`,
     },
-
     {
       title: "Link",
       dataIndex: "link",
@@ -211,15 +241,8 @@ const Shop = () => {
       title: "Description",
       dataIndex: "short_description",
       width: 320,
-
       render: (text) => (
-        <div
-          style={{
-            color: "#666",
-            fontSize: 13,
-            lineHeight: "20px",
-          }}
-        >
+        <div style={{ color: "#666", fontSize: 13, lineHeight: "20px" }}>
           {text?.length > 100 ? text.substring(0, 100) + "..." : text || "-"}
         </div>
       ),
@@ -229,7 +252,6 @@ const Shop = () => {
       dataIndex: "status",
       width: 120,
       align: "center",
-
       render: (status) => (
         <Tag
           color={status === "published" ? "green" : "orange"}
@@ -244,32 +266,23 @@ const Shop = () => {
         </Tag>
       ),
     },
-
     {
       title: "Action",
       width: 140,
       align: "center",
-
       render: (_, record) => (
         <Space size="middle">
           <Button
             type="link"
-            style={{
-              padding: 0,
-              fontWeight: 500,
-            }}
+            style={{ padding: 0, fontWeight: 500 }}
             onClick={() => navigate(`/edit-shop/${record.id}`)}
           >
             Edit
           </Button>
-
           <Button
             type="link"
             danger
-            style={{
-              padding: 0,
-              fontWeight: 500,
-            }}
+            style={{ padding: 0, fontWeight: 500 }}
             onClick={() => handleDelete(record.id)}
           >
             Delete
@@ -342,6 +355,97 @@ const Shop = () => {
     });
   };
 
+  // ---- CSV upload ----
+
+  const handleDownloadTemplate = () => {
+    const header =
+      "aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,brand_name,large_image";
+    const sampleRow =
+      'https://example.com/test-product,TEST - Sample Hydrating Serum,0000000001,TEST-001,https://example.com/images/test-product.jpg,"Sample test product for CSV import — safe to delete after testing.",Skincare,49.99,Test Brand,https://example.com/images/test-product-large.jpg';
+
+    const blob = new Blob([`${header}\n${sampleRow}\n`], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "shop-import-sample.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const draggerProps = {
+    multiple: false,
+    accept: ".csv",
+    fileList,
+    beforeUpload: async (file) => {
+      const isCsv =
+        file.type === "text/csv" || file.name.toLowerCase().endsWith(".csv");
+      if (!isCsv) {
+        message.error("Only .csv files are allowed.");
+        return Upload.LIST_IGNORE;
+      }
+
+      const { valid, missing } = await validateCsvHeaders(file);
+      if (!valid) {
+        message.error(
+          `CSV is missing required column(s): ${missing.join(", ")}. Upload rejected.`,
+        );
+        return Upload.LIST_IGNORE;
+      }
+
+      setFileList([file]);
+      return false; // prevent antd auto-upload, we submit manually
+    },
+    onRemove: () => setFileList([]),
+  };
+
+  const handleCsvUpload = async () => {
+    if (!fileList.length) {
+      message.warning("Select a CSV file first.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("csv_file", fileList[0]);
+
+    setUploading(true);
+    try {
+      const res = await BulkUploadShopCsv(formData);
+      const result = res.data.data;
+
+      message.success(res.data.message || "CSV uploaded successfully.");
+
+      if (result.skipped?.length) {
+        const rowNumbers = result.skipped.map((s) => s.row);
+        const shown = rowNumbers.slice(0, 10).join(", ");
+        const more =
+          rowNumbers.length > 10 ? ` and ${rowNumbers.length - 10} more` : "";
+
+        notification.warning({
+          message: `${result.skipped.length} row(s) skipped`,
+          description: `Imported ${result.inserted} of ${result.totalRows} rows. Skipped CSV row(s): ${shown}${more} — missing product_name or search_price.`,
+          duration: 8,
+        });
+      }
+
+      getData();
+      setUploadModalOpen(false);
+      setFileList([]);
+    } catch (err) {
+      message.error(err?.response?.data?.message || "CSV upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const closeUploadModal = () => {
+    setUploadModalOpen(false);
+    setFileList([]);
+  };
+
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" marginBottom="20px">
@@ -357,6 +461,12 @@ const Shop = () => {
             onChange={(e) => onSearch(e.target.value)}
             style={{ width: 250 }}
           />
+          <Button
+            icon={<UploadOutlined />}
+            onClick={() => setUploadModalOpen(true)}
+          >
+            Upload CSV
+          </Button>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -393,6 +503,77 @@ const Shop = () => {
           />
         </SortableContext>
       </DndContext>
+
+      <Modal
+        title="Bulk Import Shop Products"
+        open={uploadModalOpen}
+        onCancel={closeUploadModal}
+        width={600}
+        footer={[
+          <Button key="cancel" onClick={closeUploadModal}>
+            Cancel
+          </Button>,
+          <Button
+            key="upload"
+            type="primary"
+            loading={uploading}
+            disabled={!fileList.length}
+            onClick={handleCsvUpload}
+          >
+            Upload CSV
+          </Button>,
+        ]}
+      >
+        <div
+          style={{
+            marginBottom: 16,
+            padding: 12,
+            background: "#f0f9fa",
+            borderRadius: 8,
+            fontSize: 13,
+            lineHeight: "20px",
+          }}
+        >
+          <strong>Required columns:</strong> <code>product_name</code>,{" "}
+          <code>search_price</code>
+          <br />
+          <strong>Optional columns:</strong> <code>description</code>,{" "}
+          <code>brand_name</code>, <code>aw_deep_link</code> (product link),{" "}
+          <code>large_image</code> or <code>merchant_image_url</code> (cover
+          image), <code>merchant_category</code>
+          <br />
+          <br />
+          Cover images are downloaded from the CSV link, cropped to a consistent
+          ratio, and saved on our own server — not linked externally, and
+          consistent with every other product image on the site.
+          <br />
+          <br />
+          Rows missing a required value are skipped; you'll see a summary after
+          upload. A CSV missing a required column entirely is rejected before it
+          even uploads.
+          <br />
+          <br />
+          All imported products are created as <strong>Published</strong> and go
+          live immediately. Review the details afterward and edit any field if
+          something needs fixing.
+        </div>
+
+        <Button
+          icon={<DownloadOutlined />}
+          onClick={handleDownloadTemplate}
+          style={{ marginBottom: 16 }}
+        >
+          Download sample CSV
+        </Button>
+
+        <Upload.Dragger {...draggerProps}>
+          <p className="ant-upload-drag-icon">
+            <InboxOutlined />
+          </p>
+          <p className="ant-upload-text">Click or drag a CSV file to upload</p>
+          <p className="ant-upload-hint">Only .csv files, max 5MB.</p>
+        </Upload.Dragger>
+      </Modal>
     </Box>
   );
 };

@@ -104,6 +104,18 @@ import EditEvent from "./pages/Journal/Discover/Event/EditEvent.jsx";
 import Shop from "./pages/Journal/Discover/Shop/Shop.jsx";
 import AddShop from "./pages/Journal/Discover/Shop/AddShop.jsx";
 import EditShop from "./pages/Journal/Discover/Shop/EditShop.jsx";
+import AccessOrders from "./pages/BusinessCard/AccessOrders.jsx";
+import Ads from "./pages/Ads/AdsList.jsx";
+import AddAd from "./pages/Ads/AddAd.jsx";
+import ViewAd from "./pages/Ads/Viewad.jsx";
+import JournalTopics from "./pages/JournalTopics/JournalTopics.jsx";
+import JournalFaq from "./pages/JournalFaq/JournalFaq.jsx";
+import AddJournalTopic from "./pages/JournalTopics/AddJournalTopic.jsx";
+import EditJournalTopic from "./pages/JournalTopics/EditJournalTopic.jsx";
+import JournalTopicDetails from "./pages/JournalTopics/JournalTopicDetails.jsx";
+import AccessCardAnalytics from "./pages/AccessCardAnalytics/AccessCardAnalytics.jsx";
+import PartnerInquiries from "./pages/PartnerInquiries/PartnerInquiries.jsx";
+import ViewPartnerInquiry from "./pages/PartnerInquiries/ViewPartnerInquiry.jsx";
 
 function App() {
   return (
@@ -233,6 +245,14 @@ function App() {
           <Route path="/journals" element={<Journal />} />
           <Route path="/add-journal" element={<AddJournal />} />
           <Route path="/edit-journal/:id" element={<EditJournal />} />
+          <Route path="/journal-topics" element={<JournalTopics />} />
+          <Route path="/journal-topics/add" element={<AddJournalTopic />} />
+          <Route
+            path="/journal-topics/edit/:id"
+            element={<EditJournalTopic />}
+          />
+          <Route path="/journal-topics/:id" element={<JournalTopicDetails />} />
+          <Route path="/journal-faqs" element={<JournalFaq />} />
           <Route path="/education" element={<Education />} />
           <Route path="/add-education" element={<AddEducation />} />
           <Route path="/edit-education/:id" element={<EditEducation />} />
@@ -257,6 +277,14 @@ function App() {
             element={<TestBusinessCardPayment />}
           />
           <Route path="/razorpay" element={<RazorpayTest />} />
+          <Route path="/access-orders" element={<AccessOrders />} />
+          <Route path="/ads" element={<Ads />} />
+          <Route path="/add-ad" element={<AddAd />} />
+          <Route path="/edit-ad/:id" element={<AddAd />} />
+          <Route path="/view-ad/:id" element={<ViewAd />} />
+          <Route path="/access-analytics" element={<AccessCardAnalytics />} />
+          <Route path="/partner-inquiries" element={<PartnerInquiries />} />
+           <Route path="/view-partner-inquiry/:id" element={<ViewPartnerInquiry />} />
         </Route>
       </Routes>
     </Router>
