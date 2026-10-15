@@ -10,34 +10,27 @@ import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { Card } from "primereact/card";
 import { message } from "antd";
-import { SolutionOutlined } from "@ant-design/icons";
-import { Steps } from "antd";
 
 const AddAdmin = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [roleId, setRoleId] = useState("");
-  const [disable, setDisable] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setDisable(true);
 
     if (!name) {
-      setDisable(false);
       message.error("Please enter name");
 
       return;
     }
     if (!email) {
-      setDisable(false);
       message.error("Please enter email");
       return;
     }
     if (!roleId) {
-      setDisable(false);
       message.error("Please choose any Role");
       return;
     }
@@ -55,7 +48,6 @@ const AddAdmin = () => {
       setTimeout(() => {
         navigate("/adminList");
       }, 1000);
-      setDisable(false);
     } catch (error) {
       if (error.response && error.response.status === 400) {
         message.error("Email already exists");
@@ -68,7 +60,6 @@ const AddAdmin = () => {
       } else {
         message.error("Something went wrong");
       }
-      setDisable(false);
     }
   };
 

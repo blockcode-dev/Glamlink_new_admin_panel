@@ -1,21 +1,19 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table, Space, message } from "antd";
-import { Button } from "primereact/button";
+import { Table, Space } from "antd";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primeicons/primeicons.css";
 import { useNavigate } from "react-router";
 import { InputText } from "primereact/inputtext";
 import { Box, Switch } from "@material-ui/core";
 
-import { GetPromotionRequest, PromoteUser } from "../../services/Api/UserApi";
+import { GetPromotionRequest } from "../../services/Api/UserApi";
 
 const PromotionRequest = () => {
 	const navigate = useNavigate();
 	const [data, setData] = useState([]);
 	const [userBackupData, setUserBackupData] = useState([]);
-	const [isPromoted, setIsPromoted] = useState(false);
 	const [loading, setLoading] = useState(false);
 
 	const [tableParams, setTableParams] = useState({

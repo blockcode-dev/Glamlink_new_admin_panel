@@ -13,27 +13,22 @@ const AddSupport = () => {
   const [address, setAddress] = useState("");
   const [email, setEmail] = useState("");
   const [contactNumber, setContactNumber] = useState("");
-  const [disable, setDisable] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setDisable(true);
 
     if (!address) {
-      setDisable(false);
       message.error("Please enter address");
 
       return;
     }
     if (!email) {
-      setDisable(false);
       message.error("Please enter email");
       return;
     }
     if (!contactNumber) {
-      setDisable(false);
       message.error("Please enter number");
       return;
     }
@@ -51,7 +46,6 @@ const AddSupport = () => {
       setTimeout(() => {
         navigate("/support");
       }, 1000);
-      setDisable(false);
     } catch (error) {
       if (error.response && error.response.status === 400) {
         message.error("Email already exists");
@@ -64,7 +58,6 @@ const AddSupport = () => {
       } else {
         message.error("Something went wrong");
       }
-      setDisable(false);
     }
   };
 

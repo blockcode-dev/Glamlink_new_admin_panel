@@ -1,10 +1,9 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table, Space, Modal, Spin, message } from "antd";
+import { Table, Modal, Spin, message } from "antd";
 import { useNavigate, useParams } from "react-router";
 import { Box } from "@material-ui/core";
-import { InputText } from "primereact/inputtext";
 import moment from "moment";
 import { BASE_URL_IMAGE, BASE_URL_VIDEO } from "../../../services/Host";
 import ReactPlayer from "react-player";
@@ -20,9 +19,7 @@ const UserPost = () => {
 	const navigate = useNavigate();
 	const { id } = useParams();
 	const [serviceData, setServiceData] = useState([]);
-	const [serviceBackupData, setServiceBackupData] = useState([]);
 	const [loading, setLoading] = useState(false);
-	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [mediaSrc, setMediaSrc] = useState(null);
 	const [mediaType, setMediaType] = useState("");
@@ -142,13 +139,6 @@ const UserPost = () => {
 		},
 	];
 
-	const rowSelection = {
-		selectedRowKeys,
-		onChange: (selectedRowKeys) => {
-			setSelectedRowKeys(selectedRowKeys);
-		},
-	};
-
 	const getData = async () => {
 		try {
 			setLoading(true);
@@ -162,7 +152,6 @@ const UserPost = () => {
 			}));
 
 			setServiceData(newData);
-			setServiceBackupData(newData);
 		} catch (e) {
 			console.log(e);
 			if (e.response && e.response.status === 401) {
@@ -182,16 +171,6 @@ const UserPost = () => {
 			sortField: sorter.field,
 			sortOrder: sorter.order,
 		});
-	};
-
-	const onSearch = (searchField) => {
-		const LIST = [...serviceBackupData];
-		const searchList = LIST.filter(
-			(item) =>
-				item.content.toLowerCase().includes(searchField.toLowerCase()) ||
-				item.content.toLowerCase().includes(searchField.toLowerCase())
-		);
-		setServiceData(searchList);
 	};
 
 	useEffect(() => {

@@ -33,7 +33,6 @@ const EditBlog = () => {
 		blog_attachments: [],
 	});
 	const [blogData, setBlogData] = useState([]);
-	const [fileList, setFileList] = useState([]);
 	const [selectedImage, setSelectedImage] = useState(null);
 
 	const fileInputRef = useRef(null);

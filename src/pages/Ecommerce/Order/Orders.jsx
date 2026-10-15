@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { message, Table, Drawer } from "antd";
+import { Table, Drawer } from "antd";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import { Button } from "primereact/button";
@@ -59,11 +59,6 @@ const Orders = () => {
 		console.log("Opening drawer for orderId:", orderId); // Debugging log
 		setSelectedOrderId(orderId);
 		setIsDrawerVisible(true);
-	};
-
-	const closeDrawer = () => {
-		setIsDrawerVisible(false);
-		setSelectedOrderId(null);
 	};
 
 	const columns = [

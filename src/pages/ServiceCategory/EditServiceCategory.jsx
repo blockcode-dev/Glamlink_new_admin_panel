@@ -1,6 +1,7 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
+import { BASE_URL } from "../../services/Host";
 import { useNavigate, useParams } from "react-router-dom";
 import { Box } from "@mui/material";
 import { Card, Modal, Space, Table } from "antd";
@@ -20,7 +21,6 @@ import {
 	DeleteService,
 } from "../../services/Api/ServiceApi";
 import Papa from "papaparse";
-
 
 const EditServiceCategory = () => {
 	const [form] = Form.useForm();
@@ -221,7 +221,7 @@ const EditServiceCategory = () => {
 		if (csvData.length > 0) {
 			try {
 				const response = await fetch(
-					"https://node.glamlink.net/api/v1/admin/create-service-list",
+					`${BASE_URL}admin/create-service-list`,
 					{
 						method: "POST",
 						headers: {
@@ -266,7 +266,6 @@ const EditServiceCategory = () => {
 		const data = editor.getData();
 		setServiceDescription(data); // Just set the data directly
 	};
-	
 
 	return (
 		<Box>

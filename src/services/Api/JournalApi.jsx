@@ -9,10 +9,6 @@ export const GetJournalCategory = async () => {
 	return res.data;
 };
 
-export const GetJournalCategoryById = async (id) => {
-	return await axios.get(BASE_URL + `journalCategory/${id}`);
-};
-
 export const UpdateJournalCategory = async (id, formData) => {
 	return await axios.put(BASE_URL + `journalCategory/${id}`, formData);
 };
@@ -31,10 +27,6 @@ export const AddJournalCategory = async (formData) => {
 export const GetAllAuthors = async () => {
 	const res = await axios.get(BASE_URL + "author/");
 	return res.data;
-};
-
-export const GetAuthorsById = async (id) => {
-	return await axios.get(BASE_URL + `author/${id}`);
 };
 
 export const UpdateAuthors = async (id, formData) => {
@@ -80,7 +72,6 @@ export const UpdateJournalSortOrder = async (data) => {
   const res = await axios.post(BASE_URL + "journal/sort-order", data);
   return res.data;
 };
-
 
 // ======================= EDUCATION API =======================
 
@@ -249,17 +240,6 @@ export const GetAllJournalFaqs = async () => {
   );
 };
 
-export const GetJournalFaqById = async (id) => {
-  return axios.get(
-    `${BASE_URL}/journal/faq/${id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
-};
-
 export const UpdateJournalFaq = async (id, data) => {
   return axios.put(
     `${BASE_URL}/journal/faq/${id}`,
@@ -285,7 +265,6 @@ export const DeleteJournalFaq = async (ids) => {
     },
   );
 };
-
 
 // ==============================
 // Journal Topics
@@ -404,7 +383,6 @@ export const UpdateJournalFaqMappings = async (journalId, data) => {
     },
   );
 };
-
 
 // ==============================
 // Journal Topic Paragraph Mapping

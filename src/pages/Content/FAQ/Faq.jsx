@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Space, Table, message, Select } from "antd";
+import { Space, Table, message } from "antd";
 import { useNavigate } from "react-router";
 import { InputText } from "primereact/inputtext";
 import { Box } from "@material-ui/core";
@@ -138,7 +138,6 @@ const onSearch = (searchField) => {
 	});
 	setData(searchList);
 };
-
 
 	const removeUser = (user_id) => {
 		DeleteFAQ(user_id, localStorage.getItem("adminToken"))

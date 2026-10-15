@@ -1,29 +1,24 @@
-import React, { useLayoutEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { Card } from "antd";
-import { Form, Input, message } from "antd";
+import { Form, message } from "antd";
 import { Button } from "primereact/button";
 import { UpdateAboutUs } from "../../../services/Api/ContentApi";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 const EditAboutUs = () => {
-  const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { data } = location.state;
   console.log("cardadta==>", data, data.id);
 
-  const [contentData, setContentData] = useState({
+  const [contentData] = useState({
     heading: data?.heading || "",
     description: data?.description || "",
   });
   const [editorData, setEditorData] = useState(contentData?.description || "");
-
-  const onChange = (e) => {
-    setContentData({ ...contentData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();

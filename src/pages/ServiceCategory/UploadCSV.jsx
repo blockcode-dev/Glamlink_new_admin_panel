@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BASE_URL } from '../../services/Host';
 import Papa from 'papaparse';
 
 const UploadCSV = ({ category_id }) => {
@@ -26,7 +27,7 @@ const UploadCSV = ({ category_id }) => {
   const handleUploadClick = async () => {
     if (csvData.length > 0) {
       try {
-        const response = await fetch('https://node.glamlink.net/api/v1/admin/create-service-list', {
+        const response = await fetch(`${BASE_URL}admin/create-service-list`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

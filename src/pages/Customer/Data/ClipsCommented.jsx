@@ -1,12 +1,12 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table, Space, Modal, Spin, message } from "antd";
+import { Table, Modal, Spin } from "antd";
 import { useNavigate, useParams } from "react-router";
 import { Box } from "@material-ui/core";
 import { Button } from "primereact/button";
 import moment from "moment";
-import { BASE_URL_IMAGE, BASE_URL_VIDEO } from "../../../services/Host";
+import { BASE_URL_VIDEO } from "../../../services/Host";
 import ReactPlayer from "react-player";
 import { GetClipsCommentedByUserId } from "../../../services/Api/UserApi";
 
@@ -18,9 +18,6 @@ const ClipsCommented = () => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [mediaSrc, setMediaSrc] = useState("");
 	const [isMediaLoading, setIsMediaLoading] = useState(false);
-	const [isThumbNailModalVisible, setIsThumbNailModalVisible] = useState(false);
-	const [thumbaNailSrc, setThumbNailSrc] = useState("");
-	const [isThumnbNailLoading, setIsThumnbNailIsLoading] = useState(false);
 
 	const [tableParams, setTableParams] = useState({
 		pagination: {
@@ -80,24 +77,6 @@ const ClipsCommented = () => {
 			},
 			width: "10%",
 		},
-		// {
-		// 	title: "View ThumbNail",
-		// 	dataIndex: ["reel_comment_reel","thumbnail_file_name"],
-		// 	render: (thumbnail_file_name) => {
-		// 		if (thumbnail_file_name) {
-		// 			return (
-		// 				<a
-		// 					href="#"
-		// 					onClick={() => handleViewThumbNail(thumbnail_file_name)}
-		// 				>
-		// 					View ThumbNail
-		// 				</a>
-		// 			);
-		// 		}
-		// 		return "No Clip";
-		// 	},
-		// 	width: "10%",
-		// },
 		{
 			title: "Commented On",
 			dataIndex: "created_at",
@@ -166,19 +145,6 @@ const ClipsCommented = () => {
 		}
 	};
 
-	const handleViewThumbNail = (fileName) => {
-		if (fileName) {
-			const mediaUrl =
-				fileName.split("//")[0] === "https:"
-					? fileName
-					: `${BASE_URL_IMAGE}${fileName}`;
-			setThumbNailSrc(mediaUrl);
-
-			setIsThumnbNailIsLoading(true);
-			setIsThumbNailModalVisible(true);
-		}
-	};
-
 	const handleVideoReady = () => {
 		setIsMediaLoading(false);
 	};
@@ -186,15 +152,6 @@ const ClipsCommented = () => {
 	const handleModalCancel = () => {
 		setIsModalVisible(false);
 		setIsMediaLoading(false);
-	};
-
-	const handleThumbNailModalCancel = () => {
-		setIsThumbNailModalVisible(false);
-		setIsThumnbNailIsLoading(false);
-	};
-
-	const handleThumbNailMediaLoaded = () => {
-		setIsThumnbNailIsLoading(false); // Stop loading spinner once media is fully loaded
 	};
 
 	const navigateToUser = () => {
@@ -211,8 +168,6 @@ const ClipsCommented = () => {
     //         navigate(`/viewUser/${id}`);
     //     }
     // };
-
-	console.log(thumbaNailSrc, "thumbaNailSrc");
 
 	return (
 		<Box>
@@ -267,28 +222,6 @@ const ClipsCommented = () => {
 					controls
 					width="100%"
 					onReady={handleVideoReady} // This will stop the loader once the video is ready
-				/>
-			</Modal>
-
-			{/* THUMNAIL */}
-			<Modal
-				centered
-				open={isThumbNailModalVisible}
-				onCancel={handleThumbNailModalCancel}
-				footer={null}
-				width={500}
-			>
-				{isThumnbNailLoading && (
-					<div style={{ textAlign: "center" }}>
-						<Spin size="large" />
-					</div>
-				)}
-
-				<img
-					src={thumbaNailSrc}
-					alt="Media"
-					style={{ width: "100%", height: "100%" }}
-					onLoad={handleThumbNailMediaLoaded}
 				/>
 			</Modal>
 		</Box>

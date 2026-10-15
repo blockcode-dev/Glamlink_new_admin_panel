@@ -18,10 +18,6 @@ export const UpdateAd = async (id, formData) => {
   return await axios.put(BASE_URL + `ads/${id}`, formData);
 };
 
-export const UpdateAdStatus = async (id, status) => {
-  return await axios.put(BASE_URL + `ads/status/${id}`, { status });
-};
-
 export const DeleteAd = async (ad_id) => {
   const ids = Array.isArray(ad_id) ? ad_id : [ad_id];
  

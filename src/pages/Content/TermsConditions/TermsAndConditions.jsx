@@ -34,9 +34,6 @@ const TermsAndConditions = () => {
     getData();
   }, []);
 
-  const navigateToEditTAndC = (event, id) => {
-    navigate(`/editTermsAndConditions/${id}`);
-  };
   return (
     <div className="main_tc_container">
       {loading ? (

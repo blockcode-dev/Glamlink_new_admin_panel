@@ -7,7 +7,6 @@ import {
   Button,
   Upload,
   message,
-  Select,
   Card,
   Space,
 } from "antd";

@@ -53,8 +53,6 @@ const ViewOrder = ({ orderId, onClose }) => {
 		),
 	];
 
-	const sumOfPrice = orderData?.total_price || 0;
-
 	const formatDate = (dateString) => {
 		const date = new Date(dateString);
 		return (
@@ -100,7 +98,6 @@ const ViewOrder = ({ orderId, onClose }) => {
 							<Radio value="tracking">Pass Tracking Link</Radio>
 						</Radio.Group>
 
-						
 						{updateOption === "update" && (
 							<div style={{ marginTop: "20px" }}>
 								<h4 style={{ fontSize: "1rem", color: "#6575FE" }}>
@@ -141,7 +138,6 @@ const ViewOrder = ({ orderId, onClose }) => {
 							</div>
 						)}
 
-					
 						{updateOption === "tracking" && (
 							<div style={{ marginTop: "20px" }}>
 								<h4 style={{ fontSize: "1rem", color: "#6575FE" }}>

@@ -30,7 +30,6 @@ const Authors = () => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [editingId, setEditingId] = useState(null);
 	const [fileList, setFileList] = useState([]);
-	const [existingImage, setExistingImage] = useState(null);
 
 	const [form] = Form.useForm();
 
@@ -154,7 +153,6 @@ const Authors = () => {
 		setEditingId(null);
 		form.resetFields();
 		setFileList([]);
-		setExistingImage(null);
 		setModalVisible(true);
 	};
 
@@ -168,8 +166,6 @@ const Authors = () => {
 			designation: record.designation,
 			bio: record.bio,
 		});
-
-		setExistingImage(record.profile_image || null);
 
 		setFileList(
 			record.profile_image
@@ -193,7 +189,6 @@ const Authors = () => {
 		setFileList(newFileList);
 
 		if (newFileList.length === 0) {
-			setExistingImage(null);
 		}
 	};
 
@@ -231,7 +226,6 @@ const Authors = () => {
 			setModalVisible(false);
 			form.resetFields();
 			setFileList([]);
-			setExistingImage(null);
 			getData();
 		} catch (err) {
 			message.error("Something went wrong.");

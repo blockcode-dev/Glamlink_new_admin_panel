@@ -7,7 +7,8 @@ import Login from "./pages/Login/Login";
 import ChangePassword from "./pages/Sidebar/Settings/ChangePassword/ChangePassword";
 import Forgotpassword from "./pages/Forgotpassword";
 import MainLayout from "./components/MainLayout";
-import AdminList from "./pages/AdminList";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primeicons/primeicons.css";
 import User from "./pages/Customer/User";
 import AddUser from "./pages/Customer/AddUser";
 import ViewCustomer from "./pages/Customer/ViewCustomer";
@@ -93,8 +94,6 @@ import EditBusinessCard from "./pages/BusinessCard/EditBusinessCard.jsx";
 import PodcastSchedule from "./pages/Podcast/PodcastSchedule.jsx";
 import AddPodcastSchedule from "./pages/Podcast/AddPodcastSchedule.jsx";
 import EditPodcastSchedule from "./pages/Podcast/EditPodcastSchedule.jsx";
-import TestBusinessCardPayment from "./pages/BusinessCard/TestBusinessCardPayment.jsx";
-import RazorpayTest from "./pages/RazorpayTest.jsx";
 import Education from "./pages/Journal/Discover/Eductaion/Eduction.jsx";
 import AddEducation from "./pages/Journal/Discover/Eductaion/AddEduction.jsx";
 import EditEducation from "./pages/Journal/Discover/Eductaion/EditEducation.jsx";
@@ -135,7 +134,6 @@ function App() {
           />
           <Route path="/addUser" element={<AddUser />} />
           <Route path="/viewUser/:id" element={<ViewCustomer />} />
-          <Route path="adminUser" element={<AdminList />} />
           <Route path="/adminList" element={<AdminUser />} />
           <Route path="/viewAdmin" element={<ViewAdmin />} />
           <Route path="/addAdmin" element={<AddAdmin />} />
@@ -272,11 +270,6 @@ function App() {
             path="/edit-podcast-schedule/:id"
             element={<EditPodcastSchedule />}
           />
-          <Route
-            path="/test-business-card-payment"
-            element={<TestBusinessCardPayment />}
-          />
-          <Route path="/razorpay" element={<RazorpayTest />} />
           <Route path="/access-orders" element={<AccessOrders />} />
           <Route path="/ads" element={<Ads />} />
           <Route path="/add-ad" element={<AddAd />} />

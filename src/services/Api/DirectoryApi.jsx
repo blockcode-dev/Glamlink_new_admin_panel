@@ -9,10 +9,6 @@ export const GetAllDirectory = async () => {
     return res.data;
 };
 
-export const GetDirectoryById = async (id) => {
-    return await axios.get(BASE_URL + `businessCard/directory/${id}`);
-};
-
 export const UpdateDirectory = async (id, formData) => {
     return await axios.put(BASE_URL + `businessCard/updateDirectory/${id}`, formData);
 };

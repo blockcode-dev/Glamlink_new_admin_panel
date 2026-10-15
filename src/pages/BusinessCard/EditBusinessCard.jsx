@@ -7,7 +7,6 @@ import {
   Button,
   Select,
   Upload,
-  Switch,
   Card,
   message,
   Space,
@@ -15,7 +14,6 @@ import {
   Radio,
   Row,
   Col,
-  Typography,
   ColorPicker,
 } from "antd";
 import ImageCropModal from "../../components/ImageCropModal";
@@ -38,8 +36,6 @@ import {
 import LocationAutocomplete from "../../utils/LocationAutocomplete";
 import { getAllState, getAllCityByStateId } from "../../services/Api/UserApi";
 import { GetSpecialities } from "../../services/Api/SpecialitiesApi";
-
-const { Title, Paragraph } = Typography;
 
 const STATE_CODE_MAP = {
   AL: "Alabama",
@@ -346,12 +342,6 @@ const EditBusinessCard = () => {
     });
   };
 
-  const bookingMethodLabel = {
-    GO_TO_BOOKING_LINK: "Go to Booking Link",
-    CALL_TEXT: "Call / Text",
-    DM_INSTAGRAM: "DM on Instagram",
-  };
-
   const mapPainPoints = (arr = []) => {
     if (!Array.isArray(arr)) return [];
     return arr.map((item) => {
@@ -429,12 +419,6 @@ const EditBusinessCard = () => {
         })
         .map((key) => social[key])
         .filter(Boolean);
-
-      const bookingMethodMap = {
-        Go_to_Booking_Link: "GO_TO_BOOKING_LINK",
-        Call_Text: "CALL_TEXT",
-        DM_Instagram: "DM_INSTAGRAM",
-      };
 
       form.setFieldsValue({
         ...data,

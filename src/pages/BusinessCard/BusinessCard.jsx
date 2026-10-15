@@ -21,7 +21,6 @@ import { Button } from "primereact/button";
 import {
   EyeOutlined,
   MailOutlined,
-  PhoneOutlined,
   GlobalOutlined,
   CalendarOutlined,
   EnvironmentOutlined,
@@ -30,7 +29,6 @@ import {
   StarOutlined,
   InfoCircleOutlined,
   TrophyOutlined,
-  HeartOutlined,
   GiftOutlined,
   InstagramOutlined,
   VideoCameraOutlined,

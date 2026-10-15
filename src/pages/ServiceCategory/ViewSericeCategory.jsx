@@ -6,8 +6,6 @@ import { Box } from "@mui/material";
 import { Card } from "primereact/card";
 import Form from "react-bootstrap/Form";
 import { Button } from "primereact/button";
-import { BASE_URL_IMAGE } from "../../services/Host";
-import { Row, Col } from "react-bootstrap";
 import { GetServiceCategoryById } from "../../services/Api/ServiceApi";
 
 const ViewSericeCategory = () => {

@@ -1,8 +1,8 @@
 /** @format */
 
 import { Box } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { Form, Select, Input, Row, Col, message } from "antd";
+import React, { useState } from "react";
+import { Form, Input, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
@@ -10,7 +10,6 @@ import { AddBlogCategroy } from "../../services/Api/BlogsApi";
 
 const AddBlogCategory = () => {
 	const [form] = Form.useForm();
-	const [title, setTitle] = useState("");
 	const [disable, setDisable] = useState(false);
 	const navigate = useNavigate();
 

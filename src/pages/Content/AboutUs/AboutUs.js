@@ -7,11 +7,9 @@ import { GetAboutUs } from "../../../services/Api/ContentApi";
 const AboutUs = () => {
   const navigate = useNavigate();
   const [contentData, setContentData] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   const getData = async () => {
     try {
-      setLoading(true);
       let result = await GetAboutUs(localStorage.getItem("adminToken"));
       setContentData(result.data.data);
       console.log("GetAboutUs==>", result.data.data);
@@ -25,7 +23,6 @@ const AboutUs = () => {
         console.log("Error loading data. Please try again later.");
       }
     } finally {
-      setLoading(false);
     }
   };
   useEffect(() => {

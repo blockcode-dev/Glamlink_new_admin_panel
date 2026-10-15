@@ -61,10 +61,6 @@ const AdminUser = () => {
 		navigate("/addAdmin");
 	};
 
-	const navigateToEditAdmin = (id) => {
-		navigate(`/editAdmin/${id}`);
-	};
-
 	const removeUser = (user_id) => {
 		DeleteAdmin(user_id, localStorage.getItem("adminToken"))
 			.then((res) => {

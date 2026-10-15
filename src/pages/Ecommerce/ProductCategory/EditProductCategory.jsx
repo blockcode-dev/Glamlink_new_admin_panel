@@ -9,10 +9,7 @@ import { Row } from "react-bootstrap";
 import { Button } from "primereact/button";
 import moment from "moment/moment";
 import { InputText } from "primereact/inputtext";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
-import Papa from "papaparse";
 import {
 	CreateCategory,
 	DeleteCategory,
@@ -37,7 +34,6 @@ const EditProductCategory = () => {
 	const [selectedRows, setSelectedRows] = useState([]);
 	const [serviceData, setServiceData] = useState({ title: "" });
 	const [serviceBackupData, setServiceBackupData] = useState([]);
-	const [csvData, setCsvData] = useState([]);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -203,70 +199,12 @@ const EditProductCategory = () => {
 		});
 	};
 
-	const handleFileUpload = (event) => {
-		const file = event.target.files[0];
-		if (file) {
-			Papa.parse(file, {
-				header: true,
-				skipEmptyLines: true,
-				complete: (results) => {
-					const formattedData = results.data.map((row) => ({
-						title: row.title,
-						category_id: id,
-					}));
-					setCsvData(formattedData);
-				},
-			});
-		}
-	};
-
-	const handleUploadClick = async () => {
-		if (csvData.length > 0) {
-			try {
-				const response = await fetch(
-					"https://node.glamlink.net/api/v1/admin/create-service-list",
-					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({ services: csvData }),
-					}
-				);
-				const result = await response.json();
-				if (response.ok) {
-					message.success("CSV uploaded successfully!");
-					const updatedServiceListResponse =
-						await GetProductCategoryByCategoryId(id);
-					setServiceListData(updatedServiceListResponse.data.data);
-				} else {
-					message.error("Error uploading CSV: " + result.message);
-				}
-			} catch (error) {
-				console.error("Error uploading CSV data:", error);
-				message.error("Error uploading CSV data");
-			}
-		} else {
-			message.error("No CSV data to upload");
-		}
-	};
-
 	const onSearch = (searchField) => {
 		// Filter serviceListData based on the search input
 		const filteredList = serviceBackupData.filter((item) =>
 			item.title.toLowerCase().includes(searchField.toLowerCase())
 		);
 		setServiceListData(filteredList); // Update the displayed service list
-	};
-
-	const handleEditorChange = (event, editor) => {
-		const data = editor.getData();
-		setServiceDescription(data);
-	};
-
-	const handleEditorChangeUpdate = (event, editor) => {
-		const data = editor.getData();
-		setServiceDescription(data); // Just set the data directly
 	};
 
 	return (

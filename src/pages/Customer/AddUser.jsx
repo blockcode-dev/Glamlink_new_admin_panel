@@ -10,8 +10,6 @@ import { Button } from "primereact/button";
 
 const AddCustomer = () => {
   const [form] = Form.useForm();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [disable, setDisable] = useState(false);
   const [allState, setAllState] = useState([{ id: 0, name: "Please wait ..." }]);
   const [allCity, setAllCity] = useState([{ id: 0, name: "Please wait ..." }]);

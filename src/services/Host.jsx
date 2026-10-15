@@ -1,6 +1,8 @@
-let HOST = "https://node.glamlink.net/api/v1/";
-export const BASE_URL = "https://node.glamlink.net/api/v1/";
-export const BASE_URL_IMAGE = "https://node.glamlink.net/api/v1/images/";
-export const BASE_URL_VIDEO = "https://node.glamlink.net/api/v1/videos/";
+import { API_BASE_URL, IMAGE_BASE_URL, VIDEO_BASE_URL } from "../config/env";
+
+let HOST = API_BASE_URL;
+export const BASE_URL = API_BASE_URL;
+export const BASE_URL_IMAGE = IMAGE_BASE_URL;
+export const BASE_URL_VIDEO = VIDEO_BASE_URL;
 
 export default HOST;

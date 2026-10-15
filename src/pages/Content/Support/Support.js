@@ -10,18 +10,9 @@ import { message } from "antd";
 const Support = () => {
   const navigate = useNavigate();
   const [pageSize, setPageSize] = useState(50);
-  const [dataGridHeight, setDataGridHeight] = useState("550px");
+  const dataGridHeight = "550px";
   const [roleData, setRoleData] = useState([]);
-  const [anchorEl, setAnchorEl] = React.useState();
-  const [userId, setUserId] = useState();
-  const [userIdToNavigate, setUserIdToNavigate] = useState();
   const [loading, setLoading] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-
-  const handleClick = (event, value) => {
-    setUserIdToNavigate(value);
-    setAnchorEl(event.currentTarget);
-  };
 
   //get all specialist
   const getData = async () => {
@@ -55,7 +46,6 @@ const Support = () => {
   };
 
   const removeUser = (user_id) => {
-    setIsModalVisible(false);
     DeleteContactUs(user_id, localStorage.getItem("adminToken"))
       .then((res) => {
         console.log(res, "res");
@@ -162,13 +152,6 @@ const Support = () => {
               onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
               rowsPerPageOptions={[50, 75, 100]}
               experimentalFeatures={{ newEditingApi: true }}
-              onSelectionModelChange={(id) => {
-                const selectedIDs = new Set([id]);
-                const selectedRowData = roleData.filter((row) =>
-                  selectedIDs.has(row.id.toString())
-                );
-                setUserId(selectedIDs);
-              }}
             />
           </div>
         </>

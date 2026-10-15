@@ -172,7 +172,7 @@ const Posts = () => {
 	const getData = async (params = {}) => {
 		try {
 			setLoading(true);
-			const { pagination, sortField, sortOrder } = params;
+			const { pagination, sortField } = params;
 			const result = await GetAllPosts(localStorage.getItem("adminToken"), {
 				page: pagination.current,
 				limit: pagination.pageSize,
@@ -209,8 +209,6 @@ const Posts = () => {
 			setLoading(false);
 		}
 	};
-	
-	
 
 	const handleTableChange = (pagination, filters, sorter) => {
 		setTableParams({

@@ -14,7 +14,6 @@ import { SiReactivex } from "react-icons/si";
 import { PiVideoFill } from "react-icons/pi";
 import { IoArrowForwardCircleSharp } from "react-icons/io5";
 import { GiShadowFollower } from "react-icons/gi";
-import { SlUserFollowing } from "react-icons/sl";
 import { AiFillLike } from "react-icons/ai";
 import { BiSolidCommentDetail } from "react-icons/bi";
 import { FaCalendarAlt } from "react-icons/fa";

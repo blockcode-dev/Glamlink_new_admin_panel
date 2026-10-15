@@ -5,7 +5,7 @@ import { Tabs, Tab } from "react-bootstrap";
 import { Box } from "@mui/material";
 import { Button } from "primereact/button";
 import { useNavigate, useParams } from "react-router-dom";
-import { Tag, Table, Space } from "antd";
+import { Tag, Table } from "antd";
 import { GetBookingsByUserId } from "../../../services/Api/UserApi";
 
 const UserBookings = () => {

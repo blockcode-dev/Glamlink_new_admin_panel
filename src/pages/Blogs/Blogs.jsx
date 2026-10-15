@@ -7,7 +7,6 @@ import { Box } from "@material-ui/core";
 import { InputText } from "primereact/inputtext";
 import { DeleteBlog, GetBlogs } from "../../services/Api/BlogsApi";
 import { Button } from "primereact/button";
-import moment from "moment/moment";
 
 const Blogs = () => {
 	const navigate = useNavigate();

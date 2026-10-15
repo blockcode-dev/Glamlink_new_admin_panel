@@ -175,7 +175,6 @@ const AddAd = () => {
   const [fileList, setFileList] = useState([]);
   const [existingImage, setExistingImage] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(isEditMode);
   const [selectedSize, setSelectedSize] = useState(null); // { width, height }
   const [mediaType, setMediaType] = useState("image"); // "image" | "video"
   const [rawVideoFile, setRawVideoFile] = useState(null);
@@ -190,7 +189,6 @@ const AddAd = () => {
 
   const fetchAd = async () => {
     try {
-      setLoading(true);
       const res = await GetAdById(id);
       const ad = res.data.data || res.data;
 
@@ -231,7 +229,6 @@ const AddAd = () => {
     } catch (err) {
       message.error("Failed to load ad");
     } finally {
-      setLoading(false);
     }
   };
 

@@ -23,7 +23,6 @@ const AddBlog = () => {
 	const [description, setDescription] = useState("");
 	const [blogCategoryId, setBlogCategoryId] = useState("");
 	const [blogData, setBlogData] = useState([]);
-	const [disable, setDisable] = useState(false);
 	const [fileList, setFileList] = useState([]);
 	const navigate = useNavigate();
 
@@ -46,7 +45,6 @@ const AddBlog = () => {
 	const handleSubmit = async () => {
 		try {
 			await form.validateFields();
-			setDisable(true);
 
 			const formData = new FormData();
 			formData.append("title", title);
@@ -80,7 +78,6 @@ const AddBlog = () => {
 				message.error("Something went wrong");
 			}
 		} finally {
-			setDisable(false);
 		}
 	};
 

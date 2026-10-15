@@ -62,7 +62,7 @@ const Service = () => {
   const getData = async (params = {}) => {
     try {
       setLoading(true);
-      const { pagination, sortField, sortOrder } = params;
+      const { pagination, sortField } = params;
       const result = await GetServices(localStorage.getItem("adminToken"), {
         page: pagination.current,
         pageSize: pagination.pageSize,

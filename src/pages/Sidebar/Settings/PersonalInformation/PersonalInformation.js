@@ -1,14 +1,13 @@
 import { Box } from "@mui/material";
-import React, { useLayoutEffect } from "react";
+import React from "react";
 import { Form } from "react-bootstrap";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { GetAdminProfile } from "../../../../services/Api/Api.jsx";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { useEffect } from "react";
 
 const ViewAdmin = () => {
-  const { id } = useParams();
   const [idData, setIdData] = React.useState({});
 
   //get admin profile

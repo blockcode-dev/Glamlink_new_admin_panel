@@ -12,7 +12,6 @@ import {
   Input,
   Checkbox,
   Avatar,
-  Divider,
 } from "antd";
 
 import {

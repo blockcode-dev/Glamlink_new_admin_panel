@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table, Space, Modal, Spin, message } from "antd";
+import { Table, Modal, Spin, message } from "antd";
 import { useNavigate, useParams } from "react-router";
 import { Box } from "@material-ui/core";
 import { Button } from "primereact/button";
@@ -10,7 +10,6 @@ import { BASE_URL_IMAGE, BASE_URL_VIDEO } from "../../../services/Host";
 import ReactPlayer from "react-player";
 import { IoArrowForwardCircleOutline } from "react-icons/io5";
 import {
-	DeleteClip,
 	GetCommentsByClipId,
 	GetLikesByClipId,
 } from "../../../services/Api/ClipsApi";
@@ -20,9 +19,7 @@ const UserClips = () => {
 	const navigate = useNavigate();
 	const { id } = useParams();
 	const [serviceData, setServiceData] = useState([]);
-	const [serviceBackupData, setServiceBackupData] = useState([]);
 	const [loading, setLoading] = useState(false);
-	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [mediaSrc, setMediaSrc] = useState("");
 	const [isMediaLoading, setIsMediaLoading] = useState(false);
@@ -147,13 +144,6 @@ const UserClips = () => {
 		},
 	];
 
-	const rowSelection = {
-		selectedRowKeys,
-		onChange: (selectedRowKeys) => {
-			setSelectedRowKeys(selectedRowKeys);
-		},
-	};
-
 	const getData = async () => {
 		try {
 			setLoading(true);
@@ -167,7 +157,6 @@ const UserClips = () => {
 			}));
 
 			setServiceData(newData);
-			setServiceBackupData(newData);
 		} catch (e) {
 			console.log(e);
 			if (e.response && e.response.status === 401) {
@@ -188,8 +177,6 @@ const UserClips = () => {
 			sortOrder: sorter.order,
 		});
 	};
-
-	
 
 	useEffect(() => {
 		getData({

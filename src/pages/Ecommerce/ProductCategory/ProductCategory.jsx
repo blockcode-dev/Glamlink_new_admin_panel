@@ -22,7 +22,6 @@ const ProductCategory = () => {
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [serviceListData, setServiceListData] = useState([]);
-	const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
 	const [tableParams, setTableParams] = useState({
 		pagination: {
@@ -214,7 +213,6 @@ const ProductCategory = () => {
 
 	const handleViewServices = async (categoryId, title) => {
 		try {
-			setSelectedCategoryId(categoryId);
 
 			let result;
 			let services = [];
@@ -237,7 +235,6 @@ const ProductCategory = () => {
 	const handleModalClose = () => {
 		setIsModalVisible(false);
 		setServiceListData([]);
-		setSelectedCategoryId(null); // reset
 	};
 
 	const navigateToAddBlog = () => {

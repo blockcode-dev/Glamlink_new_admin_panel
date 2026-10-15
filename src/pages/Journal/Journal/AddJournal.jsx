@@ -1,6 +1,8 @@
 /** @format */
 
 import React, { useEffect, useRef, useState } from "react";
+import { BASE_URL } from "../../../services/Host";
+import { TINYMCE_API_KEY } from "../../../config/env";
 import {
   Form,
   Input,
@@ -680,7 +682,7 @@ const AddBlog = () => {
             </div>
           </div>
           <Editor
-            apiKey="0w662c96u34p1ur1y0abs6rw1cnlf5heqps96wvj4806wsdo"
+            apiKey={TINYMCE_API_KEY}
             value={content}
             init={{
               height: 500,
@@ -774,7 +776,7 @@ const AddBlog = () => {
                   );
                   try {
                     const res = await axios.post(
-                      "https://node.glamlink.net/api/v1/journal/upload",
+                      `${BASE_URL}journal/upload`,
                       formData,
                       {
                         headers: {
@@ -940,7 +942,7 @@ const AddBlog = () => {
                         formData.append("images", file);
 
                         const res = await axios.post(
-                          "https://node.glamlink.net/api/v1/journal/upload",
+                          `${BASE_URL}journal/upload`,
                           formData,
                           {
                             signal: controller.signal,

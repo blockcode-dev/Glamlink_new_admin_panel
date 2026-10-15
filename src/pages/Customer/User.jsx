@@ -105,7 +105,6 @@ const User = () => {
 			const {
 				pagination = { current: 1, pageSize: 100 },
 				sortField = null,
-				sortOrder = null,
 			} = params;
 
 			const result = await GetUsers(

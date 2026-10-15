@@ -1,5 +1,5 @@
-import React, { useLayoutEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { Card } from "antd";
 import { Form, Input, message } from "antd";
@@ -9,7 +9,6 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 const EditTermsAndConditions = () => {
-  const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { data } = location.state;

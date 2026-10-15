@@ -15,7 +15,6 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Box } from "@material-ui/core";
 import { PlusOutlined } from "@ant-design/icons";
-import moment from "moment";
 
 import {
 	AddDirectory,

@@ -9,7 +9,6 @@ import {
 import { message } from "antd";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { Select } from "antd";
 
 const EditSupport = () => {
   const { id } = useParams();

@@ -20,8 +20,6 @@ import { InputText } from "primereact/inputtext";
 import { Box } from "@material-ui/core";
 import moment from "moment/moment";
 import { FaShield } from "react-icons/fa6";
-import { TagOutlined, StopOutlined } from "@ant-design/icons";
-import { FaBriefcase } from "react-icons/fa";
 
 import dayjs from "dayjs";
 
@@ -47,7 +45,6 @@ const Professionals = () => {
   const [userBackupData, setUserBackupData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [payoutModalVisible, setPayoutModalVisible] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState(null);
   const [payoutSummary, setPayoutSummary] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -307,7 +304,6 @@ const Professionals = () => {
       const {
         pagination = { current: 1, pageSize: 100 },
         sortField = null,
-        sortOrder = null,
       } = params;
 
       const result = await GetProfessionals(
@@ -588,7 +584,6 @@ const Professionals = () => {
 
       if (response.status === 201) {
         message.success("Payout processed successfully.");
-        setPayoutModalVisible(false);
         setIsModalOpen(false);
       }
     } catch (err) {
@@ -615,7 +610,6 @@ const Professionals = () => {
       message.error("Please select a profession and keyword");
       return;
     }
-    const token = localStorage.getItem("adminToken");
 
     try {
       await PromoteUserAPI({

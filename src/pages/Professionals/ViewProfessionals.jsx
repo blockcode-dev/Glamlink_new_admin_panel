@@ -1,8 +1,8 @@
 /** @format */
 
-import React, { useEffect, useLayoutEffect, useState, } from "react";
+import React, { useLayoutEffect, useState, } from "react";
 import { Button } from "primereact/button";
-import { Box, Avatar, Typography, Switch } from "@mui/material"; // Import Grid correctly
+import { Box, Avatar, Typography } from "@mui/material"; // Import Grid correctly
 import { useNavigate, useParams } from "react-router-dom";
 import { Card } from "primereact/card";
 import {
@@ -26,23 +26,17 @@ import { BsFillGridFill } from "react-icons/bs";
 import { IoIosPeople } from "react-icons/io";
 import { GrServices } from "react-icons/gr";
 import { FaUserClock } from "react-icons/fa6";
-import { message } from "antd";
 
 const ViewProfessionals = () => {
 	const navigate = useNavigate();
 	const { id } = useParams();
 	const [userData, setUserData] = useState([]);
 
-	
-
-
-
 	useLayoutEffect(() => {
 		// Fetching user data logic here
 		GetUserById(id)
 			.then((res) => {
 				setUserData(res.data.data);
-				setIsPromoted(res.data.data.is_promoted);
 			})
 			.catch((err) => {
 				console.log(err, "error");
@@ -100,15 +94,6 @@ const ViewProfessionals = () => {
 	const handleAvailability = () => {
 		navigate(`/viewAvailability/${userData?.id}`);
 	};
-
-	const [isPromoted, setIsPromoted] = useState(false);
-	const [loading, setLoading] = useState(false);
-
-	useEffect(() => {
-		if (userData?.is_promoted !== undefined) {
-			setIsPromoted(userData?.is_promoted);
-		}
-	}, [userData?.is_promoted]);
 
 	// const handlePromotionToggle = async () => {
 	// 	setLoading(true); // Start loading

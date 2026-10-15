@@ -23,15 +23,12 @@ import {
   clearUserLoginTimings,
 } from "../../../services/Api/Api";
 
-
 function Row(props) {
   const { row } = props;
   const [open, setOpen] = React.useState(false);
   if (!row || !row[0] || !row[0]?.login_user) {
     return null; // or handle the case where login_user is undefined
   }
-
- 
 
   return (
     <React.Fragment>
@@ -125,7 +122,6 @@ Row.propTypes = {
 
 const LoginLogs = () => {
   const [userLoginTimingData, setUserLoginTimingData] = useState([]);
-  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [clearLoading, setClearLoading] = useState(false);
 
@@ -136,7 +132,7 @@ const LoginLogs = () => {
         setUserLoginTimingData(data.data.data);
         console.log("logs", data.data);
       } catch (error) {
-        setError(error.message)
+        console.error(error);
       }
       finally {
         setLoading(false)
@@ -218,7 +214,4 @@ const LoginLogs = () => {
 };
 
 export default LoginLogs;
-
-
-
 

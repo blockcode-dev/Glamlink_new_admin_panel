@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, message, Space, Table, Modal } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { Table } from "antd";
 import { GetAllBanner } from "../../services/Api/Banner";
 import moment from "moment/moment";
 
