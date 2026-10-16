@@ -3,9 +3,6 @@
 .sidebar {
 	height: 100vh;
 	overflow: scroll;
-}
-
-.sidebar {
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 }
@@ -16,52 +13,25 @@
 
 .vertical-line {
 	height: 40px;
-	border-left: 1px solid #ccc;
+	border-left: 1px solid var(--color-border-strong);
 	margin: 0 10px;
 }
 
-.admin {
-	margin: 9px !important;
-	margin-top: 5px;
+.sidebar .ant-menu .anticon {
+	font-size: 18px;
 }
-
-.clicked:hover {
-	cursor: pointer;
-}
-
-.notification {
-	transform: translate3d(988px, 64px, 0px) !important;
-	// text-align: center !important;
-}
-
-.notification_display {
-	p {
-		margin: 0;
-	}
-}
-
-.custom-logo-size {
-	font-size: 1.65rem;
-}
-
-// .custom-menu .ant-menu-item-selected {
-//   background-color: #23B8CB !important;  // Change the background color
-//   border-left: 3px solid #23B8CB !important;  // Optional: Adjust the left border color
-// }
-
-// .custom-menu .ant-menu-item-selected a {
-//   color: white !important;  // Ensure the text color is visible
-// }
 
 .ant-menu-item-selected {
-	background-color: #23b8cb !important;
-	border-left: 3px solid #23b8cb !important;
+	background-color: var(--color-primary) !important;
+	border-left: 3px solid var(--color-primary) !important;
 }
 
 .logo {
-	background-color: #23b8cb !important;
+	/* The logo is black, so its bar stays light and lines up with the header. */
+	background-color: var(--color-surface) !important;
+	border-bottom: 1px solid var(--color-border);
 	align-content: center;
-  text-align: center;
+	text-align: center;
 	height: 63px;
 	.logo-image-1 {
 		width: 100%;

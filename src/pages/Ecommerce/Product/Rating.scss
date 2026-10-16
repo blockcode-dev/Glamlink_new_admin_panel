@@ -7,29 +7,8 @@
       justify-content: space-between;
       p {
         margin-bottom: 0;
-        color: #ed1c24;
+        color: var(--color-error);
         font-weight: 600;
-      }
-    }
-  
-    .ratings-card {
-      margin-bottom: 30px;
-      padding: 15px;
-      background: #ed1c240d;
-  
-      .ratings-title {
-        font-weight: 600;
-        font-size: 20px;
-      }
-  
-      .ratings-value {
-        font-weight: 600;
-        font-size: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 50%;
-        font-size: 30px;
       }
     }
   
@@ -49,13 +28,13 @@
         width: 60px;
         height: 60px;
         border-radius: 50%;
-        background-color: #3D3C6E;
+        background-color: var(--color-surface-inverse);
         display: flex;
         justify-content: center;
         align-items: center;
         font-size: 24px;
         font-weight: bold;
-        color: white;
+        color: var(--color-on-primary);
       }
   
       .review-header {
@@ -69,17 +48,17 @@
         }
   
         .review-rating {
-          color: gold;
+          color: var(--color-rating);
           display: flex;
           align-items: center;
           .rating-number{
-            color: black;
+            color: var(--color-text);
             margin-left: 5px;
           }
         }
   
         .review-date {
-          color: #6c757d;
+          color: var(--color-text-secondary);
           margin-left: 450px;
         }
       }
@@ -87,8 +66,5 @@
       .review-comment {
         margin-top: 0.5rem;
       }
-    }
-    .lables{
-      margin-bottom: 0px;
     }
   }

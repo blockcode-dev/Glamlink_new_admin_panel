@@ -1,7 +1,106 @@
-body {
-  font-family: Roboto, sans-serif;
+/*
+ * The panel's single global stylesheet and the one source of truth for colour.
+ *
+ * Every colour in the app comes from a token below:
+ *   - CSS, SCSS and inline styles use var(--color-…);
+ *   - antd is themed from these tokens (src/config/theme.ts), including its
+ *     Tag/Badge preset colours ("green", "purple", …);
+ *   - charts read them at run time with cssVar() (canvas can't use var()).
+ * src/theme.test.ts fails if a colour literal appears anywhere else.
+ */
+
+:root {
+  /* Brand */
+  --color-primary: #226168;
+  --color-primary-hover: #2c7880;
+  --color-primary-active: #1a4b51;
+  --color-primary-soft: #e6f0f0;
+  --color-primary-soft-hover: #d6e6e7;
+  --color-primary-border: #b3cfd1;
+  --color-primary-ring: rgba(34, 97, 104, 0.2);
+  --color-on-primary: #fbfbf9;
+
+  /* Surfaces: off-white page, near-white panels (no pure white) */
+  --color-bg: #f5f6f3;
+  --color-surface: #fcfcfa;
+  --color-surface-muted: #eff1ee;
+  --color-surface-inverse: #263033;
+  --color-media-bg: #151a1b;
+
+  /* Lines */
+  --color-border: #e3e6e2;
+  --color-border-strong: #cdd2ce;
+
+  /* Text: greyish black instead of #000 */
+  --color-text: #2b2f31;
+  --color-text-secondary: #5c6366;
+  --color-text-tertiary: #889095;
+  --color-text-disabled: #b3b9bb;
+  --color-text-inverse: #f5f6f3;
+  --color-text-inverse-secondary: rgba(245, 246, 243, 0.72);
+
+  /* Status */
+  --color-success: #2f855a;
+  --color-success-soft: #e7f4ec;
+  --color-success-border: #b5dcc4;
+  --color-warning: #b7791f;
+  --color-warning-soft: #fdf3e1;
+  --color-warning-border: #f1d29a;
+  --color-error: #c53d3d;
+  --color-error-soft: #fbeaea;
+  --color-error-border: #f0bcbc;
+  --color-info: #2f6496;
+  --color-info-soft: #e8f0f8;
+  --color-info-border: #b9cfe4;
+  --color-rating: #e0a526;
+
+  /* Accents: categories, tags and chart series */
+  --color-accent-teal: #3a8f97;
+  --color-accent-blue: #3f6fa8;
+  --color-accent-purple: #6c5aa8;
+  --color-accent-purple-soft: #efecf7;
+  --color-accent-pink: #b04f7c;
+  --color-accent-pink-soft: #f8eaf1;
+  --color-accent-pink-border: #e6bfd2;
+  --color-accent-amber: #c58b23;
+  --color-accent-coral: #cf6a4c;
+  --color-accent-coral-soft: #fbece6;
+  --color-accent-green: #4b8f5f;
+
+  /* Third-party brand marks (analytics icons only) */
+  --color-brand-instagram: #e1306c;
+  --color-brand-facebook: #1877f2;
+  --color-brand-linkedin: #0a66c2;
+  --color-brand-youtube: #ff0000;
+  --color-brand-tiktok: #1f2d33;
+
+  /* Shadows and overlays */
+  --color-shadow: rgba(32, 41, 43, 0.08);
+  --color-shadow-strong: rgba(32, 41, 43, 0.2);
+  --color-overlay: rgba(21, 26, 27, 0.55);
+
+  --font-family: Roboto, system-ui, sans-serif;
 }
 
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+/* Shared text styles (were in App.css) */
+.title,
+.sub-title {
+  font-family: var(--font-family);
+  color: var(--color-text);
+}
+.desc {
+  font-family: var(--font-family);
+  color: var(--color-text-secondary);
+}
+
+/* Layout */
 .trigger {
   padding: 0 24px;
   font-size: 18px;
@@ -9,19 +108,9 @@ body {
   cursor: pointer;
   transition: color 0.3s;
 }
-
 .trigger:hover {
-  color: #0870B1;
+  color: var(--color-primary);
 }
-
-
-/* .logo {
-  background-color: #23B8CB !important;
-  height: 64px;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-} */
 
 .ant-layout {
   min-height: 100vh;
@@ -37,16 +126,6 @@ body {
   max-width: 80px !important;
   min-width: 80px !important;
   width: 80px !important;
-}
-.sm-logo {
-  display: none;
-}
-
-.ant-layout-sider-collapsed .sm-logo {
-  display: block;
-}
-.ant-layout-sider-collapsed .lg-logo {
-  display: none;
 }
 
 main {
@@ -68,13 +147,3 @@ main::-webkit-scrollbar {
   line-height: 20px;
   font-size: 13px;
 }
-.ant-layout-header div .badge {
-  top: 16px;
-  right: -6px;
-}
-.error {
-  color: red;
-  font-size: 12px;
-}
-
-

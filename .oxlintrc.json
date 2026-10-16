@@ -1,0 +1,37 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "react", "jsx-a11y", "vitest", "unicorn", "oxc"],
+  "env": { "browser": true, "es2024": true },
+  "categories": { "correctness": "warn" },
+  "rules": {
+    // Real bugs: fail the lint run.
+    // Undefined names are reported by `npm run typecheck` (tsc), which also understands type-only globals.
+    "no-undef": "off",
+    "react/jsx-no-undef": "error",
+    "react-hooks/rules-of-hooks": "error",
+    "react/jsx-no-duplicate-props": "error",
+
+    // Same warnings Create React App's ESLint preset reported.
+    "react/jsx-key": "warn",
+    "react-hooks/exhaustive-deps": "warn",
+    "jsx-a11y/anchor-is-valid": "warn",
+    "no-unused-vars": ["warn", { "args": "none", "caughtErrors": "none", "ignoreRestSiblings": true }],
+    "no-console": ["warn", { "allow": ["error", "warn"] }],
+
+    // Not enforced yet (CRA never had them). Turn on when tackling each area.
+    // React Compiler readiness:
+    "react/set-state-in-effect": "off",
+    "react/static-components": "off",
+    "react/immutability": "off",
+    "react/refs": "off",
+    "react/purity": "off",
+    // Stricter accessibility:
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/no-static-element-interactions": "off",
+    "jsx-a11y/media-has-caption": "off",
+    "jsx-a11y/label-has-associated-control": "off",
+    "jsx-a11y/prefer-tag-over-role": "off",
+    "jsx-a11y/no-autofocus": "off"
+  },
+  "ignorePatterns": ["build/**"]
+}

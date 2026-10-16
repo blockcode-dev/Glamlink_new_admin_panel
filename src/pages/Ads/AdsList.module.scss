@@ -6,11 +6,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 12px;
   padding: 18px 22px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px var(--color-shadow);
 }
 
 .headerTitle {
@@ -21,7 +21,7 @@
 
 .headerSubtitle {
   margin: 4px 0 0;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 13px;
 }
 
@@ -32,10 +32,10 @@
 }
 
 .tableCard {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 12px;
   padding: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px var(--color-shadow);
 }
 
 .adThumb {
@@ -47,7 +47,7 @@
 
 .adThumbEmpty {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--color-text-tertiary);
 }
 
 .slotCell {
@@ -56,7 +56,7 @@
 
 .sizeText {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--color-text-tertiary);
   margin-top: 2px;
 }
 
@@ -75,7 +75,7 @@
 
 .scheduleDate {
   font-size: 12px;
-  color: #475569;
+  color: var(--color-text-secondary);
 }
 
 .actionButtons {
@@ -86,7 +86,7 @@
 
 .iconButton {
   border: none;
-  background: #f1f5f9;
+  background: var(--color-surface-muted);
   width: 30px;
   height: 30px;
   border-radius: 8px;
@@ -98,44 +98,16 @@
 }
 
 .iconButtonView:hover {
-  background: #dbeafe;
-  color: #2563eb;
+  background: var(--color-info-soft);
+  color: var(--color-info);
 }
 
 .iconButtonEdit:hover {
-  background: #dcfce7;
-  color: #16a34a;
+  background: var(--color-success-soft);
+  color: var(--color-success);
 }
 
 .iconButtonDanger:hover {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.viewModalBody {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.viewModalImage {
-  width: 100%;
-  max-height: 220px;
-  object-fit: contain;
-  border-radius: 8px;
-  background: #f8fafc;
-  margin-bottom: 6px;
-}
-
-.viewRow {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 13px;
-}
-
-.viewLabel {
-  color: #64748b;
-  font-weight: 600;
-  min-width: 90px;
+  background: var(--color-error-soft);
+  color: var(--color-error);
 }

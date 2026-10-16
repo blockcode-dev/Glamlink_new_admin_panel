@@ -1,3 +1,5 @@
-# https://www.robotstxt.org/robotstxt.html
+# Crawling is allowed on purpose. Every page carries <meta name="robots" content="noindex, nofollow">,
+# and search engines only honour it on pages they may fetch: "Disallow: /" would let a linked
+# URL be listed (without content) because the noindex tag is never seen.
 User-agent: *
 Disallow:

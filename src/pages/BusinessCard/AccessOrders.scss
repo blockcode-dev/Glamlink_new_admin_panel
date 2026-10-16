@@ -1,10 +1,10 @@
 /** Access Orders — page styles */
 
-$brand: #1a9aab;
-$brand-soft: #e8f6f8;
-$text-dark: #1f1f1f;
-$text-muted: #888;
-$border: #eef0f3;
+$brand: var(--color-primary);
+$brand-soft: var(--color-primary-soft);
+$text-dark: var(--color-text);
+$text-muted: var(--color-text-tertiary);
+$border: var(--color-border);
 
 .ao-page {
   .ao-header {
@@ -13,12 +13,12 @@ $border: #eef0f3;
     align-items: center;
     flex-wrap: wrap;
     gap: 14px;
-    background: #fff;
+    background: var(--color-surface);
     border: 1px solid $border;
     border-radius: 12px;
     padding: 20px 24px;
     margin-bottom: 16px;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    box-shadow: 0 1px 2px var(--color-shadow);
   }
 
   .ao-title {
@@ -45,11 +45,11 @@ $border: #eef0f3;
   .ao-table-card {
     border-radius: 12px;
     border: 1px solid $border;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    box-shadow: 0 1px 2px var(--color-shadow);
     overflow: hidden;
 
     .ant-table-thead > tr > th {
-      background: #fafbfc;
+      background: var(--color-surface-muted);
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.3px;
@@ -72,38 +72,38 @@ $border: #eef0f3;
   }
 
   .ao-pill-paid {
-    background: #e9f9f1;
-    color: #17915f;
+    background: var(--color-success-soft);
+    color: var(--color-success);
   }
 
   .ao-pill-failed {
-    background: #fdecec;
-    color: #d64545;
+    background: var(--color-error-soft);
+    color: var(--color-error);
   }
 
   .ao-pill-refunded {
-    background: #fff6e6;
-    color: #b9800f;
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
   }
 
   .ao-pill-pending {
-    background: #f1f2f4;
-    color: #666;
+    background: var(--color-surface-muted);
+    color: var(--color-text-secondary);
   }
 
   .ao-pill-processing {
-    background: #fff6e6;
-    color: #b9800f;
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
   }
 
   .ao-pill-shipped {
-    background: #eaf2fe;
-    color: #2464d9;
+    background: var(--color-info-soft);
+    color: var(--color-info);
   }
 
   .ao-pill-delivered {
-    background: #e9f9f1;
-    color: #17915f;
+    background: var(--color-success-soft);
+    color: var(--color-success);
   }
 
   .ao-fulfillment-select {
@@ -121,7 +121,7 @@ $border: #eef0f3;
     align-items: center;
     justify-content: center;
     border: 1px solid $border;
-    background: #fafbfc;
+    background: var(--color-surface-muted);
     color: $text-muted;
     cursor: pointer;
     font-size: 13px;
@@ -139,8 +139,8 @@ $border: #eef0f3;
 .ao-modal {
   .ao-modal-header {
     padding: 26px 30px;
-    background: linear-gradient(135deg, #16232e 0%, $brand 130%);
-    color: #fff;
+    background: linear-gradient(135deg, var(--color-surface-inverse) 0%, $brand 130%);
+    color: var(--color-on-primary);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -151,7 +151,7 @@ $border: #eef0f3;
   .ao-modal-eyebrow {
     font-size: 11px;
     letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--color-text-inverse-secondary);
     text-transform: uppercase;
     margin-bottom: 4px;
   }
@@ -165,7 +165,7 @@ $border: #eef0f3;
   .ao-modal-subheading {
     margin: 4px 0 0;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--color-text-inverse-secondary);
   }
 
   .ao-modal-body {
@@ -207,7 +207,7 @@ $border: #eef0f3;
   }
 
   .ao-box {
-    background: #f9fafb;
+    background: var(--color-surface-muted);
     border: 1px solid $border;
     border-radius: 10px;
     padding: 14px 18px;
@@ -241,39 +241,3 @@ $border: #eef0f3;
 }
 
 // ---- Access Card modal specific ----
-.ao-card-modal-header {
-  padding: 26px 30px;
-  display: flex;
-  gap: 18px;
-  align-items: center;
-  background: #fff;
-  border-bottom: 3px solid $brand;
-}
-
-.ao-card-name {
-  margin: 0;
-  font-size: 19px;
-  font-weight: 700;
-  color: $text-dark;
-}
-
-.ao-card-title {
-  margin: 2px 0 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: $brand;
-}
-
-.ao-card-link {
-  font-size: 12px;
-  color: $text-muted;
-  text-decoration: underline;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 4px;
-
-  &:hover {
-    color: $brand;
-  }
-}

@@ -2,15 +2,15 @@
 
 // ---- Tokens (kept local to this page, matches the rest of the admin's
 // neutral palette — no new brand colors introduced) ----
-$border: #eef0f3;
-$border-strong: #e2e5ea;
-$text-primary: #1a1f27;
-$text-secondary: #8a94a3;
-$bg-page: #f6f7f9;
-$bg-soft: #fafbfc;
+$border: var(--color-border);
+$border-strong: var(--color-border);
+$text-primary: var(--color-text);
+$text-secondary: var(--color-text-tertiary);
+$bg-page: var(--color-surface-muted);
+$bg-soft: var(--color-surface-muted);
 $radius: 10px;
 $radius-sm: 8px;
-$shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
+$shadow-card: 0 1px 2px var(--color-shadow);
 
 .page {
   background: $bg-page;
@@ -24,7 +24,7 @@ $shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid $border;
   border-radius: $radius;
   padding: 18px 22px;
@@ -50,7 +50,7 @@ $shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
 
 // ---- Section card ----
 .sectionCard {
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid $border;
   border-radius: $radius;
   box-shadow: $shadow-card;
@@ -73,8 +73,8 @@ $shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #eef2ff;
-  color: #4f5deb;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
   font-size: 15px;
   flex-shrink: 0;
 }
@@ -186,12 +186,12 @@ $shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
   width: 26px;
   height: 26px;
   border-radius: 6px;
-  color: #8a94a3;
+  color: var(--color-text-tertiary);
   touch-action: none;
 
   &:hover {
-    background: #eef2ff;
-    color: #4f5deb;
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
   }
 
   &:active {
@@ -212,8 +212,8 @@ $shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #eef2ff;
-  color: #4f5deb;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -243,7 +243,7 @@ $shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
   justify-content: flex-end;
   gap: 10px;
   padding: 14px 22px;
-  background: #fff;
+  background: var(--color-surface);
   border-top: 1px solid $border;
   border-radius: 0 0 $radius $radius;
 }
@@ -290,8 +290,8 @@ $shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
 
 .mention-tag {
   display: inline-block;
-  background: rgba(26, 154, 171, 0.1);
-  color: #1a9aab;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
   padding: 2px 8px;
   border-radius: 999px;
   font-weight: 600;
@@ -300,13 +300,13 @@ $shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 
 .mention-tag:hover {
-  background: rgba(26, 154, 171, 0.18);
+  background: var(--color-primary-soft);
 }
 
 .topic-tagged-paragraph {
   position: relative;
-  border-left: 3px solid #4f5deb;
-  background: rgba(79, 93, 235, 0.05);
+  border-left: 3px solid var(--color-primary);
+  background: var(--color-primary-soft);
   padding-left: 12px !important;
 }
 
@@ -316,7 +316,7 @@ $shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
   top: -18px;
   left: 0;
   font-size: 11px;
-  color: #4f5deb;
+  color: var(--color-primary);
   font-family: Arial, sans-serif;
   font-weight: 600;
   white-space: nowrap;

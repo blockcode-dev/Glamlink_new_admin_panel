@@ -1,13 +1,14 @@
+
 /** @format */
 
-$border: #eef0f3;
-$text-primary: #1a1f27;
-$text-secondary: #8a94a3;
-$bg-page: #f6f7f9;
+$border: var(--color-border);
+$text-primary: var(--color-text);
+$text-secondary: var(--color-text-tertiary);
+$bg-page: var(--color-surface-muted);
 $radius: 10px;
-$shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
-$brand: #1a9aab;
-$brand-soft: #eaf7f8;
+$shadow-card: 0 1px 2px var(--color-shadow);
+$brand: var(--color-primary);
+$brand-soft: var(--color-primary-soft);
 
 .page {
   background: $bg-page;
@@ -20,7 +21,7 @@ $brand-soft: #eaf7f8;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid $border;
   border-radius: $radius;
   padding: 18px 22px;
@@ -52,7 +53,7 @@ $brand-soft: #eaf7f8;
 
 /* ── Table card (list page) ──────────── */
 .tableCard {
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid $border;
   border-radius: $radius;
   box-shadow: $shadow-card;
@@ -74,10 +75,10 @@ $brand-soft: #eaf7f8;
 .slug {
   display: inline-block;
   padding: 5px 9px;
-  background: #f6f7f9;
+  background: var(--color-surface-muted);
   border: 1px solid $border;
   border-radius: 6px;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 12px;
 }
 
@@ -106,22 +107,22 @@ $brand-soft: #eaf7f8;
   background: $brand-soft;
 
   &:hover {
-    background: darken($brand-soft, 4%);
+    background: var(--color-primary-soft-hover);
   }
 }
 
 .iconButtonDanger {
-  color: #ef4444;
-  background: #fff1f2;
+  color: var(--color-error);
+  background: var(--color-error-soft);
 
   &:hover {
-    background: #ffe4e6;
+    background: var(--color-error-soft);
   }
 }
 
 /* ── Form sections (Add/Edit pages) ──────────── */
 .sectionCard {
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid $border;
   border-radius: $radius;
   box-shadow: $shadow-card;
@@ -260,8 +261,8 @@ $brand-soft: #eaf7f8;
     border-color: $brand;
 
     &:hover {
-      background: darken($brand, 6%);
-      border-color: darken($brand, 6%);
+      background: var(--color-primary-active);
+      border-color: var(--color-primary-active);
     }
   }
 }

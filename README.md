@@ -1,70 +1,80 @@
-# Getting Started with Create React App
+# Glamlink Admin Panel
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Admin dashboard for Glamlink: users, professionals, access cards, journals, ads, e-commerce and app content.
 
-## Available Scripts
+## Stack
 
-In the project directory, you can run:
+| Job | Library |
+| --- | --- |
+| Language | [TypeScript](https://www.typescriptlang.org) (strict); `tsc` type-checks, Vite transpiles |
+| Build & dev server | [Vite](https://vite.dev) |
+| UI components, icons, notifications | [antd](https://ant.design) + `@ant-design/icons` |
+| Routing | [React Router](https://reactrouter.com) v8 (`react-router`) |
+| Rich-text editor | [Tiptap](https://tiptap.dev) — shared `src/components/RichTextEditor.tsx` |
+| Charts | Chart.js (`react-chartjs-2`) |
+| Dates | dayjs |
+| Image cropping | `antd-img-crop` (wrapped by `src/components/ImageCropModal.tsx`) |
+| Tests | [Vitest](https://vitest.dev) + Testing Library (jsdom) |
+| Lint | [oxlint](https://oxc.rs/docs/guide/usage/linter) |
 
-### `npm start`
+## Getting started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Requires Node `^22.22.2` or `>=24.15.0`.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+npm install
+cp .env.example .env   # then fill in the values
+npm run dev            # http://localhost:3000
+```
 
-### `npm test`
+### Environment variables
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Read at build time from `.env` (see `.env.example`). Only variables prefixed with `VITE_` reach the app; restart the dev server after changing them. A new variable must also be declared in `src/vite-env.d.ts`, or reading it is a type error.
 
-### `npm run build`
+| Variable | Used for |
+| --- | --- |
+| `VITE_API_BASE_URL` | Backend API base URL (ends with `/`) |
+| `VITE_IMAGE_BASE_URL` | Base URL for uploaded images |
+| `VITE_VIDEO_BASE_URL` | Base URL for uploaded videos |
+| `VITE_GOOGLE_MAPS_API_KEY` | Google Maps address search and geocoding on the access card forms; the script loads on first use (`src/utils/googleMaps.ts`) |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Scripts
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+| Command | What it does |
+| --- | --- |
+| `npm run dev` (or `npm start`) | Dev server with hot reload on port 3000 |
+| `npm run build` | Type-check, then production build into `build/` (fails on any type error) |
+| `npm run typecheck` | Type-check only (`tsc`, no output files) |
+| `npm run preview` | Serve the production build locally |
+| `npm test` | Run the test suite once |
+| `npm run test:watch` | Re-run tests on change |
+| `npm run lint` | Lint with oxlint (rules in `.oxlintrc.json`) |
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The build includes the ffmpeg core for the ad video cropper (`build/assets/ffmpeg-core-*.wasm`, about 32 MB). Browsers download it only when someone crops a video, but the host must accept a file that size; Cloudflare Pages, for one, caps files at 25 MiB.
 
-### `npm run eject`
+## Project layout
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```
+index.html                Vite entry (loads src/index.tsx)
+src/
+  App.tsx                 Routes
+  components/             Shared components (layout, rich-text editor, image cropper)
+  config/                 Environment, dayjs and the antd theme (built from index.css)
+  index.css               The only global stylesheet; every colour token lives here
+  pages/                  One folder per admin section
+  services/Api/           API calls, one module per backend area, typed with the models in types/
+  types/                  API response shapes and domain models (users, journals, access cards, …)
+  utils/                  Shared helpers: API error readers, table state, :id route param
+  setupTests.ts           Vitest setup (jest-dom matchers, jsdom shims)
+  vite-env.d.ts           Types for the VITE_* environment variables
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Tests live next to the code they cover (`*.test.ts` / `*.test.tsx`).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Colours
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Every colour is a token in `src/index.css` (`--color-primary`, `--color-text`, `--color-surface`, …). Use them as `var(--color-…)` in CSS, SCSS and inline styles. The antd theme reads the same tokens (`src/config/theme.ts`), so antd components and preset tag colours (`<Tag color="green">`) follow them automatically. Charts draw on a canvas and can't use `var()`; read tokens there with `cssVar("--color-…")`.
 
-## Learn More
+`src/theme.test.ts` fails on any hex, `rgb()` or `hsl()` colour outside `index.css`. If a value is data rather than styling (e.g. a brand colour saved with an access card), mark its line `// color-literal-ok: <reason>`.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+The domain types in `src/types/` were inferred from how the pages use each response, not from a backend schema. Fields the code treats defensively (`?.`, fallbacks) are optional; when the API turns out to differ, fix the type there and let `npm run typecheck` show every page affected.

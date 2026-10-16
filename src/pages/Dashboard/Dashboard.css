@@ -4,42 +4,17 @@
   margin-bottom: 0px !important;
 }
 
-.left_graph {
-  width: 70%;
-  margin-top: 10px;
-  padding: 1.5rem;
-  border: 1px solid #e7e7e7;
-  border-radius: 10px;
-  margin-right: 10px;
-
-}
-
-.right_graph {
-  width: 30%;
-  margin-top: 10px;
-  padding:1.5rem;
-  border: 1px solid #e7e7e7;
-  border-radius: 10px;
-  text-align: center;
-  /* margin-bottom: 20px; */
-}
-
 .headingTitle{
   margin-bottom: 20px;
   font-size: 1rem;
-  color: black;
-}
-
-.scrollable-table-container {
-  max-height: 220px; /* Adjust this value as needed */
-  overflow-y: auto;
+  color: var(--color-text);
 }
 
 .card-box {
-  background-color: white;
+  background-color: var(--color-surface);
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--color-shadow);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -47,30 +22,6 @@
 
 .small-card {
   flex: 1;
-}
-
-.large-card {
-  flex: 2; /* Takes up the space of two small cards */
-}
-
-.percentage {
-  font-size: 0.9em;
-  margin-top: 10px;
-}
-
-.positive {
-  color: green;
-}
-
-.negative {
-  color: red;
-}
-
-.graph-placeholder {
-  background: linear-gradient(to top right, #FFD700, #FFAA00);
-  height: 60px; /* Placeholder for a graph or image */
-  margin-top: 20px;
-  border-radius: 4px;
 }
 
 

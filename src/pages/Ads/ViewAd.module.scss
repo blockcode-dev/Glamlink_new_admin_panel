@@ -13,11 +13,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 12px;
   padding: 18px 22px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px var(--color-shadow);
 }
 
 .headerTitle {
@@ -28,7 +28,7 @@
 
 .headerSubtitle {
   margin: 4px 0 0;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 13px;
 }
 
@@ -50,10 +50,10 @@
 }
 
 .sectionCard {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 12px;
   padding: 20px 22px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px var(--color-shadow);
 }
 
 .imageWrap {
@@ -61,8 +61,8 @@
   min-height: 200px;
   border-radius: 10px;
   overflow: hidden;
-  background: #f8fafc;
-  border: 1px dashed #e2e8f0;
+  background: var(--color-surface-muted);
+  border: 1px dashed var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -75,7 +75,7 @@
 }
 
 .imageEmpty {
-  color: #94a3b8;
+  color: var(--color-text-tertiary);
   font-size: 13px;
 }
 
@@ -83,7 +83,7 @@
   text-align: center;
   margin-top: 10px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-weight: 600;
 }
 
@@ -92,7 +92,7 @@
   align-items: flex-start;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-border);
   font-size: 13px;
 
   &:last-child {
@@ -102,7 +102,7 @@
 
 .detailLabel {
   min-width: 110px;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-weight: 600;
 }
 

@@ -1,13 +1,14 @@
+
 /** @format */
 
-$border: #eef0f3;
-$text-primary: #1a1f27;
-$text-secondary: #8a94a3;
-$bg-page: #f6f7f9;
+$border: var(--color-border);
+$text-primary: var(--color-text);
+$text-secondary: var(--color-text-tertiary);
+$bg-page: var(--color-surface-muted);
 $radius: 10px;
-$shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04);
-$brand: #1a9aab;
-$brand-soft: #eaf7f8;
+$shadow-card: 0 1px 2px var(--color-shadow);
+$brand: var(--color-primary);
+$brand-soft: var(--color-primary-soft);
 
 .page {
   background: $bg-page;
@@ -20,7 +21,7 @@ $brand-soft: #eaf7f8;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid $border;
   border-radius: $radius;
   padding: 18px 22px;
@@ -52,7 +53,7 @@ $brand-soft: #eaf7f8;
 
 /* ── Table card (list page) ──────────── */
 .tableCard {
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid $border;
   border-radius: $radius;
   box-shadow: $shadow-card;
@@ -74,10 +75,10 @@ $brand-soft: #eaf7f8;
 .slug {
   display: inline-block;
   padding: 5px 9px;
-  background: #f6f7f9;
+  background: var(--color-surface-muted);
   border: 1px solid $border;
   border-radius: 6px;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 12px;
 }
 
@@ -106,22 +107,22 @@ $brand-soft: #eaf7f8;
   background: $brand-soft;
 
   &:hover {
-    background: darken($brand-soft, 4%);
+    background: var(--color-primary-soft-hover);
   }
 }
 
 .iconButtonDanger {
-  color: #ef4444;
-  background: #fff1f2;
+  color: var(--color-error);
+  background: var(--color-error-soft);
 
   &:hover {
-    background: #ffe4e6;
+    background: var(--color-error-soft);
   }
 }
 
 /* ── Form sections (Add/Edit pages, and Topic Details below) ──────────── */
 .sectionCard {
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid $border;
   border-radius: $radius;
   box-shadow: $shadow-card;
@@ -186,8 +187,8 @@ $brand-soft: #eaf7f8;
     border-color: $brand;
 
     &:hover {
-      background: darken($brand, 6%);
-      border-color: darken($brand, 6%);
+      background: var(--color-primary-active);
+      border-color: var(--color-primary-active);
     }
   }
 }
@@ -280,8 +281,8 @@ $brand-soft: #eaf7f8;
     border-color: $brand;
 
     &:hover {
-      background: darken($brand, 6%);
-      border-color: darken($brand, 6%);
+      background: var(--color-primary-active);
+      border-color: var(--color-primary-active);
     }
   }
 }
@@ -404,7 +405,7 @@ $brand-soft: #eaf7f8;
 // Renders rich-text (topic description, business card bio) safely — it's
 // raw HTML coming from the backend, not plain text.
 .prose {
-  color: #4b5563;
+  color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 1.75;
 
@@ -471,11 +472,11 @@ $brand-soft: #eaf7f8;
   padding: 14px 16px;
   cursor: pointer;
   transition: all 0.15s ease;
-  background: #fff;
+  background: var(--color-surface);
 
   &:hover {
     border-color: $brand;
-    box-shadow: 0 4px 14px rgba(26, 154, 171, 0.12);
+    box-shadow: 0 4px 14px var(--color-primary-ring);
   }
 }
 
@@ -510,7 +511,7 @@ $brand-soft: #eaf7f8;
 
 .paragraphSnippet {
   font-size: 13px;
-  color: #555;
+  color: var(--color-text-secondary);
   line-height: 1.6;
   margin: 0;
   display: -webkit-box;
@@ -526,13 +527,13 @@ $brand-soft: #eaf7f8;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.15s ease;
-  background: #fff;
+  background: var(--color-surface);
   display: flex;
   flex-direction: column;
 
   &:hover {
     border-color: $brand;
-    box-shadow: 0 4px 14px rgba(26, 154, 171, 0.12);
+    box-shadow: 0 4px 14px var(--color-primary-ring);
   }
 }
 
@@ -604,7 +605,7 @@ $brand-soft: #eaf7f8;
 
 .shopDescription {
   font-size: 12.5px;
-  color: #666;
+  color: var(--color-text-secondary);
   line-height: 1.6;
   margin: 6px 0 0;
   display: -webkit-box;
@@ -633,14 +634,14 @@ $brand-soft: #eaf7f8;
   padding: 14px 16px;
   cursor: pointer;
   transition: all 0.15s ease;
-  background: #fff;
+  background: var(--color-surface);
   display: flex;
   align-items: flex-start;
   gap: 12px;
 
   &:hover {
     border-color: $brand;
-    box-shadow: 0 4px 14px rgba(26, 154, 171, 0.12);
+    box-shadow: 0 4px 14px var(--color-primary-ring);
   }
 }
 
@@ -698,12 +699,12 @@ $brand-soft: #eaf7f8;
   border: 1px solid $border;
   border-radius: 8px;
   padding: 16px 14px;
-  background: #fff;
+  background: var(--color-surface);
   transition: all 0.15s ease;
 
   &:hover {
     border-color: $brand;
-    box-shadow: 0 4px 14px rgba(26, 154, 171, 0.12);
+    box-shadow: 0 4px 14px var(--color-primary-ring);
 
     .professionalRemoveBtn {
       opacity: 1;
@@ -739,8 +740,8 @@ $brand-soft: #eaf7f8;
   z-index: 2;
 
   &:hover {
-    color: #ef4444;
-    background: #fff1f2;
+    color: var(--color-error);
+    background: var(--color-error-soft);
   }
 }
 
@@ -784,8 +785,8 @@ $brand-soft: #eaf7f8;
       border-color: $brand;
 
       &:hover {
-        background: darken($brand, 6%);
-        border-color: darken($brand, 6%);
+        background: var(--color-primary-active);
+        border-color: var(--color-primary-active);
       }
     }
   }
@@ -832,12 +833,12 @@ $brand-soft: #eaf7f8;
   background: $brand-soft;
 
   &:hover {
-    background: darken($brand-soft, 2%);
+    background: var(--color-primary-soft-hover);
   }
 }
 
 .professionalPickerAvatar {
-  background: #fff;
+  background: var(--color-surface);
   color: $brand;
   border: 1px solid $border;
   flex-shrink: 0;
@@ -956,7 +957,7 @@ $brand-soft: #eaf7f8;
 
   &:hover {
     border-color: $brand;
-    box-shadow: 0 4px 12px rgba(26, 154, 171, 0.12);
+    box-shadow: 0 4px 12px var(--color-primary-ring);
   }
 
   img {
