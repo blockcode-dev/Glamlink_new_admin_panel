@@ -83,7 +83,7 @@ const Faq = () => {
 	const getData = async () => {
 		try {
 			setLoading(true);
-			let result = await GetFAQ(localStorage.getItem("adminToken"));
+			let result = await GetFAQ();
 			const newData = result.data.data.map((item, index) => ({
 				...item,
 				index: index + 1,

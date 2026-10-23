@@ -85,9 +85,7 @@ const isPast = scheduleDate.isBefore(dayjs().startOf("day"));
     try {
       setLoading(true);
 
-      const result = await GetAllPodcastSchedule(
-        localStorage.getItem("adminToken"),
-      );
+      const result = await GetAllPodcastSchedule();
 
       const newData = result?.data?.data?.map((item, index) => ({
         ...item,
@@ -122,10 +120,7 @@ const isPast = scheduleDate.isBefore(dayjs().startOf("day"));
 
       onOk: async () => {
         try {
-          await DeletePodcastSchedule(
-            [id],
-            localStorage.getItem("adminToken"),
-          );
+          await DeletePodcastSchedule([id]);
 
           message.success("Schedule deleted successfully");
 

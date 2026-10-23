@@ -13,9 +13,6 @@ export default defineConfig({
     // request headers (the admin token) included. Dev and tests keep them.
     rolldownOptions: { output: { minify: { compress: { dropConsole: true } } } },
   },
-  // ffmpeg.wasm creates its own worker from a URL next to its module;
-  // pre-bundling moves the module and breaks that URL.
-  optimizeDeps: { exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"] },
   test: {
     environment: "jsdom",
     setupFiles: "./src/setupTests.ts",

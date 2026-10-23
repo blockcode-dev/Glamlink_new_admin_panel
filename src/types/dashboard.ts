@@ -23,6 +23,6 @@ export interface BookedTimeSlot {
 }
 
 export interface BookedProfessional {
-  appointment_counselor: UserRef;
+  appointment_professional: UserRef;
   booking_count: number;
 }

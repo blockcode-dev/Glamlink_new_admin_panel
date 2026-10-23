@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { BASE_URL } from "../Host";
-import type { AdminToken, ApiResponse, ListParams, Paged } from "../../types/api";
+import type { ApiResponse, ListParams, Paged } from "../../types/api";
 import type { State, StateCities } from "../../types/location";
 import type {
 	AvailabilitySlot,
@@ -26,14 +26,13 @@ import type { UserClipComment, UserClipLike, UserPostComment, UserPostLike } fro
 type Id = number | string;
 
 //get all user
-export const GetUsers = async (adminToken: AdminToken, params: ListParams) => {
+export const GetUsers = async (params: ListParams) => {
 	try {
 		const { page, limit, sortBy } = params;
 		const res = await axios.get<ApiResponse<Paged<User>>>(BASE_URL + `admin/users/list/6`, {
 			headers: {
-				"x-access-token": `${adminToken}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 			params: {
 				page: page,
 				limit: limit,
@@ -49,14 +48,13 @@ export const GetUsers = async (adminToken: AdminToken, params: ListParams) => {
 	}
 };
 
-export const GetProfessionals = async (adminToken: AdminToken, params: ListParams) => {
+export const GetProfessionals = async (params: ListParams) => {
 	const { page, limit, sortBy } = params;
 	try {
 		const res = await axios.get<ApiResponse<Paged<Professional>>>(BASE_URL + `admin/users/list/7`, {
 			headers: {
-				"x-access-token": `${adminToken}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 			params: {
 				page: page,
 				limit: limit,
@@ -86,9 +84,8 @@ export const GetProfessionalPayoutSummary = async (id: Id) => {
 export const ProfessialPayout = async (formData: FormData) => {
 	return await axios.post<ApiResponse<unknown>>(BASE_URL + "stripe/payout/professional", formData, {
 		headers: {
-			"x-access-token": `${localStorage.getItem("adminToken")}`,
-			"Content-Type": "multipart/form-data",
-		},
+            "Content-Type": "multipart/form-data"
+        },
 	});
 };
 
@@ -101,9 +98,8 @@ export const DeleteUser = async (user_id: React.Key[]) => {
 		},
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -159,9 +155,9 @@ export const GetReviewsGivenByUserId = async (user_id: Id) => {
 	});
 };
 
-export const GetReviewsTakenByUserId = async (counselor_id: Id) => {
+export const GetReviewsTakenByUserId = async (professional_id: Id) => {
 	return await axios.post<ApiResponse<Review[]>>(BASE_URL + `admin/getReviewsTakenByUserId`, {
-		counselor_id: counselor_id,
+		professional_id,
 	});
 };
 
@@ -171,9 +167,9 @@ export const GetServiceByUserId = async (user_id: Id) => {
 	});
 };
 
-export const GetAvailabilityByUserId = async (counselor_id: Id) => {
+export const GetAvailabilityByUserId = async (professional_id: Id) => {
 	return await axios.post<ApiResponse<AvailabilitySlot[]>>(BASE_URL + `admin/getAvailablityByUserId`, {
-		counselor_id: counselor_id,
+		professional_id,
 	});
 };
 
@@ -195,14 +191,14 @@ export const GetBookingsByUserId = async (status: string, user_id: Id) => {
 	}
 };
 
-export const GetBookingsByCounsellorId = async (status: string, user_id: Id) => {
+export const GetBookingsByProfessionalId = async (status: string, user_id: Id) => {
 	let config = {
 		status: status,
 		user_id: user_id,
 	};
 	try {
 		const res = await axios.post<ApiResponse<Booking[]>>(
-			BASE_URL + "admin/getBookingsByCounsellorId",
+			BASE_URL + "admin/getBookingsByProfessionalId",
 			config
 		);
 
@@ -216,9 +212,8 @@ export const GetBookingsByCounsellorId = async (status: string, user_id: Id) => 
 export const PromoteUserAPI = async (formData: PromotionRequest) => {
 	return await axios.post<ApiResponse<unknown>>(BASE_URL + `admin/user/promoted`, formData, {
 		headers: {
-			"Content-Type": "application/json",
-			"x-access-token": `${localStorage.getItem("adminToken")}`,
-		},
+            "Content-Type": "application/json"
+        },
 	});
 };
 
@@ -248,16 +243,15 @@ export const CreateFounder = async (user_id: number) => {
 		{ user_id },
 		{
 			headers: {
-				"Content-Type": "application/json",
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-			},
+                "Content-Type": "application/json"
+            },
 		}
 	);
 };
 
 
-export const GetAllReferralByBeauticianId = async (id: Id) => {
-	return await axios.get<ApiResponse<{ users?: User[] }>>(BASE_URL + `admin/getAllReferralByBeauticianId/${id}`);
+export const GetAllReferralByProfessionalId = async (id: Id) => {
+	return await axios.get<ApiResponse<{ users?: User[] }>>(BASE_URL + `admin/getAllReferralByProfessionalId/${id}`);
 };
 
 export const GetAllReferral = async () => {
@@ -271,8 +265,7 @@ export const GetAllRewardRules = async () => {
 export const UpdateGlamCoinRules = async (formData: Pick<RewardRule, "title" | "coins">, id: number) => {
 	return await axios.put<ApiResponse<RewardRule>>(BASE_URL + `admin/editGlamCoinRules/${id}`, formData, {
 		headers: {
-			"x-access-token": `${localStorage.getItem("adminToken")}`,
-			"Content-Type": "multipart/form-data",
-		},
+            "Content-Type": "multipart/form-data"
+        },
 	});
 };

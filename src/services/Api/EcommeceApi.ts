@@ -2,12 +2,12 @@
 
 import axios from "axios";
 import { BASE_URL } from "../Host";
-import type { AdminToken, ApiResponse, ListParams, Paged } from "../../types/api";
+import type { ApiResponse, ListParams, Paged } from "../../types/api";
 import type { Order, Product, ProductCategory, ProductReview, ProductSubCategory, TaxCategory } from "../../types/ecommerce";
 
 type Id = number | string;
 
-export const GetProductCategory = async (adminToken: AdminToken, params: ListParams) => {
+export const GetProductCategory = async (params: ListParams) => {
 	const { page, limit, sortBy } = params;
 
 	try {
@@ -15,9 +15,8 @@ export const GetProductCategory = async (adminToken: AdminToken, params: ListPar
 			BASE_URL + "product/category/getAllProductCategories",
 			{
 				headers: {
-					"x-access-token": adminToken,
-					"Content-Type": "application/json",
-				},
+                    "Content-Type": "application/json"
+                },
 				params: {
 					page: page,
 					limit: limit,
@@ -54,9 +53,8 @@ export const CreateProductCategory = async (formData: { title: string }) => {
 		formData,
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -67,9 +65,8 @@ export const UpdateProductCategory = async (id: Id, formData: FormData) => {
 		formData,
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -80,9 +77,8 @@ export const DeleteProductCategory = async (category_id: React.Key[]) => {
 		{ category_id: category_id },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -95,9 +91,8 @@ export const CreateCategory = async (formData: FormData) => {
 		formData,
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -108,9 +103,8 @@ export const UpdateCategory = async (id: Id, formData: FormData) => {
 		formData,
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -121,19 +115,15 @@ export const DeleteCategory = async (category_id: React.Key[]) => {
 		{ category_id: category_id },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
 
-export const GetProduct = async (adminToken: AdminToken) => {
+export const GetProduct = async () => {
 	try {
-		const res = await axios.get<ApiResponse<Product[]>>(
-			BASE_URL + "product/getAllProductsForAdmin",
-			{}
-		);
+		const res = await axios.get<ApiResponse<Product[]>>(BASE_URL + "product/getAllProductsForAdmin");
 
 		return res.data; // Return just the data part of the response
 	} catch (error) {
@@ -144,10 +134,7 @@ export const GetProduct = async (adminToken: AdminToken) => {
 
 export const GetAllNumeralCategory = async () => {
 	try {
-		const res = await axios.get<ApiResponse<TaxCategory[]>>(
-			BASE_URL + "taxCategory/getTaxCategoryName",
-			{}
-		);
+		const res = await axios.get<ApiResponse<TaxCategory[]>>(BASE_URL + "taxCategory/getTaxCategoryName");
 
 		return res.data; // Return just the data part of the response
 	} catch (error) {
@@ -162,9 +149,8 @@ export const UpdateProduct = async (id: Id, formData: { status: string; numeral_
 		formData,
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -175,9 +161,8 @@ export const DeleteProduct = async (product_id: React.Key[]) => {
 		{ product_id: product_id },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -188,24 +173,22 @@ export const GetProductById = async (id: Id) => {
 
 export const GetReviewsByProductId = async (product_id: Id) => {
 	return await axios.post<ApiResponse<ProductReview[]>>(
-		`${BASE_URL}/product/review/getReviewsAndRatingsByProductId`,
+		`${BASE_URL}product/review/getReviewsAndRatingsByProductId`,
 		{ product_id },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
 
-export const GetAllOrders = async (adminToken: AdminToken) => {
+export const GetAllOrders = async () => {
 	try {
 		const res = await axios.get<ApiResponse<Order[]>>(BASE_URL + "order/getAllOrders", {
 			headers: {
-				"x-access-token": `${adminToken}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		});
 
 		return res;

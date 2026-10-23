@@ -114,7 +114,7 @@ const PostComment = () => {
 			setServiceData(newData);
 		} catch (e) {
 			console.error(e);
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 				console.error("You do not have access to this page as a sub-admin.");
 			} else {

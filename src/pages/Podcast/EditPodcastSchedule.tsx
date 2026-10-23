@@ -62,10 +62,7 @@ const EditPodcastSchedule = () => {
 
   const getDetails = async () => {
     try {
-      const result = await GetPodcastScheduleById(
-        id,
-        localStorage.getItem("adminToken"),
-      );
+      const result = await GetPodcastScheduleById(id);
 
       const data = result?.data?.data;
 
@@ -251,13 +248,7 @@ const EditPodcastSchedule = () => {
       // Update Podcast
       // ==========================
 
-      await UpdatePodcastSchedule(
-        id,
-        payload,
-        localStorage.getItem(
-          "adminToken",
-        ),
-      );
+      await UpdatePodcastSchedule(id, payload);
 
       // ==========================
       // Update Topic Mapping

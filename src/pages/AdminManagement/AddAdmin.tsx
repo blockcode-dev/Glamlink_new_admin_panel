@@ -7,13 +7,13 @@ import { useNavigate } from "react-router";
 import { message, Button, Card, Form, Input, Select } from "antd";
 
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
-import { apiErrorStatus } from "../../utils/apiError";
-import { clearSession } from "../../utils/session";
+import { apiErrorMessage, apiErrorStatus } from "../../utils/apiError";
 
 const AddAdmin = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [roleId, setRoleId] = useState("");
+  const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
 
@@ -33,11 +33,17 @@ const AddAdmin = () => {
       message.error("Please choose any Role");
       return;
     }
+    // The API requires a password for a new admin (they sign in with it).
+    if (password.length < 8) {
+      message.error("Please enter a password of at least 8 characters");
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append("name", name);
       formData.append("email", email);
       formData.append("role_id", String(parseInt(roleId, 10)));
+      formData.append("password", password);
 
       const response = await CreateAdmin(formData);
 
@@ -49,14 +55,10 @@ const AddAdmin = () => {
       }, 1000);
     } catch (error) {
       if (apiErrorStatus(error) === 400) {
-        message.error("Email already exists");
+        message.error(apiErrorMessage(error) ?? "Email already exists");
       } else if (apiErrorStatus(error) === 401) {
-        message.error("Token expired");
-        clearSession();
-        setTimeout(() => {
-          navigate("/login");
-        }, 1000);
-      } else {
+        // The session has ended; the shared API client (utils/session.ts) has signed the admin out.
+       } else {
         message.error("Something went wrong");
       }
     }
@@ -101,6 +103,16 @@ const AddAdmin = () => {
                   value={email}
                   required
                   onChange={(e) => setEmail(e.target.value)}
+                  className="new_form_control"
+                />
+              </Form.Item>
+
+              <Form.Item label="Password" extra="At least 8 characters. Share it with the new admin securely.">
+                <Input.Password
+                  placeholder="Enter password"
+                  value={password}
+                  autoComplete="new-password"
+                  onChange={(e) => setPassword(e.target.value)}
                   className="new_form_control"
                 />
               </Form.Item>

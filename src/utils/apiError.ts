@@ -8,6 +8,10 @@ import { isAxiosError } from "axios";
 export interface ApiErrorBody {
   message?: string;
   error?: string;
+  /** Machine-readable reason on newer endpoints, e.g. "INVALID_CARD", "CARD_EXISTS". */
+  code?: string;
+  /** Extra facts for some codes: the field a check failed on, the conflicting record. */
+  details?: { field?: string; card_id?: number | string };
 }
 
 /** HTTP status of a failed API call. */

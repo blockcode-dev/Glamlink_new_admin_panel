@@ -11,8 +11,7 @@ import type {
 type Id = number | string;
 
 const authHeaders = () => ({
-  "Content-Type": "application/json",
-  "x-access-token": localStorage.getItem("adminToken"),
+  "Content-Type": "application/json"
 });
 
 /** `from` / `to` are "YYYY-MM-DD" dates in the admin's time zone. */

@@ -60,6 +60,7 @@ export interface BusinessCard {
   email?: string | null;
   phone?: string | null;
   professional_title?: string | null;
+  /** The first specialty; the API sets it. */
   primary_specialty?: string | null;
   bio?: string | null;
   website?: string | null;
@@ -78,10 +79,12 @@ export interface BusinessCard {
   nfc_status?: string | null;
   /** "subscription_only", "nfc_with_subscription", … */
   plan_type?: string | null;
+  /** No longer accepted by the API; old cards keep the stored value. */
   elite_setup?: boolean | null;
   offer_promotion?: boolean | null;
   promotion_details?: string | null;
   color_code?: string | null;
+  /** No longer accepted by the API; old cards keep the stored value (journal mentions still link by it). */
   custom_handle?: string | null;
   is_phone_visible?: boolean;
   business_user?: { subscription_status?: string | null } | null;
@@ -98,7 +101,10 @@ export interface BusinessCard {
   images?: CardMedia[];
 }
 
-/** Values of the create/edit access-card form; Edit seeds it from the saved card, so text can be null. */
+/**
+ * Values of the create/edit access-card form; Edit seeds it from the saved card, so text can be null.
+ * Only the fields the API accepts (backend docs/access.md, section 1).
+ */
 export interface BusinessCardFormValues {
   name: string;
   business_name?: string | null;
@@ -108,19 +114,14 @@ export interface BusinessCardFormValues {
   bio?: string | null;
   website?: string | null;
   booking_link?: string | null;
-  custom_handle?: string | null;
   is_phone_visible?: boolean;
-  primary_specialty?: string | null;
   offer_promotion?: boolean | null;
   promotion_details?: string | null;
-  elite_setup?: boolean | null;
   /** Hex string, or the picker's colour object before it is normalised. */
   color_code?: string | { toString(): string } | null;
   preferred_booking_method?: string[] | null;
   specialties?: string[];
   important_info?: string[];
-  excites_about_glamlink?: string[];
-  biggest_pain_points?: string[];
   other_links?: CardLink[];
   /** Create page only; Edit keeps featured links in component state. */
   featured_links?: (Partial<FeaturedLink> & { _uid?: string })[];
@@ -141,7 +142,7 @@ export interface CardVideo {
 }
 
 /** A gallery image in the upload list; saved ones carry their media id. */
-export type GalleryImage = UploadFile & { is_thumbnail?: boolean; mediaId?: number };
+export type GalleryImage = UploadFile & { is_thumbnail?: boolean; mediaId?: number; caption?: string | null };
 
 /** A featured link being edited; new ones have a `_uid` until saved. */
 export type EditableFeaturedLink = FeaturedLink & { _uid?: string };

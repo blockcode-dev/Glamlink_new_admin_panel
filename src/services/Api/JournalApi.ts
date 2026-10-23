@@ -47,7 +47,7 @@ export const DeleteJournalCategory = async (category_id: React.Key[]) => {
 };
 
 export const AddJournalCategory = async (formData: FormData) => {
-	return await axios.post<ApiResponse<JournalCategory>>(BASE_URL + "journalCategory", formData, {});
+	return await axios.post<ApiResponse<JournalCategory>>(BASE_URL + "journalCategory", formData);
 };
 
 // authors api
@@ -65,7 +65,7 @@ export const DeleteAuthors = async (author_id: React.Key[]) => {
 };
 
 export const AddAuthors = async (formData: FormData) => {
-	return await axios.post<ApiResponse<Author>>(BASE_URL + "author", formData, {});
+	return await axios.post<ApiResponse<Author>>(BASE_URL + "author", formData);
 };
 
 // journal api
@@ -92,7 +92,7 @@ export const DeleteJournal = async (journal_id: Id | Id[]) => {
 };
 
 export const CreateJournal = async (formData: FormData) => {
-	return await axios.post<ApiResponse<Journal>>(BASE_URL + "journal", formData, {});
+	return await axios.post<ApiResponse<Journal>>(BASE_URL + "journal", formData);
 };
 
 export const UpdateJournalSortOrder = async (data: SortOrder<"journals">) => {
@@ -206,14 +206,12 @@ export const UploadJournalMedia = async (file: File, { onProgress, signal }: Upl
   formData.append("images", file, file.name);
   const res = await axios.post<ApiResponse<{ location?: string }>>(`${BASE_URL}journal/upload`, formData, {
     signal,
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-    },
+
     onUploadProgress: (event) => {
       if (event.total && onProgress) {
         onProgress(Math.round((event.loaded / event.total) * 100));
       }
-    },
+    }
   });
   const location = res.data?.data?.location;
   if (!location) throw new Error("Invalid response format from server");
@@ -223,8 +221,7 @@ export const UploadJournalMedia = async (file: File, { onProgress, signal }: Upl
 export const BulkUploadShopCsv = async (formData: FormData) => {
   return await axios.post<ApiResponse<ShopCsvResult>>(BASE_URL + "discover/shop/csv-upload", formData, {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      "Content-Type": "multipart/form-data",
+      "Content-Type": "multipart/form-data"
     },
   });
 };
@@ -234,15 +231,7 @@ export const BulkUploadShopCsv = async (formData: FormData) => {
 // ==============================
 
 export const UpdateJournalTopicShops = async (topicId: Id, data: { shop_ids: number[] }) => {
-  return axios.put<ApiResponse<unknown>>(
-    `${BASE_URL}/journal/topic/${topicId}/shops`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.put<ApiResponse<unknown>>(`${BASE_URL}journal/topic/${topicId}/shops`, data);
 };
 
 // ==============================
@@ -250,15 +239,7 @@ export const UpdateJournalTopicShops = async (topicId: Id, data: { shop_ids: num
 // ==============================
 
 export const UpdateJournalTopicPodcasts = async (topicId: Id, data: { podcast_ids: number[] }) => {
-  return axios.put<ApiResponse<unknown>>(
-    `${BASE_URL}/journal/topic/${topicId}/podcasts`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.put<ApiResponse<unknown>>(`${BASE_URL}journal/topic/${topicId}/podcasts`, data);
 };
 
 // ==============================
@@ -266,52 +247,21 @@ export const UpdateJournalTopicPodcasts = async (topicId: Id, data: { podcast_id
 // ==============================
 
 export const CreateJournalFaq = async (data: Omit<JournalFaq, "id">) => {
-  return axios.post<ApiResponse<JournalFaq>>(
-    `${BASE_URL}/journal/faq`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.post<ApiResponse<JournalFaq>>(`${BASE_URL}journal/faq`, data);
 };
 
 export const GetAllJournalFaqs = async () => {
-  return axios.get<FlexibleList<JournalFaq>>(
-    `${BASE_URL}/journal/faq`,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.get<FlexibleList<JournalFaq>>(`${BASE_URL}journal/faq`);
 };
 
 export const UpdateJournalFaq = async (id: Id, data: Omit<JournalFaq, "id">) => {
-  return axios.put<ApiResponse<JournalFaq>>(
-    `${BASE_URL}/journal/faq/${id}`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.put<ApiResponse<JournalFaq>>(`${BASE_URL}journal/faq/${id}`, data);
 };
 
 export const DeleteJournalFaq = async (ids: Id[]) => {
-  return axios.post<ApiResponse<unknown>>(
-    `${BASE_URL}/journal/faq/delete`,
-    {
-      faq_id: ids,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.post<ApiResponse<unknown>>(`${BASE_URL}journal/faq/delete`, {
+    faq_id: ids,
+  });
 };
 
 // ==============================
@@ -319,63 +269,25 @@ export const DeleteJournalFaq = async (ids: Id[]) => {
 // ==============================
 
 export const CreateJournalTopic = async (data: FormData) => {
-  return axios.post<ApiResponse<JournalTopic>>(
-    `${BASE_URL}/journal/topic`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.post<ApiResponse<JournalTopic>>(`${BASE_URL}journal/topic`, data);
 };
 
 export const GetAllJournalTopics = async () => {
-  return axios.get<FlexibleList<JournalTopic>>(
-    `${BASE_URL}/journal/topic`,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.get<FlexibleList<JournalTopic>>(`${BASE_URL}journal/topic`);
 };
 
 export const GetJournalTopicById = async (id: Id) => {
-  return axios.get<ApiResponse<JournalTopic>>(
-    `${BASE_URL}/journal/topic/${id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.get<ApiResponse<JournalTopic>>(`${BASE_URL}journal/topic/${id}`);
 };
 
 export const UpdateJournalTopic = async (id: Id, data: FormData) => {
-  return axios.put<ApiResponse<JournalTopic>>(
-    `${BASE_URL}/journal/topic/${id}`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.put<ApiResponse<JournalTopic>>(`${BASE_URL}journal/topic/${id}`, data);
 };
 
 export const DeleteJournalTopic = async (ids: Id[]) => {
-  return axios.post<ApiResponse<unknown>>(
-    `${BASE_URL}/journal/topic/delete`,
-    {
-      topic_id: ids,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.post<ApiResponse<unknown>>(`${BASE_URL}journal/topic/delete`, {
+    topic_id: ids,
+  });
 };
 
 // ==============================
@@ -383,26 +295,11 @@ export const DeleteJournalTopic = async (ids: Id[]) => {
 // ==============================
 
 export const GetJournalTopicMappings = async (journalId: Id) => {
-  return axios.get<ApiResponse<JournalTopicMapping[]>>(
-    `${BASE_URL}/journal/${journalId}/topics`,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.get<ApiResponse<JournalTopicMapping[]>>(`${BASE_URL}journal/${journalId}/topics`);
 };
 
 export const UpdateJournalTopicMappings = async (journalId: Id, data: { topic_ids: number[] }) => {
-  return axios.post<ApiResponse<unknown>>(
-    `${BASE_URL}/journal/${journalId}/topics`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.post<ApiResponse<unknown>>(`${BASE_URL}journal/${journalId}/topics`, data);
 };
 
 // ==============================
@@ -410,26 +307,11 @@ export const UpdateJournalTopicMappings = async (journalId: Id, data: { topic_id
 // ==============================
 
 export const GetJournalFaqMappings = async (journalId: Id) => {
-  return axios.get<ApiResponse<JournalFaqMapping[]>>(
-    `${BASE_URL}/journal/${journalId}/faqs`,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.get<ApiResponse<JournalFaqMapping[]>>(`${BASE_URL}journal/${journalId}/faqs`);
 };
 
 export const UpdateJournalFaqMappings = async (journalId: Id, data: { faq_ids: number[] }) => {
-  return axios.post<ApiResponse<unknown>>(
-    `${BASE_URL}/journal/${journalId}/faqs`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.post<ApiResponse<unknown>>(`${BASE_URL}journal/${journalId}/faqs`, data);
 };
 
 // ==============================
@@ -437,29 +319,14 @@ export const UpdateJournalFaqMappings = async (journalId: Id, data: { faq_ids: n
 // ==============================
 
 export const GetJournalTopicParagraphs = async (topicId: Id) => {
-  return axios.get<ApiResponse<TopicParagraph[]>>(
-    `${BASE_URL}/journal/topic/${topicId}/paragraphs`,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.get<ApiResponse<TopicParagraph[]>>(`${BASE_URL}journal/topic/${topicId}/paragraphs`);
 };
 
 export const UpdateJournalTopicParagraphs = async (
   topicId: Id,
   data: { paragraphs: ParagraphRow[] },
 ) => {
-  return axios.put<ApiResponse<unknown>>(
-    `${BASE_URL}/journal/topic/${topicId}/paragraphs`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.put<ApiResponse<unknown>>(`${BASE_URL}journal/topic/${topicId}/paragraphs`, data);
 };
 
 // ==============================
@@ -467,13 +334,5 @@ export const UpdateJournalTopicParagraphs = async (
 // ==============================
 
 export const UpdateJournalTopicProfessionals = async (topicId: Id, data: { professional_ids: number[] }) => {
-  return axios.put<ApiResponse<JournalTopic>>(
-    `${BASE_URL}/journal/topic/${topicId}/professionals`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-      },
-    },
-  );
+  return axios.put<ApiResponse<JournalTopic>>(`${BASE_URL}journal/topic/${topicId}/professionals`, data);
 };

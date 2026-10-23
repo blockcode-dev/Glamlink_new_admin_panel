@@ -192,4 +192,16 @@
 		color: var(--color-text-tertiary);
 		font-weight: 400;
 	}
+
+	&__count {
+		padding: 4px 10px;
+		font-size: 12px;
+		text-align: right;
+		color: var(--color-text-tertiary);
+		border-top: 1px solid var(--color-border);
+
+		&--over {
+			color: var(--color-error);
+		}
+	}
 }

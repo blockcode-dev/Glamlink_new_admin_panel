@@ -161,12 +161,7 @@ const AddPodcastSchedule = () => {
       // ==========================
 
       const result =
-        await CreatePodcastSchedule(
-          payload,
-          localStorage.getItem(
-            "adminToken",
-          ),
-        );
+        await CreatePodcastSchedule(payload);
 
       /*
        * Adjust this if your create API returns

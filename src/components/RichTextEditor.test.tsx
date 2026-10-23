@@ -61,6 +61,14 @@ describe("RichTextEditor", () => {
     expect(p?.getAttribute("data-paragraph-id")).toMatch(/^para_/);
   });
 
+  it("offers only the website's formatting in simple mode, with a character count", () => {
+    render(<RichTextEditor simple maxLength={80} value="<p>Hello <strong>there</strong></p>" onChange={() => {}} />);
+    expect(screen.getByRole("button", { name: /strikethrough/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /table/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /html source/i })).not.toBeInTheDocument();
+    expect(screen.getByText("11 / 80 characters")).toBeInTheDocument();
+  });
+
   it("drops scripts and unsafe embeds from loaded content", () => {
     const hostile =
       '<p>Hi<img src="x" onerror="steal()"></p>' +

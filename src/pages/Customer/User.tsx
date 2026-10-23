@@ -99,14 +99,11 @@ const User = () => {
 				pagination = { current: 1, pageSize: 100 },
 			} = params;
 
-			const result = await GetUsers(
-				localStorage.getItem("adminToken"),
-				{
-					page: pagination.current, // Current page
-					limit: pagination.pageSize, // Page size
-					sortBy: "DESC",
-				}
-			);
+			const result = await GetUsers({
+                page: pagination.current, // Current page
+                limit: pagination.pageSize, // Page size
+                sortBy: "DESC",
+            });
 
 			const rows = result?.data?.data?.rows || []; // Safely access rows
 			const total = result?.data?.data?.count || 0; // Total number of records
@@ -129,7 +126,7 @@ const User = () => {
 		} catch (e) {
 			console.error("Error loading data:", e);
 
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 			} else if (apiErrorStatus(e) === 500) {
 				// An expired session is handled for every request (utils/session.ts).

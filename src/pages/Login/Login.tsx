@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { Form, Input, Button } from "antd";
 import { message } from "antd";
 import logo from "../../assets/glamlink-logo-black.png";
-import { apiErrorMessage } from "../../utils/apiError";
+import { apiErrorMessage, apiErrorStatus } from "../../utils/apiError";
 import { setToken } from "../../utils/session";
 
 interface LoginValues {
@@ -34,21 +34,12 @@ const Login = () => {
         }, 1000);
       })
       .catch((error) => {
-        if (apiErrorMessage(error) === "User not found.") {
-          message.error("Email Doesn't Exist");
-        } else if (
-          apiErrorMessage(error) ===
-          "Invalid email or password. Please try again."
-        ) {
-          message.error("Invalid Password");
-        } else if (
-          apiErrorMessage(error) ===
-          "Please Enter Required Fields : [ email_id || password ]"
-        ) {
-          message.error("Please enter Required Fields");
-        } else {
-          message.error(apiErrorMessage(error) ?? "Sign-in failed. Please try again.");
-        }
+        // Every failed sign-in answers 401 "Invalid email or password."; too many tries answer 429.
+        message.error(
+          apiErrorStatus(error) === 429
+            ? "Too many sign-in attempts. Please wait 15 minutes and try again."
+            : (apiErrorMessage(error) ?? "Sign-in failed. Please try again."),
+        );
       });
   };
   const onFinishFailed = () => {};

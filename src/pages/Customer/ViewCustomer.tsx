@@ -22,6 +22,7 @@ import {
 	VideoCameraFilled,
 } from "@ant-design/icons";
 import { useIdParam } from "../../utils/routing";
+import AccountFields from "./AccountFields";
 import type { UserDetail } from "../../types/user";
 
 const ViewCustomer = () => {
@@ -184,6 +185,8 @@ const ViewCustomer = () => {
 							<p style={{ marginBottom: "20px", fontSize: "13px" }}>
 								{userData?.email ? userData?.email : "Not Provided"}
 							</p>
+
+							<AccountFields user={userData} />
 
 							<h4 className="heading_pi">Address:</h4>
 							<p style={{ marginBottom: "20px", fontSize: "13px" }}>

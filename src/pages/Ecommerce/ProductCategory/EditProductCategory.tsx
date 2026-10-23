@@ -25,7 +25,6 @@ import {
 	SearchOutlined,
 } from "@ant-design/icons";
 import { apiErrorStatus } from "../../../utils/apiError";
-import { clearSession } from "../../../utils/session";
 import { useIdParam } from "../../../utils/routing";
 import type { ProductCategory, ProductSubCategory } from "../../../types/ecommerce";
 
@@ -81,11 +80,7 @@ const EditProductCategory = () => {
 			})
 			.catch((err) => {
 				if (apiErrorStatus(err) === 401) {
-					message.error("Token expired!");
-					clearSession();
-					setTimeout(() => {
-						navigate("/login");
-					}, 3000);
+					// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 				} else {
 					message.error("Something went wrong");
 				}
@@ -117,11 +112,7 @@ const EditProductCategory = () => {
 			}
 		} catch (error) {
 			if (apiErrorStatus(error) === 401) {
-				message.error("Token expired");
-				clearSession();
-				setTimeout(() => {
-					navigate("/Login");
-				}, 1000);
+				// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 			} else {
 				message.error("Something went wrong");
 			}
@@ -146,11 +137,7 @@ const EditProductCategory = () => {
 			}
 		} catch (error) {
 			if (apiErrorStatus(error) === 401) {
-				message.error("Token expired");
-				clearSession();
-				setTimeout(() => {
-					navigate("/Login");
-				}, 1000);
+				// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 			} else {
 				message.error("Something went wrong");
 			}

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import axios from "axios";
 import App from "./App";
-import { clearSession } from "./utils/session";
+import { clearSession, setToken } from "./utils/session";
 
 // No network in tests: every API call resolves with an empty list.
 vi.mock("axios", () => {
@@ -59,16 +59,19 @@ describe("App routing", () => {
     expect(screen.queryByText("BANNER CONTENT")).not.toBeInTheDocument();
   });
 
-  it("sends the token with the sidebar's pending counts", async () => {
-    localStorage.setItem("adminToken", "test-token");
-    renderAt("/banner");
-    await screen.findByText("BANNER CONTENT");
-
+  // The token itself is attached by the shared client (utils/session.test.ts).
+  it("loads the profile and pending counts only once signed in", async () => {
     const get = vi.mocked(axios.get);
-    for (const path of ["form/getPendingFormCount", "product/getPendingProductCount"]) {
-      const call = get.mock.calls.find(([url]) => url.endsWith(path));
-      expect(call?.[1]?.headers).toMatchObject({ "x-access-token": "test-token" });
-    }
+    const requested = (path: string) => get.mock.calls.some(([url]) => url.endsWith(path));
+    const paths = ["admin/profile", "form/getPendingFormCount", "product/getPendingProductCount"];
+
+    renderAt("/users");
+    expect(screen.getByRole("button", { name: "SIGN IN" })).toBeInTheDocument();
+    expect(paths.filter(requested)).toEqual([]);
+
+    act(() => setToken("test-token"));
+    await screen.findByText("Access Management");
+    expect(paths.filter(requested)).toEqual(paths);
   });
 
   it("renders no page for a route that was removed", () => {

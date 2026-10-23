@@ -10,7 +10,6 @@ import { ArrowLeftOutlined, CheckOutlined, CloseOutlined } from "@ant-design/ico
 
 
 import { apiErrorStatus } from "../../../utils/apiError";
-import { clearSession } from "../../../utils/session";
 
 
 const AddProductCategory = () => {
@@ -36,11 +35,7 @@ const AddProductCategory = () => {
 			if (apiErrorStatus(error) === 409) {
 				message.error("This category already exists");
 			} else if (apiErrorStatus(error) === 401) {
-				message.error("Token expired");
-				clearSession();
-				setTimeout(() => {
-					navigate("/login");
-				}, 3000);
+				// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 			} else {
 				message.error("Something went wrong");
 			}

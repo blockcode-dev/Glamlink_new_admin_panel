@@ -15,7 +15,7 @@ const Banner = () => {
 	const getData = async () => {
 		try {
 			setLoading(true);
-			let result = await GetAllBanner(localStorage.getItem("adminToken"));
+			let result = await GetAllBanner();
 			const formattedData = result.data.data.map((item, index) => ({
 				...item,
 				index: index + 1,

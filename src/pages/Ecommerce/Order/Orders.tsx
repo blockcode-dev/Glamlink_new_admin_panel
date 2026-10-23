@@ -25,12 +25,12 @@ const Orders = () => {
 	const getData = async () => {
 		try {
 			setLoading(true);
-			let result = await GetAllOrders(localStorage.getItem("adminToken"));
+			let result = await GetAllOrders();
 			setOrderData(result.data.data);
 			setBackupData(result.data.data);
 		} catch (e) {
 			console.error(e);
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 				console.error("Unauthorized access.");
 			} else {

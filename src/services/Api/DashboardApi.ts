@@ -13,13 +13,13 @@ import type {
 } from "../../types/dashboard";
 
 export const GetUserCount = async () => {
-	const res = await axios.get<ApiResponse<number>>(BASE_URL + "/admin/dashboard/getUserCount");
+	const res = await axios.get<ApiResponse<number>>(BASE_URL + "admin/dashboard/getUserCount");
 	return res;
 };
 
 export const GetProfessionalCount = async () => {
 	const res = await axios.get<ApiResponse<number>>(
-		BASE_URL + "/admin/dashboard/getProfessionalsCount"
+		BASE_URL + "admin/dashboard/getProfessionalsCount"
 	);
 	return res;
 };
@@ -152,9 +152,8 @@ export const GetUserRegisteredStatistics = async (period: RegistrationPeriod) =>
 		{ period },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -165,9 +164,8 @@ export const GetCorporateRegisteredStatistics = async (period: RegistrationPerio
 		{ period },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -178,9 +176,8 @@ export const GetPostUploadedStatistics = async (period: UploadPeriod) => {
 		{ period },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -191,9 +188,8 @@ export const GetClipsUploadedStatistics = async (period: UploadPeriod) => {
 		{ period },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };

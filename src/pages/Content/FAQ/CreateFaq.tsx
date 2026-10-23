@@ -7,7 +7,6 @@ import RichTextEditor from "../../../components/RichTextEditor";
 
 import { ArrowLeftOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { apiErrorStatus } from "../../../utils/apiError";
-import { clearSession } from "../../../utils/session";
 
 const CreateFaq = () => {
 	const navigate = useNavigate();
@@ -37,9 +36,7 @@ const CreateFaq = () => {
 			}
 		} catch (err) {
 			if (apiErrorStatus(err) === 401) {
-				message.error("Session expired – please log in again");
-				clearSession();
-				setTimeout(() => navigate("/Login"), 2000);
+				// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 			} else {
 				message.error("Something went wrong");
 			}

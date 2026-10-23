@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Tag, Table, Button, Tabs, type TableColumnsType } from "antd";
-import { GetBookingsByCounsellorId } from "../../../services/Api/UserApi";
+import { GetBookingsByProfessionalId } from "../../../services/Api/UserApi";
 
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { apiErrorStatus } from "../../../utils/apiError";
@@ -32,7 +32,7 @@ const ProfessionalBooking = () => {
 		try {
 			setLoading(true);
 			// Pass both status and user_id in the API call
-			const result = await GetBookingsByCounsellorId(status, user_id);
+			const result = await GetBookingsByProfessionalId(status, user_id);
 			const newData = result.data.data.map((item, index) => ({
 				...item,
 				index: index + 1,
@@ -40,7 +40,7 @@ const ProfessionalBooking = () => {
 			setBookingData(newData);
 		} catch (e) {
 			console.error(e);
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 			} else {
 				console.error("Error loading data. Please try again later.");
@@ -84,7 +84,7 @@ const ProfessionalBooking = () => {
 
 		{
 			title: "Professional's Name",
-			dataIndex: ["appointment_counselor", "user_profile", "name"],
+			dataIndex: ["appointment_professional", "user_profile", "name"],
 			key: "name",
 		},
 		{

@@ -33,10 +33,14 @@ Read at build time from `.env` (see `.env.example`). Only variables prefixed wit
 
 | Variable | Used for |
 | --- | --- |
-| `VITE_API_BASE_URL` | Backend API base URL (ends with `/`) |
-| `VITE_IMAGE_BASE_URL` | Base URL for uploaded images |
-| `VITE_VIDEO_BASE_URL` | Base URL for uploaded videos |
+| `VITE_API_BASE_URL` | Backend API base URL (ends with `/`); production: `https://api.glamlink.net/api/v1/` |
+| `VITE_IMAGE_BASE_URL` | Base URL for uploaded images; production: `https://api.glamlink.net/images/` |
+| `VITE_VIDEO_BASE_URL` | Base URL for uploaded videos; production: `https://api.glamlink.net/videos/` |
 | `VITE_GOOGLE_MAPS_API_KEY` | Google Maps address search and geocoding on the access card forms; the script loads on first use (`src/utils/googleMaps.ts`) |
+
+The API only answers browsers on origins it lists (`ACCESSDOMAINS` on the server; production: `https://admin.glamlink.net`). To run the panel locally against it, ask for `http://localhost:3000` to be added.
+
+Every request carries the admin token through one shared client (`src/utils/session.ts`); API functions don't set auth headers themselves.
 
 ## Scripts
 
@@ -50,7 +54,7 @@ Read at build time from `.env` (see `.env.example`). Only variables prefixed wit
 | `npm run test:watch` | Re-run tests on change |
 | `npm run lint` | Lint with oxlint (rules in `.oxlintrc.json`) |
 
-The build includes the ffmpeg core for the ad video cropper (`build/assets/ffmpeg-core-*.wasm`, about 32 MB). Browsers download it only when someone crops a video, but the host must accept a file that size; Cloudflare Pages, for one, caps files at 25 MiB.
+The ad video cropper uses the browser's own encoder (WebCodecs, through Mediabunny), so admins need a current Chrome, Edge, Safari or Firefox to crop videos.
 
 ## Project layout
 

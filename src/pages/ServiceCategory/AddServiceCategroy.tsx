@@ -7,7 +7,6 @@ import { message, Button, Card, Form, Input } from "antd";
 
 import { ArrowLeftOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { apiErrorStatus } from "../../utils/apiError";
-import { clearSession } from "../../utils/session";
 
 const AddServiceCategory = () => {
 	const [title, setTitle] = useState("");
@@ -36,11 +35,7 @@ const AddServiceCategory = () => {
 			setDisable(false);
 		} catch (error) {
 			if (apiErrorStatus(error) === 401) {
-				message.error("Token expired");
-				clearSession();
-				setTimeout(() => {
-					navigate("/Login");
-				}, 1000);
+				// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 			} else {
 				message.error("Something went wrong");
 			}

@@ -26,7 +26,7 @@ import {
   DeleteUser,
   GetAllkeywords,
   GetAllProfessional,
-  GetAllReferralByBeauticianId,
+  GetAllReferralByProfessionalId,
   GetProfessionalPayoutSummary,
   GetProfessionals,
   GetUserPromotions,
@@ -82,10 +82,10 @@ const Professionals = () => {
     borderRadius: "25px",
   };
 
-  const openReferralModal = async (beauticianId: number) => {
+  const openReferralModal = async (professionalId: number) => {
     try {
       setReferralLoading(true);
-      const res = await GetAllReferralByBeauticianId(beauticianId);
+      const res = await GetAllReferralByProfessionalId(professionalId);
       const users = res.data?.data?.users || []; // assuming API returns { users: [...] }
       setSelectedReferrals(users);
       setReferralModalOpen(true);
@@ -302,14 +302,11 @@ const Professionals = () => {
         pagination = { current: 1, pageSize: 100 },
       } = params;
 
-      const result = await GetProfessionals(
-        localStorage.getItem("adminToken"),
-        {
-          page: pagination.current, // Current page
-          limit: pagination.pageSize, // Page size
-          sortBy: "DESC",
-        },
-      );
+      const result = await GetProfessionals({
+        page: pagination.current, // Current page
+        limit: pagination.pageSize, // Page size
+        sortBy: "DESC",
+      });
 
       const rows = result?.data?.data?.rows || []; // Safely access rows
       const total = result?.data?.data?.count || 0; // Total number of records
@@ -332,7 +329,7 @@ const Professionals = () => {
     } catch (e) {
       console.error("Error loading data:", e);
 
-      if (apiErrorStatus(e) === 401) {
+      if (apiErrorStatus(e) === 403) {
         navigate("/error401");
       } else if (apiErrorStatus(e) === 500) {
         // An expired session is handled for every request (utils/session.ts).
@@ -405,9 +402,9 @@ const Professionals = () => {
         setUserBackupData(updatedData);
 
         if (!userData.is_founder) {
-          message.success("Beautician is marked as Founder.");
+          message.success("Professional is marked as Founder.");
         } else {
-          message.success("Beautician is removed as Founder.");
+          message.success("Professional is removed as Founder.");
         }
       } else {
         message.error("Something went wrong. Please try again.");

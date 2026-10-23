@@ -2,21 +2,20 @@
 
 import axios from "axios";
 import { BASE_URL } from "../Host";
-import type { AdminToken, ApiResponse, CountedList, ListParams } from "../../types/api";
+import type { ApiResponse, CountedList, ListParams } from "../../types/api";
 import type { Clip, ClipComment, ClipLike } from "../../types/social";
 
 type Id = number | string;
 
-export const GetAllClips = async (adminToken: AdminToken, params: ListParams) => {
+export const GetAllClips = async (params: ListParams) => {
 	const { page, limit, sortBy } = params;
 
 	try {
 		const res = await axios.get<CountedList<Clip>>(BASE_URL + "admin/reels", {
 			headers: {
-				"x-access-token": adminToken,
-				"Content-Type": "application/json",
-				timezone: "Asia/Kolkata",
-			},
+                "Content-Type": "application/json",
+                timezone: "Asia/Kolkata"
+            },
 			params: {
 				page: page,
 				limit: limit,
@@ -37,9 +36,8 @@ export const DeleteClip = async (reel_id: React.Key[]) => {
 		{ reel_id: reel_id },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };

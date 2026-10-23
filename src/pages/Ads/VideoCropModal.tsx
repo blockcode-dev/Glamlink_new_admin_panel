@@ -2,52 +2,17 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Modal, Slider, message, Progress } from "antd";
-import type { FFmpeg } from "@ffmpeg/ffmpeg";
-// The ffmpeg core is a dependency, so it ships in our build instead of loading from a CDN
-// at run time (its integrity is pinned by package-lock.json). These imports are only URLs.
-import coreURL from "@ffmpeg/core?url";
-import wasmURL from "@ffmpeg/core/wasm?url";
+import { cropUnsupportedReason, cropVideo } from "./cropVideo";
 
 const DISPLAY_MAX_WIDTH = 480;
 const MAX_OUTPUT_SIZE_MB = 25;
 
-let ffmpegInstance: FFmpeg | null = null;
-let ffmpegLoadPromise: Promise<FFmpeg> | null = null;
-
-// ffmpeg.wasm (~25-30MB) is only fetched the first time someone actually
-// crops a video — not on initial page load — and is cached in memory for
-// the rest of the session after that.
-async function getFFmpeg(onProgress?: (percent: number) => void): Promise<FFmpeg> {
-  if (ffmpegInstance) return ffmpegInstance;
-
-  if (!ffmpegLoadPromise) {
-    ffmpegLoadPromise = (async () => {
-      const { FFmpeg } = await import("@ffmpeg/ffmpeg");
-
-      const ffmpeg = new FFmpeg();
-
-      ffmpeg.on("progress", ({ progress }) => {
-        if (onProgress) onProgress(Math.min(99, Math.round(progress * 100)));
-      });
-
-      // Vite runs ffmpeg's worker as a module worker; the "import" export of @ffmpeg/core is the ESM build it needs.
-      await ffmpeg.load({ coreURL, wasmURL });
-
-      ffmpegInstance = ffmpeg;
-      return ffmpeg;
-    })();
-  }
-
-  return ffmpegLoadPromise;
-}
-
 /**
  * VideoCropModal
  *
- * Admin drags/zooms a fixed-ratio crop box over the uploaded video, then
- * ffmpeg.wasm actually re-encodes just that cropped region into a real MP4
- * at the exact target size — this is a genuine video transcode running
- * entirely in the browser, not a canvas screen-recording trick.
+ * Admin drags/zooms a fixed-ratio crop box over the uploaded video, then the
+ * browser's own video encoder (WebCodecs, see cropVideo.ts) re-encodes just
+ * that region into a real MP4 at the exact target size.
  */
 interface VideoCropModalProps {
   open: boolean;
@@ -89,7 +54,7 @@ export default function VideoCropModal({
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, boxX: 0, boxY: 0 });
   const [processing, setProcessing] = useState(false);
-  const [stage, setStage] = useState(""); // "loading engine" | "processing"
+  const [stage, setStage] = useState("");
   const [progress, setProgress] = useState(0);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
 
@@ -191,7 +156,7 @@ export default function VideoCropModal({
   const handleApply = async () => {
     if (!cropBox || !videoMeta || !file) return;
     if (!targetWidth || !targetHeight) {
-      // e.g. "Journal Listing In-Feed 2" has no fixed height, and ffmpeg can't scale to "null".
+      // e.g. "Journal Listing In-Feed 2" has no fixed height, so there is no size to scale to.
       message.error("This slot has no fixed video size to crop to");
       return;
     }
@@ -204,67 +169,41 @@ export default function VideoCropModal({
       return;
     }
 
+    // H.264 (yuv420p) needs even dimensions; an odd one silently produces a broken
+    // video. Round up by 1px when needed: imperceptible, and the ad record still
+    // stores the slot's intended size.
+    const encodeWidth = targetWidth % 2 === 0 ? targetWidth : targetWidth + 1;
+    const encodeHeight = targetHeight % 2 === 0 ? targetHeight : targetHeight + 1;
+
+    const unsupported = await cropUnsupportedReason(encodeWidth, encodeHeight);
+    if (unsupported) {
+      message.error(unsupported);
+      return;
+    }
+
     setProcessing(true);
-    setStage("Loading video engine...");
+    setStage("Cropping video...");
     setProgress(0);
 
     try {
-      const ffmpeg = await getFFmpeg((pct) => {
-        setStage("Cropping video...");
-        setProgress(pct);
-      });
-
-      const { fetchFile } = await import("@ffmpeg/util");
-
       const scaleToVideo = videoMeta.vw / videoMeta.displayWidth;
-      // ffmpeg's crop filter needs even numbers for some encoders — round safely.
-      const sx = Math.round(cropBox.x * scaleToVideo);
-      const sy = Math.round(cropBox.y * scaleToVideo);
-      const sWidth = Math.round(cropBox.width * scaleToVideo);
-      const sHeight = Math.round(cropBox.height * scaleToVideo);
+      const blob = await cropVideo(
+        file,
+        {
+          left: Math.round(cropBox.x * scaleToVideo),
+          top: Math.round(cropBox.y * scaleToVideo),
+          width: Math.round(cropBox.width * scaleToVideo),
+          height: Math.round(cropBox.height * scaleToVideo),
+        },
+        encodeWidth,
+        encodeHeight,
+        setProgress,
+      );
 
-      // H.264's default pixel format (yuv420p) REQUIRES even width/height —
-      // an odd dimension like 45px silently produces a broken/empty video
-      // instead of a clear error. Round up by 1px when needed; this is the
-      // actual encoded video's size (imperceptible), while the ad record
-      // still stores the slot's intended target size.
-      const encodeWidth = targetWidth % 2 === 0 ? targetWidth : targetWidth + 1;
-      const encodeHeight = targetHeight % 2 === 0 ? targetHeight : targetHeight + 1;
-
-      const inputName = "input" + (file.name.match(/\.[^.]+$/)?.[0] || ".mp4");
-      const outputName = "output.mp4";
-
-      await ffmpeg.writeFile(inputName, await fetchFile(file));
-
-      setStage("Cropping video...");
-
-      await ffmpeg.exec([
-        "-i",
-        inputName,
-        "-vf",
-        `crop=${sWidth}:${sHeight}:${sx}:${sy},scale=${encodeWidth}:${encodeHeight}`,
-        "-an", // ad videos don't need audio; also keeps file size down
-        "-c:v",
-        "libx264",
-        "-pix_fmt",
-        "yuv420p",
-        "-preset",
-        "veryfast",
-        "-movflags",
-        "+faststart",
-        outputName,
-      ]);
-
-      const data = await ffmpeg.readFile(outputName);
-
-      if (!data || typeof data === "string" || data.byteLength === 0) {
+      if (blob.size === 0) {
         message.error("Cropping produced an empty file — try a different video");
-        setProcessing(false);
         return;
       }
-
-      // ffmpeg's worker transfers a plain ArrayBuffer back, never a SharedArrayBuffer.
-      const blob = new Blob([data.buffer as ArrayBuffer], { type: "video/mp4" });
 
       if (blob.size / 1024 / 1024 > MAX_OUTPUT_SIZE_MB) {
         message.error(
@@ -303,10 +242,6 @@ export default function VideoCropModal({
         (file.name || "ad-video").replace(/\.[^.]+$/, "") + "-cropped.mp4",
         { type: "video/mp4" },
       );
-
-      // Clean up ffmpeg's virtual filesystem
-      await ffmpeg.deleteFile(inputName).catch(() => {});
-      await ffmpeg.deleteFile(outputName).catch(() => {});
 
       onCropped(croppedFile);
     } catch (err) {
@@ -394,8 +329,6 @@ export default function VideoCropModal({
             <p style={{ fontSize: 12, color: "var(--color-text-tertiary)", marginTop: 8 }}>
               Drag the box to choose which part of the video to keep. Output
               will be an MP4 at exactly {targetWidth} x {targetHeight}px.
-              First-time cropping loads a video engine (~25MB) and may take a
-              little longer.
             </p>
           )}
         </>

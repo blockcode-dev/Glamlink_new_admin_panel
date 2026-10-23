@@ -40,7 +40,7 @@ const UserBookings = () => {
 			setBookingData(newData);
 		} catch (e) {
 			console.error(e);
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 			} else {
 				console.error("Error loading data. Please try again later.");
@@ -84,7 +84,7 @@ const UserBookings = () => {
 
 		{
 			title: "Professional's Name",
-			dataIndex: ["appointment_counselor", "user_profile", "name"],
+			dataIndex: ["appointment_professional", "user_profile", "name"],
 			key: "name",
 		},
 		{

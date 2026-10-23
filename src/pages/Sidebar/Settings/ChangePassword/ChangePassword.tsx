@@ -4,6 +4,7 @@ import { EyeOutlined, EyeInvisibleOutlined, KeyOutlined } from "@ant-design/icon
 import { useNavigate } from "react-router";
 import { ChangeAdminPassword } from "../../../../services/Api/Api";
 import { apiErrorMessage } from "../../../../utils/apiError";
+import { clearSession } from "../../../../utils/session";
 
 const { Title, Text } = Typography;
 
@@ -44,7 +45,9 @@ const handleChangePassword = async () => {
     const res = await ChangeAdminPassword(formData);
 
     if (res?.status === 200) {
-      message.success("Password changed!");
+      // A new password ends every session, this one included.
+      message.success("Password changed. Please sign in with your new password.");
+      clearSession();
     } else {
       message.error(res?.data?.message || "Failed to change password");
     }

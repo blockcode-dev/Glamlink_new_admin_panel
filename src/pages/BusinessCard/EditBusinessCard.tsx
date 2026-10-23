@@ -37,6 +37,17 @@ import { loadGoogleMaps } from "../../utils/googleMaps";
 import { getAllState, getAllCityByStateId } from "../../services/Api/UserApi";
 import { GetSpecialities } from "../../services/Api/SpecialitiesApi";
 import { useIdParam } from "../../utils/routing";
+import {
+  BIO_MAX,
+  bioRules,
+  businessNameRules,
+  MAX_VIDEOS,
+  nameRules,
+  phoneRules,
+  showCardError,
+  titleRules,
+  videoProblem,
+} from "./cardRules";
 import type {
   BusinessCardFormValues,
   CardVideo,
@@ -311,7 +322,7 @@ const EditBusinessCard = () => {
 
   const loadSpecialties = async () => {
     try {
-      const res = await GetSpecialities(localStorage.getItem("adminToken"), {
+      const res = await GetSpecialities({
         page: 1,
         limit: 1000,
         sortBy: "asc",
@@ -348,29 +359,6 @@ const EditBusinessCard = () => {
       fetchData();
     }
   }, [states, id]);
-
-  const mapExcites = (arr: string[] = []) => {
-    if (!Array.isArray(arr)) return [];
-    return arr.map((item) => {
-      if (item.includes("Discover"))
-        return "Clients ability to discover pros nearby and check out their services, work, reviews, etc";
-      if (item.includes("Seamless"))
-        return "Seamless booking inside Glamlink either in app or goes directly to your booking link";
-      if (item.includes("E-commerce")) return "Pro shops & e-commerce";
-      return item;
-    });
-  };
-
-  const mapPainPoints = (arr: string[] = []) => {
-    if (!Array.isArray(arr)) return [];
-    return arr.map((item) => {
-      if (item.includes("No-shows")) return "No shows";
-      if (item.includes("Too many platforms"))
-        return "Juggling too many platforms (booking, social media, e-commerce, etc)";
-      if (item.includes("Low conversion")) return "Posting but no conversions";
-      return item;
-    });
-  };
 
   const fetchData = async () => {
     try {
@@ -446,11 +434,7 @@ const EditBusinessCard = () => {
 
         preferred_booking_method: data.preferred_booking_method || [],
 
-        excites_about_glamlink: mapExcites(
-          safeParse(data.excites_about_glamlink),
-        ),
         other_links: safeParse(data.other_links),
-        biggest_pain_points: mapPainPoints(safeParse(data.biggest_pain_points)),
         important_info: safeParse(data.important_info),
         specialties: safeParse(data.specialties),
         instagram_links: instagramLinks,
@@ -490,6 +474,8 @@ const EditBusinessCard = () => {
             url: m.file_uri,
             status: "done",
             is_thumbnail: m.is_thumbnail,
+            // Sent back unchanged: the API clears a kept photo's caption when none is sent.
+            caption: m.caption ?? null,
           };
           if (m.file_type === "image") {
             imgs.push(fileObj);
@@ -584,14 +570,6 @@ const EditBusinessCard = () => {
         "important_info",
         JSON.stringify(values.important_info || []),
       );
-      formData.append(
-        "excites_about_glamlink",
-        JSON.stringify(values.excites_about_glamlink || []),
-      );
-      formData.append(
-        "biggest_pain_points",
-        JSON.stringify(values.biggest_pain_points || []),
-      );
       const formattedLocations = (values.locations || []).map((loc, index) => {
         const location = {
           ...loc,
@@ -661,9 +639,8 @@ const EditBusinessCard = () => {
         JSON.stringify(updatedFeaturedLinks),
       );
 
-      const existingImageIds = images
-        .filter((img) => !img.originFileObj)
-        .map((img) => img.mediaId ?? img.uid);
+      const keptImages = images.filter((img) => !img.originFileObj);
+      const existingImageIds = keptImages.map((img) => img.mediaId ?? img.uid);
       formData.append("existing_image_ids", JSON.stringify(existingImageIds));
 
       const existingVideoIds = videos
@@ -671,11 +648,14 @@ const EditBusinessCard = () => {
         .map((v) => v.uid);
       formData.append("existing_video_ids", JSON.stringify(existingVideoIds));
 
-      const gallery_meta = images.map((img, idx) => ({
-        is_thumbnail: img.is_thumbnail || false,
-        sort_order: idx + 1,
-      }));
-      formData.append("gallery_meta", JSON.stringify(gallery_meta));
+      // Caption and cover flag: one entry per kept photo (in existing_image_ids order)
+      // and one per new photo (in upload order).
+      const metaOf = (img: GalleryImage) => ({ is_thumbnail: img.is_thumbnail || false, caption: img.caption ?? null });
+      formData.append("existing_images_gallery_meta", JSON.stringify(keptImages.map(metaOf)));
+      formData.append(
+        "new_images_gallery_meta",
+        JSON.stringify(images.filter((img) => img.originFileObj).map(metaOf)),
+      );
 
       if (profileImage[0]?.originFileObj) {
         formData.append("profile_image", profileImage[0].originFileObj);
@@ -703,13 +683,11 @@ const EditBusinessCard = () => {
         "email",
         "phone",
         "website",
-        "custom_handle",
         "is_phone_visible",
-        // "booking_link",
-        "primary_specialty",
+        // primary_specialty is the first specialty; the API no longer takes
+        // custom_handle, elite_setup, excites_about_glamlink or biggest_pain_points.
         "offer_promotion",
         "promotion_details",
-        "elite_setup",
       ];
 
       basicFields.forEach((key) => {
@@ -741,7 +719,7 @@ const EditBusinessCard = () => {
       navigate("/digital-card");
     } catch (error) {
       console.error(error);
-      message.error("Failed to update business card");
+      message.error(showCardError(form, error) ?? "Failed to update business card");
     } finally {
       setLoading(false);
     }
@@ -846,17 +824,26 @@ const EditBusinessCard = () => {
             title="Basic Info"
             style={{ borderRadius: 8, boxShadow: "0 2px 8px var(--color-shadow)" }}
           >
-            <Form.Item name="name" label="Name">
+            <Form.Item name="name" label="Name" rules={nameRules}>
               <Input style={{ borderRadius: "6px", height: "40px" }} />
             </Form.Item>
-            <Form.Item name="business_name" label="Business Name">
+            <Form.Item name="business_name" label="Business Name" rules={businessNameRules}>
               <Input style={{ borderRadius: "6px", height: "40px" }} />
             </Form.Item>
-            <Form.Item name="professional_title" label="Title">
+            <Form.Item name="professional_title" label="Title" rules={titleRules}>
               <Input style={{ borderRadius: "6px", height: "40px" }} />
             </Form.Item>
-            <Form.Item name="bio" label="Bio">
+            <Form.Item
+              name="bio"
+              label="Bio"
+              required
+              extra={`The website's formatting only, at most ${BIO_MAX} characters.`}
+              rules={bioRules}
+            >
               <RichTextEditor
+                simple
+                maxLength={BIO_MAX}
+                height={140}
                 value={form.getFieldValue("bio") || ""}
                 onChange={data => {
                   form.setFieldValue("bio", data);
@@ -871,7 +858,7 @@ const EditBusinessCard = () => {
             <Form.Item name="email" label="Email">
               <Input style={{ borderRadius: "6px", height: "40px" }} />
             </Form.Item>
-            <Form.Item name="phone" label="Phone">
+            <Form.Item name="phone" label="Phone" dependencies={["is_phone_visible"]} rules={phoneRules(form)}>
               <Input style={{ borderRadius: "6px", height: "40px" }} />
             </Form.Item>
 
@@ -1877,8 +1864,14 @@ const EditBusinessCard = () => {
           <Form.Item label="Production Videos">
             <Upload
               accept=".mp4"
-              customRequest={({ file, onSuccess }) => {
+              customRequest={async ({ file, onSuccess, onError }) => {
                 const picked = file as RcFile;
+                const problem = videos.length >= MAX_VIDEOS ? `Up to ${MAX_VIDEOS} video per card.` : await videoProblem(picked);
+                if (problem) {
+                  message.error(problem);
+                  onError?.(new Error(problem));
+                  return;
+                }
                 setVideos((prev) => [
                   ...prev,
                   {
@@ -1893,7 +1886,6 @@ const EditBusinessCard = () => {
 
                 onSuccess?.("ok");
               }}
-              multiple
               showUploadList={false}
             >
               <Button
@@ -1919,7 +1911,7 @@ const EditBusinessCard = () => {
             >
               <strong>Video Requirements</strong>
               <br />• Upload only <strong>.mp4</strong> videos.
-              <br />• Video duration must be{" "}
+              <br />• One video, at most 21 MB. Duration must be{" "}
               <strong>less than 60 seconds</strong>.
             </div>
 

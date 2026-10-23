@@ -180,7 +180,7 @@ const Clips = () => {
 			const { pagination, sortField } = params;
 
 			// Fetch clips with pagination and sorting
-			const result = await GetAllClips(localStorage.getItem("adminToken"), {
+			const result = await GetAllClips({
 				page: pagination.current,
 				limit: pagination.pageSize,
 				sortBy: sortField,
@@ -213,7 +213,7 @@ const Clips = () => {
 			// Log the full error object for debugging
 			console.error("Error: ", e);
 
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 				console.error("You do not have access to this page as a sub-admin.");
 			} else if (apiErrorStatus(e) === 500) {

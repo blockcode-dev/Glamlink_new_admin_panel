@@ -50,50 +50,59 @@ describe("sentToken", () => {
 });
 
 describe("installSessionHandler", () => {
-  let interceptor: number | undefined;
+  const API = import.meta.env.VITE_API_BASE_URL; // "https://api.test/api/v1/" in tests
+  let uninstall: (() => void) | undefined;
   afterEach(() => {
-    if (interceptor !== undefined) axios.interceptors.response.eject(interceptor);
-    interceptor = undefined;
+    uninstall?.();
+    uninstall = undefined;
   });
 
-  // Sends a request whose response is `status` with `body`, without a network.
-  const respond = (status: number, body: unknown, headers: AxiosRequestConfig["headers"]) =>
-    axios.get("/api/test", {
+  /** Sends a request without a network; answers `status` with `body` and reports the headers it went out with. */
+  const send = (url: string, status = 200, body: unknown = {}, headers: AxiosRequestConfig["headers"] = {}) => {
+    let sent: Record<string, unknown> = {};
+    const request = axios.get(url, {
       headers,
       adapter: async (cfg) => {
-        throw new AxiosError("Request failed", "ERR_BAD_RESPONSE", cfg, null, {
-          status,
-          statusText: "",
-          data: body,
-          headers: {},
-          config: cfg,
-        });
+        sent = cfg.headers.toJSON();
+        const response = { status, statusText: "", data: body, headers: {}, config: cfg };
+        if (status >= 400) throw new AxiosError("Request failed", "ERR_BAD_RESPONSE", cfg, null, response);
+        return response;
       },
     });
+    return request.then(() => sent, (error: unknown) => Promise.reject(error));
+  };
+  const expired = { success: false, status: 401, code: "ADMIN_SESSION_EXPIRED", message: "Invalid or expired admin token", data: "" };
 
-  it("ends the session when the server says the current token expired", async () => {
-    interceptor = installSessionHandler();
+  it("sends the token as a Bearer header on every API call", async () => {
+    uninstall = installSessionHandler();
     setToken("current");
-    await expect(respond(500, { message: "jwt expired" }, { "x-access-token": "current" })).rejects.toThrow("Request failed");
-    expect(getToken()).toBeNull();
+    expect(await send(`${API}journal/admin`)).toMatchObject({ Authorization: "Bearer current" });
   });
 
-  it("does the same for Bearer requests and other dead-token messages", async () => {
-    interceptor = installSessionHandler();
+  it("keeps the token off other hosts and off sign-in", async () => {
+    uninstall = installSessionHandler();
     setToken("current");
-    await expect(respond(500, { message: "invalid signature" }, { Authorization: "Bearer current" })).rejects.toThrow("Request failed");
+    expect((await send("https://maps.example.com/x")).Authorization).toBeUndefined();
+    expect((await send(`${API}admin/auth/login`)).Authorization).toBeUndefined();
+  });
+
+  it("ends the session when the current token gets a 401", async () => {
+    uninstall = installSessionHandler();
+    setToken("current");
+    await expect(send(`${API}admin/profile`, 401, expired)).rejects.toThrow("Request failed");
     expect(getToken()).toBeNull();
   });
 
   it("keeps the session for other failures", async () => {
-    interceptor = installSessionHandler();
+    uninstall = installSessionHandler();
     setToken("current");
-    // A 401 can mean "not allowed for this role" (see the backend questions).
-    await expect(respond(401, { message: "Unauthorized" }, { "x-access-token": "current" })).rejects.toThrow("Request failed");
-    await expect(respond(500, { message: "Something broke" }, { "x-access-token": "current" })).rejects.toThrow("Request failed");
-    // A request that forgot the token, or one sent with an older token.
-    await expect(respond(500, { message: "jwt malformed" }, { "x-access-token": "undefined" })).rejects.toThrow("Request failed");
-    await expect(respond(500, { message: "jwt expired" }, { "x-access-token": "previous" })).rejects.toThrow("Request failed");
+    // Wrong password on the sign-in form.
+    await expect(send(`${API}admin/auth/login`, 401, { code: "INVALID_CREDENTIALS" })).rejects.toThrow("Request failed");
+    // Not allowed (roles, later) and server errors.
+    await expect(send(`${API}admin/list`, 403)).rejects.toThrow("Request failed");
+    await expect(send(`${API}admin/list`, 500)).rejects.toThrow("Request failed");
+    // A stale request sent with an older token.
+    await expect(send("https://elsewhere.test/x", 401, expired, { Authorization: "Bearer previous" })).rejects.toThrow("Request failed");
     expect(getToken()).toBe("current");
   });
 });

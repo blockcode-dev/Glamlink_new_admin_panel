@@ -20,16 +20,16 @@ Tracks the work done against the code and dependency audit of the admin panel ([
 | Jobs done by two or more libraries | 10 | 0 |
 | Routes unreachable from the UI | 29 | 0 (deleted) |
 | `console.*` calls | 320 (including credential logging) | 222 in the source, all `console.error` / `console.warn`; none in production builds |
-| Tests | None | 50 (Vitest) |
+| Tests | None | 51 (Vitest) |
 | Lint | ESLint (CRA): 51 hook-dependency and 14 anchor warnings | oxlint: 0 errors; 60 warnings (42 hook deps, 14 anchors, 4 missing keys) |
 | Colour literals outside the global stylesheet | 876 in 71 files (266 distinct values) | 0, enforced by a test; card-data swatches excepted |
 | Language | JavaScript | TypeScript, `strict` mode, 0 type errors; the build fails on a type error |
 
-Against the audit's "Fix first" list, 3 of 5 items are done, 1 is partly done (keys) and 1 is open (server auth, waiting on the backend). Of the 23 confirmed bugs, 10 are fixed, 2 are partly fixed and 11 are open. The bug list was intentionally left for a later pass; the ones fixed went away as a side effect of other work: the TypeScript migration (see [Found during the TypeScript migration](#found-during-the-typescript-migration)) and the security pass (session handling).
+Against the audit's "Fix first" list, 4 of 5 items are done; the fifth (a new, restricted Maps key for the panel) is partly done. Of the 23 confirmed bugs, 10 are fixed, 2 are partly fixed and 11 are open. The bug list was intentionally left for a later pass; the ones fixed went away as a side effect of other work: the TypeScript migration (see [Found during the TypeScript migration](#found-during-the-typescript-migration)) and the security pass (session handling).
 
 ## Work done
 
-Eight passes, in order. Each pass was verified with a production build before the next one started.
+Nine passes, in order. Each pass was verified with a production build before the next one started.
 
 ### 1. One job, one library
 
@@ -118,7 +118,7 @@ Eight passes, in order. Each pass was verified with a production build before th
   - `notification` `message` → `title`
 - **Check:** all 83 routes were rendered in the test environment with the API mocked. No antd deprecation warnings or React 19 warnings appeared.
 
-**Already on the latest version:** Tiptap, @dnd-kit, @ffmpeg, antd-img-crop and browser-image-compression. (`@ffmpeg/core` joined as a dependency in pass 7, at its latest, 0.12.10.)
+**Already on the latest version:** Tiptap, @dnd-kit, antd-img-crop and browser-image-compression. (ffmpeg.wasm was later replaced by Mediabunny, pass 9.)
 
 ### 6. TypeScript
 
@@ -198,6 +198,34 @@ Frontend-only fixes from the audit's security list. Anything that needs a backen
   - Three card-page buttons painted a primary background over a default button. They now use `type="primary"`, so hover works.
 - **Checked** with screenshots in headless Chrome (login, dashboard, access cards, analytics, create card, admin profile), with the API stubbed.
 
+### 9. Backend answers and the new API
+
+The backend answered every question in the [backend questions doc](https://claude.ai/code/artifact/7cf1fb80-6241-4282-b8a6-9966c6290ed9) and listed what the panel must change for the new API (`api.glamlink.net`) in its `docs/handoff/admin-panel.md`.
+
+- **Ad video cropping no longer needs ffmpeg.wasm (32 MB).**
+  - It now uses the browser's own video encoder (WebCodecs) through Mediabunny (`src/pages/Ads/cropVideo.ts`): crop, scale to the slot's exact size, H.264 MP4, audio removed, as before.
+  - Mediabunny is a 548 KB chunk (137 KB gzipped), loaded only when someone crops: about 75× less to download than the old core. `@ffmpeg/core`, `@ffmpeg/ffmpeg` and `@ffmpeg/util` are removed.
+  - It's also faster (the browser's encoder, often on the GPU): a 2-second 720p clip cropped in under a second.
+  - Checked in headless Chrome, dev and production builds: an MP4 source, and a portrait WebM (VP9) with Opus audio, both came out H.264 at exactly the slot size with no audio track.
+  - Browsers without WebCodecs H.264 encoding get a clear message instead of a failed crop. The CSP no longer needs `'wasm-unsafe-eval'`.
+- **One API client, as the backend asked.** Every admin endpoint now refuses a missing token.
+  - `utils/session.ts` attaches `Authorization: Bearer <token>` to every axios call to `VITE_API_BASE_URL`, except the sign-in calls. Other hosts never get the token.
+  - All per-call auth headers are gone: `x-access-token` in 55 calls and `Bearer` in 25. So are the token parameters of 22 API functions, their arguments at the call sites, and every `localStorage.getItem("adminToken")` in the pages (133 at audit time). The 122 calls that sent no token now send it. The service CSV upload moved from `fetch` to the API module so it gets the token too.
+  - **401 now always means "sign in again"** (the API's `ADMIN_SIGN_IN_REQUIRED` / `ADMIN_SESSION_EXPIRED`): a 401 for the current token ends the session and shows the login form. A 401 from the sign-in call doesn't. The "jwt expired" checks are gone; the new API never sends them.
+  - The 30 "not allowed" redirects moved from 401 to 403, which the API will use once admin roles are enforced. The 13 save handlers that cleared the session themselves now leave it to the shared client.
+- **Sign-in, sign-out, password:**
+  - Login shows the API's single message for every failure ("Invalid email or password.") and a wait message on 429 (15 tries per 15 minutes).
+  - Sign out calls `POST /admin/auth/logout` first, which ends the admin's sessions on every device.
+  - After a password change the panel signs out and asks for the new password: the API ends every session on a password change.
+- **Endpoints, fields and URLs the new API changed:**
+  - Renamed: `getBookingsByCounsellorId` → `getBookingsByProfessionalId` and `getAllReferralByBeauticianId` → `getAllReferralByProfessionalId` (functions renamed with them). Deleting an admin calls `DELETE /admin/deleteAdmin` with `{ admin_id }`; the old path never existed.
+  - Request bodies: reviews-taken and availability send `professional_id` instead of `counselor_id`.
+  - Response fields: `appointment_counselor` → `appointment_professional` (Appointments, both booking tabs, Dashboard). "Beautician" became "Professional" in the founder messages and the service list column.
+  - **Add Admin** asks for a password (at least 8 characters); the API requires one. It shows the API's own 400 message (e.g. "Email already taken").
+  - Service Categories and Appointments read the total from `data.count` (the backend confirmed the shape); pagination totals were missing before.
+  - The 26 double-slash URLs (`/api/v1//journal/topic`) are fixed.
+  - `.env.example` holds the new API's URLs; the README says the API only answers listed origins (local dev needs `http://localhost:3000` added).
+
 **Still in use but unmaintained:** browser-image-compression has had no release since March 2023. It does real work: it shrinks photos to at most 2000 px before cropping. Replace it with a small in-house resize helper when convenient.
 
 ## Status against the audit
@@ -208,11 +236,11 @@ Frontend-only fixes from the audit's security list. Anything that needs a backen
 
 | Item | Status | Notes |
 | --- | --- | --- |
-| Rotate leaked Google Maps / TinyMCE keys | **Partly** | The owner reports the keys are disabled. TinyMCE keys are no longer needed. The Maps key now comes from `VITE_GOOGLE_MAPS_API_KEY`. Git history still contains the old values. |
+| Rotate leaked Google Maps / TinyMCE keys | **Partly** | The leaked keys are disabled (owner) and TinyMCE needs none. The backend rotated its own Google key. Still to confirm: a new panel Maps key restricted to `admin.glamlink.net`, in the existing Cloud project, set as `VITE_GOOGLE_MAPS_API_KEY`. |
 | Remove the credential `console.log` in `Api.ts` | **Done** | |
 | Sanitize the `dangerouslySetInnerHTML` sites | **Done** | 4 of the 10 sites went with deleted pages; the other 6 render through `SafeHtml` (pass 7) |
 | Unblock `npm ci` | **Done** | |
-| Confirm server auth for calls made without a token | **Open** | Waiting on the backend (listed under Security) |
+| Confirm server auth for calls made without a token | **Done** | Confirmed and enforced by the backend; the panel sends the token everywhere |
 
 ### Security
 
@@ -220,11 +248,11 @@ Frontend-only fixes from the audit's security list. Anything that needs a backen
 | --- | --- | --- |
 | Stored XSS | **Done** | All 6 sites render through `SafeHtml`; the editor sanitizes what it loads. Server-side sanitizing is asked for in the backend doc (section 5), because the app and website may render the same fields. |
 | CSV formula injection (found in this pass) | **Done** | Users and Products exports escape cells through `utils/csv.ts` |
-| Secrets in git history | **Partly** | See "Fix first" |
+| Secrets in git history | **Done** | Keys rotated; the backend checked the panel's history (all branches) and found no backend secret, only a public Stripe publishable test key |
 | Credential logging | **Done** | Login and user-list logs removed; no `console.log` left in the code; production builds drop all `console.*` calls |
-| Calls without auth | **Open** (waiting on the backend) | 122 endpoints get no token, 40 of which change data; the full list is in the backend doc. Which header to send, and which endpoints are public, is the backend's call. The 4 calls that had the token but didn't pass it (badge counts, podcast get and delete) are fixed. |
-| Session handling | **Partly** | Done in the panel: `utils/session.ts`, a global handler that clears a dead token, login without a token refused, sign-out shown at once and across tabs. Waiting on the backend: what 401 means, token lifetime and revocation, httpOnly cookies (doc sections 3 and 4). |
-| Third-party scripts | **Done** | Bootstrap, Popper and Font Awesome CDN files are removed; the ffmpeg core ships with the build; Google Maps loads only on the access card forms; the image-compression worker loads its library from the build (found in this pass). Google Fonts remains (a stylesheet, no script). Restricting the Maps key is in the backend doc (section 6). |
+| Calls without auth | **Done** | The backend now requires an admin token on every admin endpoint (25 public reads are public on purpose), and the panel sends `Authorization: Bearer` on every API call (pass 9) |
+| Session handling | **Done** | `utils/session.ts`: one client, 401 ends the session, sign-out on the server, sign-out after a password change. Server side: 12-hour tokens, revocation, login rate limit. httpOnly cookies were declined for now (they need CSRF protection; planned with admin roles). |
+| Third-party scripts | **Done** | Bootstrap, Popper and Font Awesome CDN files are removed; ffmpeg is gone (the browser's own encoder crops ad videos); Google Maps loads only on the access card forms; the image-compression worker loads its library from the build (found in this pass). Google Fonts remains (a stylesheet, no script). Restricting the Maps key is in the backend doc (section 6). |
 | Indexing | **Done** | `noindex, nofollow` meta tag in `index.html`; `robots.txt` deliberately allows crawling so the tag is seen. An `X-Robots-Tag` header is asked of the host (backend doc, section 6). |
 | Browser libraries with advisories | **Done** | axios, dompurify and react-router upgraded; moment, TinyMCE and CKEditor removed; `npm audit` is clean |
 
@@ -234,7 +262,7 @@ Frontend-only fixes from the audit's security list. Anything that needs a backen
 | --- | --- | --- |
 | `npm ci` fails | **Done** | |
 | Create React App deprecated | **Done** | Vite 8 |
-| One 6.2 MB bundle, no route-level splitting | **Partly** | 2.87 MB / 855 KB gzipped now; still one file. Both editors' CDN scripts are gone; ffmpeg loads only when used. Next step: `React.lazy` per route. |
+| One 6.2 MB bundle, no route-level splitting | **Partly** | 2.87 MB / 855 KB gzipped now; still one file. Both editors' CDN scripts are gone; ffmpeg is replaced by a 137 KB (gzipped) chunk loaded only when cropping. Next step: `React.lazy` per route. |
 | CKEditor is 21% of the bundle | **Done** | Removed |
 
 ### package.json review
@@ -321,7 +349,7 @@ The version mismatches and duplicate copies are gone: Bootstrap CSS/JS is remove
 
 | Item | Status | Notes |
 | --- | --- | --- |
-| No shared HTTP client; two auth schemes | **Partly** | A global response handler now ends dead sessions (`utils/session.ts`). Requests still set their own headers: `x-access-token` in 55, `Authorization: Bearer` in 25, none in 122. One client waits on the backend's choice of header. |
+| No shared HTTP client; two auth schemes | **Done** | One client in `utils/session.ts` sends `Authorization: Bearer` on every call (pass 9) |
 | List-page logic copy-pasted about 40 times | **Open** | |
 | Lint findings | **Partly** | Now oxlint: 43 hook-dependency, 14 anchor, 4 missing-key warnings; 0 errors |
 | Misspelled file names | **Partly** | Logo renamed; `ViewSericeCategory.jsx` deleted. Still misspelled: `Directroy.tsx`, `Eductaion/AddEduction.tsx`, `Eductaion/Eduction.tsx`, `AddServiceCategroy.tsx`, `EcommeceApi.ts`, `Viewad.tsx`. |
@@ -333,9 +361,8 @@ Choices made along the way that are worth a second look. None blocks anything to
 
 | Decision | Why it was made | What would change it |
 | --- | --- | --- |
-| A 401 response doesn't log the admin out | 30 pages read 401 as "not allowed for this role", so logging out on it could lock admins out of pages they lack access to | The backend confirming that 401 only means "sign in again" (backend doc, section 3) |
 | Production builds drop every `console.*` call, `console.error` included | Error logs print whole axios errors, the admin token in the request headers included | Adding an error reporter (e.g. Sentry) to see production errors |
-| The ffmpeg core (a 32 MB `.wasm`) ships in `build/` | Loading it from unpkg meant running unverified third-party code; it's still downloaded only on the first video crop | A host that caps file size (Cloudflare Pages: 25 MiB), or moving video cropping server-side |
+| Ad videos are cropped with the browser's encoder (WebCodecs), not ffmpeg.wasm | 32 MB less to ship and download, and faster | An admin browser without WebCodecs H.264 encoding (old Safari or Firefox) or one that can't decode a source format such as HEVC (it couldn't preview that video either); server-side cropping would cover both |
 | `robots.txt` allows crawling, against the audit's suggestion | Search engines only honour `noindex` on pages they may fetch | Nothing, unless the host adds an `X-Robots-Tag` header; then either works |
 | antd's preset tag colours (`"green"`, `"purple"`, …) are themed rather than replaced | One mapping in `config/theme.ts` keeps all tags on the palette without touching 60+ call sites | Wanting tag colours by meaning only (`success`, `error`, …); then replace the names |
 | Panels are near-white (`#fcfcfa`) on an off-white page (`#f5f6f3`) | You asked for no pure white; panels still need to stand out from the page | Taste: change `--color-surface` / `--color-bg` in `index.css` |

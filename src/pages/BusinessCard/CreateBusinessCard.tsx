@@ -16,6 +16,7 @@ import {
   Col,
   Divider,
   ColorPicker,
+  Modal,
   type UploadFile,
 } from "antd";
 import {
@@ -34,6 +35,18 @@ import { getAllCityByStateId, getAllState } from "../../services/Api/UserApi";
 import { GetSpecialities } from "../../services/Api/SpecialitiesApi";
 import ImageCropModal from "../../components/ImageCropModal";
 import { apiErrorMessage } from "../../utils/apiError";
+import {
+  BIO_MAX,
+  bioRules,
+  businessNameRules,
+  existingCardId,
+  MAX_VIDEOS,
+  nameRules,
+  phoneRules,
+  showCardError,
+  titleRules,
+  videoProblem,
+} from "./cardRules";
 import type {
   BusinessCardFormValues,
   CardLocation,
@@ -251,7 +264,7 @@ const CreateBusinessCard = () => {
 
   const loadSpecialties = async () => {
     try {
-      const res = await GetSpecialities(localStorage.getItem("adminToken"), {
+      const res = await GetSpecialities({
         page: 1,
         limit: 1000,
         sortBy: "asc",
@@ -284,7 +297,8 @@ const CreateBusinessCard = () => {
   };
 
   /* ================= SUBMIT ================= */
-  const handleSubmit = async () => {
+  // `replace`: the admin agreed to replace the card this email already has.
+  const submit = async (replace = false) => {
     try {
       setLoading(true);
       const values = await form.validateFields();
@@ -343,12 +357,12 @@ const CreateBusinessCard = () => {
       }
 
       /* ================= GALLERY META ================= */
-      const gallery_meta = images.map((img, index) => ({
+      // Caption and cover flag per new photo, in upload order; the first photo is the cover.
+      const galleryMeta = images.map((_, index) => ({
         is_thumbnail: index === 0,
-        sort_order: index + 1,
         caption: null,
       }));
-      formData.append("gallery_meta", JSON.stringify(gallery_meta));
+      formData.append("new_images_gallery_meta", JSON.stringify(galleryMeta));
 
       /* ================= ARRAYS & SPECIAL FIELDS ================= */
       const cleanArray = (arr: string[] | undefined) =>
@@ -361,14 +375,6 @@ const CreateBusinessCard = () => {
       formData.append(
         "important_info",
         JSON.stringify(cleanArray(values.important_info)),
-      );
-      formData.append(
-        "excites_about_glamlink",
-        JSON.stringify(values.excites_about_glamlink || []),
-      );
-      formData.append(
-        "biggest_pain_points",
-        JSON.stringify(values.biggest_pain_points || []),
       );
       const otherLinks = (values.other_links || []).filter((item) =>
         item?.url?.trim(),
@@ -421,12 +427,10 @@ const CreateBusinessCard = () => {
         "bio",
         "website",
         "is_phone_visible",
-        // "booking_link",
-        "primary_specialty",
+        // primary_specialty is the first specialty; the API no longer takes
+        // custom_handle, elite_setup, excites_about_glamlink or biggest_pain_points.
         "offer_promotion",
         "promotion_details",
-        "elite_setup",
-        "custom_handle",
       ];
 
       basicFields.forEach((key) => {
@@ -484,6 +488,8 @@ const CreateBusinessCard = () => {
         formData.append("video_thumbnails", item.thumbnail!.originFileObj!);
       });
 
+      if (replace) formData.append("replace", "true");
+
       /* ================= API CALL ================= */
       await GenerateBusinessCard(formData);
 
@@ -491,6 +497,24 @@ const CreateBusinessCard = () => {
       navigate("/digital-card");
     } catch (err) {
       console.error("SUBMIT ERROR:", err);
+
+      // One card per person: this email's account already has one.
+      if (existingCardId(err) !== null) {
+        Modal.confirm({
+          title: "This email already has an access card",
+          content:
+            "Replace it with this one? The old card is deleted (kept in the records), and the new card takes over its link and QR code.",
+          okText: "Replace card",
+          okButtonProps: { danger: true },
+          onOk: () => submit(true),
+        });
+        return;
+      }
+      const cardError = showCardError(form, err);
+      if (cardError) {
+        message.error(cardError);
+        return;
+      }
 
       const e = err as SubmitError;
       const errorMsg =
@@ -501,8 +525,11 @@ const CreateBusinessCard = () => {
         "Something went wrong";
 
       message.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
+  const handleSubmit = () => submit();
 
   const getCityCoordinates = async (city: string, state: string) => {
     await loadGoogleMaps();
@@ -574,26 +601,28 @@ const CreateBusinessCard = () => {
           >
             <Row gutter={[16, 0]}>
               <Col xs={24}>
-                <Form.Item
-                  name="name"
-                  label="Full Name"
-                  rules={[{ required: true, message: "Name is required" }]}
-                >
+                <Form.Item name="name" label="Full Name" rules={nameRules}>
                   <Input placeholder="Sophia Martinez" />
                 </Form.Item>
               </Col>
               <Col xs={24}>
-                <Form.Item name="business_name" label="Business Name">
+                <Form.Item name="business_name" label="Business Name" rules={businessNameRules}>
                   <Input placeholder="Enter business name" />
                 </Form.Item>
               </Col>
               <Col xs={24}>
-                <Form.Item name="professional_title" label="Professional Title">
+                <Form.Item name="professional_title" label="Professional Title" rules={titleRules}>
                   <Input placeholder="Master Hair Stylist & Colorist" />
                 </Form.Item>
               </Col>
               <Col xs={24}>
-                <Form.Item name="bio" label="Professional Bio">
+                <Form.Item
+                  name="bio"
+                  label="Professional Bio"
+                  required
+                  extra={`The website's formatting only, at most ${BIO_MAX} characters.`}
+                  rules={bioRules}
+                >
                   <div
                     style={{
                       border: "1px solid var(--color-border-strong)",
@@ -602,6 +631,9 @@ const CreateBusinessCard = () => {
                     }}
                   >
                     <RichTextEditor
+                      simple
+                      maxLength={BIO_MAX}
+                      height={140}
                       value={form.getFieldValue("bio") || ""}
                       onChange={data => {
                         form.setFieldsValue({ bio: data });
@@ -630,6 +662,8 @@ const CreateBusinessCard = () => {
                 <Form.Item
                   name="phone"
                   label="Phone"
+                  dependencies={["is_phone_visible"]}
+                  rules={phoneRules(form)}
                 >
                   <Input placeholder="123-456-7890" />
                 </Form.Item>
@@ -1500,9 +1534,14 @@ const CreateBusinessCard = () => {
               <Upload
                 accept=".mp4"
                 showUploadList={false}
-                multiple
-                customRequest={({ file, onSuccess }) => {
+                customRequest={async ({ file, onSuccess, onError }) => {
                   const picked = file as RcFile;
+                  const problem = videos.length >= MAX_VIDEOS ? `Up to ${MAX_VIDEOS} video per card.` : await videoProblem(picked);
+                  if (problem) {
+                    message.error(problem);
+                    onError?.(new Error(problem));
+                    return;
+                  }
                   setVideos((prev) => [
                     ...prev,
                     {
@@ -1536,8 +1575,8 @@ const CreateBusinessCard = () => {
               >
                 <strong>Video Requirements</strong>
                 <br />• Upload only <strong>.mp4</strong> videos.
-                <br />• Video duration must be{" "}
-                <strong>less than 60 seconds</strong>.
+                <br />• One video, at most <strong>60 seconds</strong> and{" "}
+                <strong>21 MB</strong>, with a thumbnail.
               </div>
 
               <div

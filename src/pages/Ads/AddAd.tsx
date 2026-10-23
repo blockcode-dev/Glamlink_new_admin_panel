@@ -342,7 +342,7 @@ const AddAd = () => {
 
   // VIDEO upload — type/size are checked up front, then the crop modal opens
   // (which also enforces the 60-second limit before it lets you apply the
-  // crop). ffmpeg.wasm inside the modal re-encodes the cropped region into a
+  // crop). The browser's video encoder (WebCodecs) re-encodes the cropped region into a
   // real MP4 at the slot's exact size, so the ratio is always guaranteed.
   const handleVideoBeforeUpload: NonNullable<UploadProps["beforeUpload"]> = (file) => {
     if (!file.type.startsWith("video/")) {

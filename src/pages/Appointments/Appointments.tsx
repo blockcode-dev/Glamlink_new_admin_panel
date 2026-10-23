@@ -34,7 +34,7 @@ const Appointments = () => {
 		},
 		{
 			title: "Profesisonal's Name",
-			dataIndex: ["appointment_counselor", "user_profile", "name"],
+			dataIndex: ["appointment_professional", "user_profile", "name"],
 			width: "20%",
 		},
 		{
@@ -111,14 +111,11 @@ const Appointments = () => {
 			const { pagination, sortField } = params;
 
 			// Fetch appointments with pagination and sorting
-			const result = await GetAllAppointments(
-				localStorage.getItem("adminToken"),
-				{
-					page: pagination.current,
-					limit: pagination.pageSize,
-					sortBy: sortField,
-				}
-			);
+			const result = await GetAllAppointments({
+                page: pagination.current,
+                limit: pagination.pageSize,
+                sortBy: sortField,
+            });
 
 			// Sort the rows based on appointment_slot.date in descending order
 			const sortedData = result.data.rows.sort((a, b) => 
@@ -138,14 +135,14 @@ const Appointments = () => {
 				...tableParams,
 				pagination: {
 					...pagination,
-					total: result.count, // Update total count
+					total: result.data.count,
 				},
 			});
 		} catch (e) {
 			// Log the full error object to inspect the structure
 			console.error("Error object: ", e);
 	
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 				console.error("You do not have access to this page as a sub-admin.");
 			} else if (apiErrorStatus(e) === 500) {
@@ -175,7 +172,7 @@ const Appointments = () => {
 		const LIST = [...serviceBackupData];
 		const searchList = LIST.filter(
 			(item) =>
-				item.appointment_counselor.user_profile.name
+				item.appointment_professional.user_profile.name
 					.toLowerCase()
 					.includes(searchField.toLowerCase()) || // Professional's Name
 				item.appointment_user.user_profile.name

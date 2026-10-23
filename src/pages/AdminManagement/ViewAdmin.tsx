@@ -13,7 +13,7 @@ const ViewAdmin = () => {
 
   const getData = async () => {
     try {
-      let result = await GetAdminProfile(localStorage.getItem("adminToken"));
+      let result = await GetAdminProfile();
       setIdData(result.data.data);
     } catch (e) {
       console.error(e);

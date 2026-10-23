@@ -45,6 +45,7 @@ import { Layout, theme, Menu, Dropdown, Flex } from "antd";
 import { message } from "antd";
 import Login from "../pages/Login/Login";
 import {
+  AdminLogout,
   GetAdminProfile,
   GetPendingFormCount,
   GetPendingProductCount,
@@ -63,7 +64,7 @@ const MainLayout = () => {
   const [applicantCount, setApplicantCount] = useState(0);
   const getData = async (adminToken: string) => {
     try {
-      const result = await GetAdminProfile(adminToken);
+      const result = await GetAdminProfile();
       setIdData(result.data.data);
     } catch (e) {
       // An expired session is handled for every request in utils/session.ts.
@@ -80,7 +81,7 @@ const MainLayout = () => {
     if (!token) return;
     async function fetchApplicantCount(adminToken: string) {
       try {
-        const res = await GetPendingFormCount(adminToken);
+        const res = await GetPendingFormCount();
         const count = parseInt(String(res.data.data), 10);
         setApplicantCount(isNaN(count) ? 0 : count);
       } catch (err) {
@@ -97,7 +98,7 @@ const MainLayout = () => {
     if (!token) return;
     async function fetchPendingProductCount(adminToken: string) {
       try {
-        const res = await GetPendingProductCount(adminToken);
+        const res = await GetPendingProductCount();
         const count = parseInt(String(res.data?.data), 10);
         setPendingProductCount(isNaN(count) ? 0 : count);
       } catch (err) {
@@ -114,7 +115,9 @@ const MainLayout = () => {
   } = theme.useToken();
   const navigate = useNavigate();
 
-  function logout() {
+  async function logout() {
+    // Sign out on the server first (it ends every session of this admin), then here.
+    await AdminLogout().catch(() => {});
     clearSession();
     message.success("Logged Out Successfully");
     navigate("/login");

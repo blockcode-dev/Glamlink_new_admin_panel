@@ -105,14 +105,11 @@ const ProductCategory = () => {
 			setLoading(true);
 
 			// Fetch specialities with pagination and limit
-			const result = await GetProductCategory(
-				localStorage.getItem("adminToken"),
-				{
-					...params,
-					limit: 100, // Ensure the limit is passed
-					page: tableParams.pagination.current, // Use the correct current page from tableParams
-				}
-			);
+			const result = await GetProductCategory({
+                ...params,
+                limit: 100, // Ensure the limit is passed
+                page: tableParams.pagination.current, // Use the correct current page from tableParams
+            });
 
 			// Adding index for serial number
 			const newData = result.data.rows.map((item, index) => ({
@@ -136,7 +133,7 @@ const ProductCategory = () => {
 			// Log the full error for debugging
 			console.error("Error: ", e);
 
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 				console.error("You do not have access to this page as a sub-admin.");
 			} else if (apiErrorStatus(e) === 500) {

@@ -227,10 +227,7 @@ const JournalTopicDetails = () => {
     try {
       setAllProfessionalsLoading(true);
 
-      const result = await GetProfessionals(
-        localStorage.getItem("adminToken"),
-        { page: 1, limit: 1000, sortBy: "DESC" },
-      );
+      const result = await GetProfessionals({ page: 1, limit: 1000, sortBy: "DESC" });
 
       const rows = result?.data?.data?.rows || [];
       setAllProfessionals(rows);

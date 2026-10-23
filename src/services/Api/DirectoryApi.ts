@@ -22,7 +22,7 @@ export const DeleteDirectory = async (category_id: React.Key[]) => {
 };
 
 export const AddDirectory = async (formData: FormData) => {
-    return await axios.post<ApiResponse<DirectoryEntry>>(BASE_URL + "businessCard/createDirectory", formData, {});
+    return await axios.post<ApiResponse<DirectoryEntry>>(BASE_URL + "businessCard/createDirectory", formData);
 };
 
 export const GetAllCategories = async () => {

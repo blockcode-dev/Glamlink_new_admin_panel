@@ -32,6 +32,11 @@ export interface User {
   /** "PENDING" until the email is verified. */
   status?: string;
   created_at: string;
+  /** One account per email; "staff" accounts belong to the CRM. */
+  account_type?: "user" | "professional" | "staff";
+  /** Professionals only. */
+  professional_type?: "individual" | "brand" | null;
+  email_verified_at?: string | null;
   user_profile: UserProfile;
   user_attachments?: Attachment[];
 }
@@ -142,7 +147,7 @@ export interface Appointment {
   id: number;
   status: string;
   notes?: string;
-  appointment_counselor: UserRef;
+  appointment_professional: UserRef;
   appointment_user: UserRef;
   appointment_slot: { date: string; start_time: string };
 }
@@ -154,7 +159,7 @@ export interface Booking {
   date: string;
   start_time: string;
   notes?: string;
-  appointment_counselor?: UserRef;
+  appointment_professional?: UserRef;
   appointment_user?: UserRef;
   appointment_service?: { name: string };
 }

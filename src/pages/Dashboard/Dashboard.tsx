@@ -572,7 +572,7 @@ const Dashboard = () => {
 	const topMostBookedProfessional: TableColumnsType<BookedProfessional> = [
 		{
 			title: "Professional Name",
-			dataIndex: ["appointment_counselor", "user_profile", "name"],
+			dataIndex: ["appointment_professional", "user_profile", "name"],
 			key: "name",
 			width: "20%",
 		},

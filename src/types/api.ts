@@ -1,6 +1,3 @@
-/** Token read from localStorage; null when signed out. Sent as `x-access-token`. */
-export type AdminToken = string | null;
-
 /** Envelope most endpoints wrap their payload in. */
 export interface ApiResponse<T> {
   data: T;

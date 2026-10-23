@@ -2,20 +2,19 @@
 
 import axios from "axios";
 import { BASE_URL } from "../Host";
-import type { AdminToken, ApiResponse, ListParams, Paged } from "../../types/api";
+import type { ApiResponse, ListParams, Paged } from "../../types/api";
 import type { ProfessionUser, Speciality } from "../../types/catalog";
 
 type Id = number | string;
 
-export const GetSpecialities = async (adminToken: AdminToken, params: ListParams) => {
+export const GetSpecialities = async (params: ListParams) => {
 	const { page, limit, sortBy } = params;
 
 	try {
 		const res = await axios.get<ApiResponse<Paged<Speciality>>>(BASE_URL + "profession", {
 			headers: {
-				"x-access-token": adminToken,
-				"Content-Type": "application/json",
-			},
+                "Content-Type": "application/json"
+            },
 			params: {
 				page: page,
 				limit: limit,
@@ -37,18 +36,16 @@ export const GetSpecialitiesById = async (id: Id) => {
 export const CreateSpecialities = async (formData: { title: string }) => {
 	return await axios.post<ApiResponse<Speciality>>(BASE_URL + "profession", formData, {
 		headers: {
-			"x-access-token": `${localStorage.getItem("adminToken")}`,
-			"Content-Type": "multipart/form-data",
-		},
+            "Content-Type": "multipart/form-data"
+        },
 	});
 };
 
 export const UpdateSpecialities = async (id: Id, formData: FormData) => {
 	return await axios.put<ApiResponse<Speciality>>(BASE_URL + `profession/${id}`, formData, {
 		headers: {
-			"x-access-token": `${localStorage.getItem("adminToken")}`,
-			"Content-Type": "multipart/form-data",
-		},
+            "Content-Type": "multipart/form-data"
+        },
 	});
 };
 
@@ -58,9 +55,8 @@ export const DeleteSpecialities = async (profession_id: React.Key[]) => {
 		{ profession_id: profession_id },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };

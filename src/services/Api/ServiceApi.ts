@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { BASE_URL } from "../Host";
-import type { AdminToken, ApiResponse, ListParams, Paged } from "../../types/api";
+import type { ApiResponse, ListParams, Paged } from "../../types/api";
 import type { OtherServiceList, ServiceCategory, ServiceListItem } from "../../types/catalog";
 
 type Id = number | string;
@@ -10,18 +10,16 @@ type Id = number | string;
 export const CreateSerice = async (formData: FormData) => {
 	return await axios.post<ApiResponse<ServiceListItem>>(BASE_URL + "admin/service-list", formData, {
 		headers: {
-			"x-access-token": `${localStorage.getItem("adminToken")}`,
-			"Content-Type": "multipart/form-data",
-		},
+            "Content-Type": "multipart/form-data"
+        },
 	});
 };
 
 export const UpdateService = async (id: Id, formData: FormData) => {
 	return await axios.put<ApiResponse<ServiceListItem>>(BASE_URL + `admin/updateServiceList/${id}`, formData, {
 		headers: {
-			"x-access-token": `${localStorage.getItem("adminToken")}`,
-			"Content-Type": "multipart/form-data",
-		},
+            "Content-Type": "multipart/form-data"
+        },
 	});
 };
 
@@ -31,9 +29,8 @@ export const DeleteService = async (service_list_id: React.Key[]) => {
 		{ service_list_id: service_list_id },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -41,16 +38,15 @@ export const DeleteService = async (service_list_id: React.Key[]) => {
 // category apis
 
 //get category
-export const GetServiceCategory = async (adminToken: AdminToken, params: ListParams) => {
+export const GetServiceCategory = async (params: ListParams) => {
 	const { page, limit, sortBy } = params;
 
 	try {
-		// The page reads rows from data.rows but the total from a top-level count.
-		const res = await axios.get<ApiResponse<Paged<ServiceCategory>> & { count?: number }>(BASE_URL + "category", {
+		// The API answers data: { count, rows } (confirmed by the backend).
+		const res = await axios.get<ApiResponse<Paged<ServiceCategory>>>(BASE_URL + "category", {
 			headers: {
-				"x-access-token": adminToken,
-				"Content-Type": "application/json",
-			},
+                "Content-Type": "application/json"
+            },
 			params: {
 				page: page,
 				limit: limit,
@@ -72,18 +68,16 @@ export const GetServiceCategoryById = async (id: Id) => {
 export const CreateServiceCategory = async (formData: FormData) => {
 	return await axios.post<ApiResponse<ServiceCategory>>(BASE_URL + "category", formData, {
 		headers: {
-			"x-access-token": `${localStorage.getItem("adminToken")}`,
-			"Content-Type": "multipart/form-data",
-		},
+            "Content-Type": "multipart/form-data"
+        },
 	});
 };
 
 export const UpdateServiceCategory = async (id: Id, formData: FormData) => {
 	return await axios.put<ApiResponse<ServiceCategory>>(BASE_URL + `category/${id}`, formData, {
 		headers: {
-			"x-access-token": `${localStorage.getItem("adminToken")}`,
-			"Content-Type": "multipart/form-data",
-		},
+            "Content-Type": "multipart/form-data"
+        },
 	});
 };
 
@@ -93,9 +87,8 @@ export const DeleteServiceCategory = async (category_id: React.Key[]) => {
 		{ category_id: category_id },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
@@ -111,6 +104,11 @@ export const GetOtherServiceListByCategoryId = async (formData: { category_id: n
 		BASE_URL + `service/get-other-service-list`,
 		formData
 	);
+};
+
+/** Adds services in bulk from a CSV, one { title, category_id } per row. */
+export const UploadServiceListCsv = async (services: { title: string; category_id: string }[]) => {
+	return await axios.post<ApiResponse<unknown>>(BASE_URL + "admin/create-service-list", { services });
 };
 
 export const DeleteOtherServiceCategory = async (service_id: React.Key[]) => {

@@ -1,6 +1,5 @@
 /** @format */
 
-import { useMemo } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import { ConfigProvider } from "antd";
 import { antdTheme } from "./config/theme";
@@ -88,9 +87,12 @@ import AccessCardAnalytics from "./pages/AccessCardAnalytics/AccessCardAnalytics
 import PartnerInquiries from "./pages/PartnerInquiries/PartnerInquiries";
 import ViewPartnerInquiry from "./pages/PartnerInquiries/ViewPartnerInquiry";
 
+// Colours come from the tokens in index.css, which index.tsx loads before this module runs.
+const theme = antdTheme();
+// antd's static message() / notification() calls render outside the app's tree; give them the same theme.
+ConfigProvider.config({ holderRender: (children) => <ConfigProvider theme={theme}>{children}</ConfigProvider> });
+
 function App() {
-  // Colours come from the tokens in index.css (loaded before the app renders).
-  const theme = useMemo(() => antdTheme(), []);
   return (
     <ConfigProvider theme={theme}>
     <Router>

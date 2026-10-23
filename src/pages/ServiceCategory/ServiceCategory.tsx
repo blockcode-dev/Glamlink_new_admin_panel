@@ -119,14 +119,11 @@ const ServiceCategory = () => {
 
 			const { pagination, sortOrder } = params;
 			// Fetch service categories with pagination and sorting
-			const result = await GetServiceCategory(
-				localStorage.getItem("adminToken"),
-				{
-					page: pagination.current,
-					limit: pagination.pageSize, // Ensure correct pagination limit
-					sortBy: sortOrder === "ascend" ? "ASC" : "ASC", // <== use ASC/DESC here
-				}
-			);
+			const result = await GetServiceCategory({
+                page: pagination.current,
+                limit: pagination.pageSize, // Ensure correct pagination limit
+                sortBy: sortOrder === "ascend" ? "ASC" : "ASC", // <== use ASC/DESC here
+            });
 
 			// Adding index for serial numbers
 			const newData = result.data.rows.map((item, index) => ({
@@ -156,14 +153,14 @@ const ServiceCategory = () => {
 				...tableParams,
 				pagination: {
 					...pagination,
-					total: result.count, // Set total items count from the API response
+					total: result.data.count,
 				},
 			});
 		} catch (e) {
 			// Log the full error object for debugging purposes
 			console.error("Error: ", e);
 
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 				console.error("You do not have access to this page as a sub-admin.");
 			} else if (apiErrorStatus(e) === 500) {
@@ -379,9 +376,9 @@ const ServiceCategory = () => {
 									key: "name",
 								},
 								{
-									title: "Beautician Name",
+									title: "Professional Name",
 									dataIndex: ["service_user", "user_profile", "name"],
-									key: "beautician_name",
+									key: "professional_name",
 								},
 								{
 									title: "Created On",

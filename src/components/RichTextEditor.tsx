@@ -39,6 +39,7 @@ import {
   TableOutlined,
   TagsOutlined,
   UnderlineOutlined,
+  StrikethroughOutlined,
   UndoOutlined,
   UnorderedListOutlined,
   VideoCameraAddOutlined,
@@ -66,6 +67,8 @@ const BLOCKS = [
   { label: "Paragraph", value: "p" },
   ...[1, 2, 3, 4, 5, 6].map((level) => ({ label: `Heading ${level}`, value: `h${level}` })),
 ];
+// The website's bio editor allows paragraphs and h3 only (the API cleans to that list).
+const SIMPLE_BLOCKS = BLOCKS.filter((b) => b.value === "p" || b.value === "h3");
 const TAGGED_CLASS = "topic-tagged-paragraph";
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -84,6 +87,14 @@ export interface RichTextEditorProps {
   onChange?: (html: string) => void;
   height?: number;
   full?: boolean;
+  /**
+   * The website's formatting only (paragraph or h3, bold, italic, underline, strike,
+   * lists, quotes, links): no fonts, colours, tables, media or HTML source. For fields
+   * the API cleans to that list, such as an access card's bio.
+   */
+  simple?: boolean;
+  /** Shows a character counter (text only, not markup) against this limit. */
+  maxLength?: number;
   uploadMedia?: (file: File, options: UploadMediaOptions) => Promise<string>;
   mentions?: MentionSource;
   topics?: Topic[];
@@ -157,6 +168,8 @@ const RichTextEditor = ({
   onChange,
   height = 300,
   full = false,
+  simple = false,
+  maxLength,
   uploadMedia,
   mentions,
   topics,
@@ -427,7 +440,7 @@ const RichTextEditor = ({
         {tool("Undo", <UndoOutlined />, () => editor.chain().focus().undo().run(), { disabled: !can.undo() })}
         {tool("Redo", <RedoOutlined />, () => editor.chain().focus().redo().run(), { disabled: !can.redo() })}
         {sep("s1")}
-        <Select size="small" style={{ width: 120 }} value={blockValue} options={BLOCKS} onChange={setBlock} disabled={source !== null} />
+        <Select size="small" style={{ width: 120 }} value={blockValue} options={simple ? SIMPLE_BLOCKS : BLOCKS} onChange={setBlock} disabled={source !== null} />
         {full && (
           <>
             <Select
@@ -456,6 +469,7 @@ const RichTextEditor = ({
         {tool("Bold", <BoldOutlined />, () => editor.chain().focus().toggleBold().run(), { active: editor.isActive("bold") })}
         {tool("Italic", <ItalicOutlined />, () => editor.chain().focus().toggleItalic().run(), { active: editor.isActive("italic") })}
         {tool("Underline", <UnderlineOutlined />, () => editor.chain().focus().toggleUnderline().run(), { active: editor.isActive("underline") })}
+        {simple && tool("Strikethrough", <StrikethroughOutlined />, () => editor.chain().focus().toggleStrike().run(), { active: editor.isActive("strike") })}
         {full && (
           <>
             <ColorPicker
@@ -501,6 +515,7 @@ const RichTextEditor = ({
             {tool("Video", <VideoCameraAddOutlined />, insertVideo)}
           </>
         )}
+        {!simple && (
         <Dropdown
           trigger={["click"]}
           disabled={source !== null}
@@ -532,6 +547,7 @@ const RichTextEditor = ({
             <Button size="small" type={inTable ? "primary" : "text"} icon={<TableOutlined />} disabled={source !== null} />
           </Tooltip>
         </Dropdown>
+        )}
         {topics && (
           <>
             {sep("s6")}
@@ -544,6 +560,7 @@ const RichTextEditor = ({
         )}
         {sep("s7")}
         {tool("Clear formatting", <ClearOutlined />, () => editor.chain().focus().unsetAllMarks().clearNodes().run())}
+        {!simple && (
         <Tooltip title={source === null ? "Edit HTML source" : "Back to editor"}>
           <Button
             size="small"
@@ -558,6 +575,7 @@ const RichTextEditor = ({
             }}
           />
         </Tooltip>
+        )}
         {full &&
           tool(fullscreen ? "Exit full screen" : "Full screen", fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />, () => setFullscreen(!fullscreen))}
       </div>
@@ -572,6 +590,15 @@ const RichTextEditor = ({
           style={{ minHeight: height }}
         />
       )}
+
+      {maxLength !== undefined && (() => {
+        const length = editor.getText().trim().length;
+        return (
+          <div className={`rte__count${length > maxLength ? " rte__count--over" : ""}`} aria-live="polite">
+            {length} / {maxLength} characters
+          </div>
+        );
+      })()}
 
       {mentionUi && mentionUi.rect && (
         <div

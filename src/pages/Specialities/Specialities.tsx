@@ -105,7 +105,7 @@ const Specialities = () => {
 			setLoading(true);
 
 			// Fetch specialities with pagination and limit
-			const result = await GetSpecialities(localStorage.getItem("adminToken"), {
+			const result = await GetSpecialities({
 				...params,
 				limit: 100, // Ensure the limit is passed
 				page: tableParams.pagination.current, // Use the correct current page from tableParams
@@ -133,7 +133,7 @@ const Specialities = () => {
 			// Log the full error for debugging
 			console.error("Error: ", e);
 
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 				console.error("You do not have access to this page as a sub-admin.");
 			} else if (apiErrorStatus(e) === 500) {

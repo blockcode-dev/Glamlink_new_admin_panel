@@ -8,7 +8,6 @@ import RichTextEditor from "../../../components/RichTextEditor";
 
 import { ArrowLeftOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { apiErrorStatus } from "../../../utils/apiError";
-import { clearSession } from "../../../utils/session";
 import { useIdParam } from "../../../utils/routing";
 import type { Faq } from "../../../types/content";
 
@@ -47,11 +46,7 @@ const EditFaq = () => {
 			})
 			.catch((err) => {
 				if (apiErrorStatus(err) === 401) {
-					message.error("Token expired!");
-					clearSession();
-					setTimeout(() => {
-						navigate("/Login");
-					}, 3000);
+					// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 				} else {
 					message.error("Something went wrong");
 				}

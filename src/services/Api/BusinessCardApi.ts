@@ -28,11 +28,7 @@ export const DeleteBusinessCard = async (category_id: React.Key[]) => {
 };
 
 export const GenerateBusinessCard = async (formData: FormData) => {
-  return await axios.post<ApiResponse<BusinessCard>>(
-    BASE_URL + "businessCard/createBusinessCardByAdmin",
-    formData,
-    {},
-  );
+  return await axios.post<ApiResponse<BusinessCard>>(BASE_URL + "businessCard/createBusinessCardByAdmin", formData);
 };
 
 export const GetBusinessCardById = async (id: Id) => {
@@ -45,8 +41,7 @@ export const UpdateBusinessCard = async (id: Id, formData: FormData) => {
     formData,
     {
       headers: {
-        "x-access-token": `${localStorage.getItem("adminToken")}`,
-        "Content-Type": "multipart/form-data",
+        "Content-Type": "multipart/form-data"
       },
     },
   );
@@ -59,7 +54,7 @@ export const GetAllAccessOrders = async (params: { page?: number; limit?: number
 };
 
 export const GetAccessOrderById = async (id: Id) => {
-  return await axios.get<ApiResponse<AccessOrder> | AccessOrder>(BASE_URL + `businessCard/access-orders/${id}`, {});
+  return await axios.get<ApiResponse<AccessOrder> | AccessOrder>(BASE_URL + `businessCard/access-orders/${id}`);
 };
 
 /** The order in a GetAccessOrderById body, whichever shape it came in. */
@@ -77,12 +72,8 @@ export const ReorderFeaturedLinks = async (
   businessCardId: Id,
   featured_links: FeaturedLink[],
 ) => {
-  return await axios.put<ApiResponse<unknown>>(
-    BASE_URL +
-      `businessCard/${businessCardId}/featured-links/reorder`,
-    {
-      featured_links,
-    },
-    {},
-  );
+  return await axios.put<ApiResponse<unknown>>(BASE_URL +
+    `businessCard/${businessCardId}/featured-links/reorder`, {
+    featured_links,
+  });
 };

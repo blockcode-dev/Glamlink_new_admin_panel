@@ -7,7 +7,6 @@ import { CreateSpecialities } from "../../services/Api/SpecialitiesApi";
 
 import { ArrowLeftOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { apiErrorStatus } from "../../utils/apiError";
-import { clearSession } from "../../utils/session";
 
 const AddSpecialities = () => {
 	const [form] = Form.useForm();
@@ -32,11 +31,7 @@ const AddSpecialities = () => {
 			if (apiErrorStatus(error) === 400) {
 				message.error("Email already exists");
 			} else if (apiErrorStatus(error) === 401) {
-				message.error("Token expired");
-				clearSession();
-				setTimeout(() => {
-					navigate("/login");
-				}, 3000);
+				// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 			} else {
 				message.error("Something went wrong");
 			}

@@ -26,11 +26,11 @@ const AdminUser = () => {
 	const getData = async () => {
 		try {
 		    setLoading(true);
-			let result = await GetAdmins(localStorage.getItem("adminToken"));
+			let result = await GetAdmins();
 			setRoleData(result.data.data);
 		} catch (e) {
 			console.error(e);
-			if (apiErrorStatus(e) === 401) {
+			if (apiErrorStatus(e) === 403) {
 				navigate("/error401");
 				message.error("You do not have access to this page.");
 			} else {
@@ -60,7 +60,7 @@ const AdminUser = () => {
 	};
 
 	const removeUser = (user_id: number) => {
-		DeleteAdmin(user_id, localStorage.getItem("adminToken"))
+		DeleteAdmin(user_id)
 			.then((res) => {
 				message.success(res?.data?.message);
 				getData(); // Reload data after deleting

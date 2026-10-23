@@ -1,7 +1,6 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { BASE_URL } from "../../services/Host";
 import { useNavigate } from "react-router";
 import { Card, Modal, Space, Table, Button, Row } from "antd";
 import { message, Form, Input } from "antd";
@@ -14,6 +13,7 @@ import {
 	CreateSerice,
 	UpdateService,
 	DeleteService,
+	UploadServiceListCsv,
 } from "../../services/Api/ServiceApi";
 import Papa from "papaparse";
 
@@ -27,8 +27,7 @@ import {
 	PlusOutlined,
 	SearchOutlined,
 } from "@ant-design/icons";
-import { apiErrorStatus } from "../../utils/apiError";
-import { clearSession } from "../../utils/session";
+import { apiErrorMessage, apiErrorStatus } from "../../utils/apiError";
 import { useIdParam } from "../../utils/routing";
 import SafeHtml from "../../components/SafeHtml";
 import type { ServiceCategory, ServiceListItem } from "../../types/catalog";
@@ -86,11 +85,7 @@ const EditServiceCategory = () => {
 			})
 			.catch((err) => {
 				if (apiErrorStatus(err) === 401) {
-					message.error("Token expired!");
-					clearSession();
-					setTimeout(() => {
-						navigate("/login");
-					}, 3000);
+					// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 				} else {
 					message.error("Something went wrong");
 				}
@@ -120,11 +115,7 @@ const EditServiceCategory = () => {
 			}
 		} catch (error) {
 			if (apiErrorStatus(error) === 401) {
-				message.error("Token expired");
-				clearSession();
-				setTimeout(() => {
-					navigate("/Login");
-				}, 1000);
+				// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 			} else {
 				message.error("Something went wrong");
 			}
@@ -147,11 +138,7 @@ const EditServiceCategory = () => {
 			}
 		} catch (error) {
 			if (apiErrorStatus(error) === 401) {
-				message.error("Token expired");
-				clearSession();
-				setTimeout(() => {
-					navigate("/Login");
-				}, 1000);
+				// The session has ended; the shared API client (utils/session.ts) has signed the admin out.
 			} else {
 				message.error("Something went wrong");
 			}
@@ -231,29 +218,14 @@ const EditServiceCategory = () => {
 	const handleUploadClick = async () => {
 		if (csvData.length > 0) {
 			try {
-				const response = await fetch(
-					`${BASE_URL}admin/create-service-list`,
-					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({ services: csvData }),
-					}
-				);
-				const result = await response.json();
-				if (response.ok) {
-					message.success("CSV uploaded successfully!");
-					const updatedServiceListResponse = await GetServiceListByCategoryId(
-						id
-					);
-					setServiceListData(updatedServiceListResponse.data.data);
-				} else {
-					message.error("Error uploading CSV: " + result.message);
-				}
+				await UploadServiceListCsv(csvData);
+				message.success("CSV uploaded successfully!");
+				const updatedServiceListResponse = await GetServiceListByCategoryId(id);
+				setServiceListData(updatedServiceListResponse.data.data);
 			} catch (error) {
 				console.error("Error uploading CSV data:", error);
-				message.error("Error uploading CSV data");
+				const reason = apiErrorMessage(error);
+				message.error(reason ? "Error uploading CSV: " + reason : "Error uploading CSV data");
 			}
 		} else {
 			message.error("No CSV data to upload");

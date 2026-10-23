@@ -284,7 +284,7 @@ const Product = () => {
 	const getData = async () => {
 		try {
 			setLoading(true);
-			let result = await GetProduct(localStorage.getItem("adminToken"));
+			let result = await GetProduct();
 			const newData = result.data.map((item, index) => ({
 				...item,
 				index: index + 1,

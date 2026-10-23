@@ -2,21 +2,20 @@
 
 import axios from "axios";
 import { BASE_URL } from "../Host";
-import type { AdminToken, ApiResponse, CountedList, ListParams } from "../../types/api";
+import type { ApiResponse, CountedList, ListParams } from "../../types/api";
 import type { Clip, Post, PostComment, PostLike } from "../../types/social";
 
 type Id = number | string;
 
-export const GetAllPosts = async (adminToken: AdminToken, params: ListParams) => {
+export const GetAllPosts = async (params: ListParams) => {
 	const { page, limit, sortBy } = params;
 
 	try {
 		const res = await axios.get<CountedList<Post>>(BASE_URL + "admin/posts", {
 			headers: {
-				"x-access-token": adminToken,
-				timezone: "Asia/Kolkata",
-				"Content-Type": "application/json",
-			},
+                timezone: "Asia/Kolkata",
+                "Content-Type": "application/json"
+            },
 			params: {
 				page: page,
 				limit: limit,
@@ -37,9 +36,8 @@ export const DeletePost = async (post_id: React.Key[]) => {
 		{ post_id: post_id },
 		{
 			headers: {
-				"x-access-token": `${localStorage.getItem("adminToken")}`,
-				"Content-Type": "multipart/form-data",
-			},
+                "Content-Type": "multipart/form-data"
+            },
 		}
 	);
 };
