@@ -2,7 +2,7 @@
 
 Tracks the work done against the code and dependency audit of the admin panel ([full audit](https://claude.ai/code/artifact/e5486df6-a77d-4fd4-abc6-0030334b5224)). The audit was taken at commit `4ebfc15` on `main`.
 
-- **Branch:** `main`. Passes 1–9 are committed (`2970239`); pass 10 is **uncommitted**.
+- **Branch:** passes 1–9 are on `main` (`2970239`); pass 10 is on `feature/website-first` (`b75b38b`, then `ed32708`, which only changes line endings to LF).
 - **Status as of:** 2026-10-28.
 - **Backend questions:** security items that need a server change or answer are collected in [Admin panel security: backend changes and questions](https://claude.ai/code/artifact/7cf1fb80-6241-4282-b8a6-9966c6290ed9). The panel side of those items waits for its answers.
 - **Backend requests (pass 10):** [Glamlink Backend Requests — Admin Panel](https://claude.ai/artifact/Qb8i2fdiYQAN6TNMUG86KY): what the backend should change, with a status per row (the findings table in pass 10, kept up to date there).
