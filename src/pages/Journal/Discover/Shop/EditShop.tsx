@@ -26,7 +26,9 @@ import {
   GetJournalTopicById,
   UpdateJournalTopicShops,
 } from "../../../../services/Api/JournalApi";
-import { apiErrorMessage } from "../../../../utils/apiError";
+import { apiErrorMessage, apiErrorStatus } from "../../../../utils/apiError";
+import { showFieldError } from "../../../../utils/formErrors";
+import ProductSiteFields, { appendProductSiteFields, productSiteValues } from "./ProductSiteFields";
 import { useIdParam } from "../../../../utils/routing";
 import type { JournalTopic } from "../../../../types/journal";
 
@@ -66,6 +68,7 @@ const EditShop = () => {
         price: shop.price,
         link: shop.link,
         status: shop.status || "draft",
+        ...productSiteValues(shop),
       });
 
       if (shop.cover_image) {
@@ -95,6 +98,12 @@ const EditShop = () => {
       setInitialTopicIds(assignedTopicIds);
     } catch (error) {
       console.error(error);
+      // The API answers 404 for a product that doesn't exist (any more).
+      if (apiErrorStatus(error) === 404) {
+        message.error("This product doesn't exist; it may have been deleted");
+        navigate("/shop");
+        return;
+      }
       message.error("Failed to load shop");
     }
   };
@@ -156,6 +165,7 @@ const EditShop = () => {
 
       formData.append("link", values.link);
       formData.append("status", values.status);
+      appendProductSiteFields(formData, values);
 
       if (fileList[0]?.originFileObj) {
         formData.append(
@@ -240,8 +250,10 @@ const EditShop = () => {
     } catch (error) {
       console.error(error);
 
+      // A taken slug or a wrong owner or brand is refused with details.field.
       message.error(
-        apiErrorMessage(error) ||
+        showFieldError(form, error) ||
+          apiErrorMessage(error) ||
           "Failed to update Shop",
       );
     }
@@ -355,6 +367,8 @@ const EditShop = () => {
               </Select.Option>
             </Select>
           </Form.Item>
+
+          <ProductSiteFields isNew={false} />
 
           {/* ==========================
               TOPICS

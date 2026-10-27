@@ -220,9 +220,14 @@ const Shop = () => {
       title: "Title",
       dataIndex: "title",
       width: 260,
-      render: (text) => (
+      render: (text, record) => (
         <div style={{ fontWeight: 600, color: "var(--color-text)", lineHeight: "20px" }}>
           {text}
+          {record.is_featured && (
+            <Tag color="gold" style={{ marginLeft: 6 }}>
+              Home page {record.featured_order ?? 0}
+            </Tag>
+          )}
         </div>
       ),
     },
@@ -230,7 +235,14 @@ const Shop = () => {
       title: "Brand",
       dataIndex: "brand",
       width: 180,
-      render: (brand) => brand || "-",
+      render: (brand, record) => (
+        <div>
+          <div>{brand || "-"}</div>
+          {record.owner?.name && (
+            <div style={{ fontSize: 12, color: "var(--color-text-tertiary)" }}>Put up by {record.owner.name}</div>
+          )}
+        </div>
+      ),
     },
     {
       title: "Price",

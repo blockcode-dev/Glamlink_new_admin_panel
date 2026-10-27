@@ -59,14 +59,6 @@ export const GetPendingFormCount = async () => {
 	});
 };
 
-export const GetPendingProductCount = async () => {
-	return axios.get<ApiResponse<string | number>>(BASE_URL + "product/getPendingProductCount", {
-		headers: {
-            "Content-Type": "multipart/form-data"
-        },
-	});
-};
-
 export const CreateAdmin = async (formData: FormData) => {
 	return await axios.post<ApiResponse<Admin>>(BASE_URL + "admin/auth/register", formData, {
 		headers: {

@@ -15,6 +15,8 @@ export interface JournalFormValues {
   publish_date?: Dayjs | null;
   /** Edit page only; Add takes the status from the button pressed. */
   status?: string;
+  /** The Journal hero's article. */
+  is_featured?: boolean;
 }
 
 /** One journal paragraph tagged with a topic, as sent to the topic's paragraph list. */
@@ -40,6 +42,13 @@ export interface DownloadDraft {
 export interface JournalCategory {
   id: number;
   title: string;
+  /** Made from the title for the website's URLs ("What's New" is whats-new). */
+  slug?: string | null;
+  description?: string | null;
+  /** The Journal sidebar's order: lowest first, then by title. */
+  sort_order?: number;
+  /** Published articles in the category. */
+  article_count?: number;
   created_at?: string;
 }
 
@@ -82,6 +91,35 @@ export interface Journal {
   journal_category?: JournalCategory | null;
   shops?: { id: number }[];
   downloads?: JournalDownload[];
+  /** The Journal page's hero shows the newest featured article. */
+  is_featured?: boolean;
+  /** On create and update only: the @handles in the text that match no page or card (likely typos). */
+  unmatched_mentions?: string[];
+}
+
+/** Someone an article features (GET /journal/:id/mentions). */
+export interface ArticleMention {
+  id: number;
+  /** "text": an @handle in the article. "editor": an account added on the article form. */
+  source: "text" | "editor";
+  /** The @handle, for a text mention. */
+  handle: string | null;
+  /** A text mention set aside: it stays in the text but doesn't count. */
+  excluded: boolean;
+  /** The professional or brand account; null when the handle matches no page slug or card handle. */
+  account: {
+    id: number;
+    slug: string | null;
+    name: string | null;
+    type: "individual" | "brand" | null;
+    visible: boolean;
+  } | null;
+}
+
+export interface ArticleMentions {
+  mentions: ArticleMention[];
+  /** Handles in the text that match no one. */
+  unmatched: string[];
 }
 
 /** Fields shared by the "Discover" items (education, events, shop). */
@@ -104,9 +142,31 @@ export interface DiscoverEvent extends DiscoverItem {
   location?: string | null;
 }
 
+/** A product's link to a professional's or brand's page; null when the account has no visible page. */
+export interface PageLink {
+  id: number;
+  slug: string;
+  name: string | null;
+  type?: "individual" | "brand" | null;
+}
+
 export interface Shop extends DiscoverItem {
+  /** The product page's address (shop/<slug>): made from the title unless given; kept when the title changes. */
+  slug?: string | null;
+  /** The name shown for the brand (free text). */
   brand?: string | null;
   price?: number | string | null;
+  /** The product page's longer text (plain text; a blank line starts a paragraph). Lists leave it out. */
+  description?: string | null;
+  /** The professional or brand account that put the product up; null: Glamlink's own pick. */
+  owner_id?: number | null;
+  /** The brand account that makes it. */
+  brand_id?: number | null;
+  owner?: PageLink | null;
+  brand_profile?: PageLink | null;
+  /** Shown in the home page's Shop Products row, by featured_order (lowest first). */
+  is_featured?: boolean;
+  featured_order?: number;
   journal_topics?: { id: number }[];
 }
 
@@ -144,6 +204,12 @@ export interface JournalTopic {
   description?: string | null;
   slug?: string | null;
   cover_image?: string | null;
+  /** A tile in the home page's "Explore Beauty + Wellness" row. */
+  is_featured?: boolean;
+  /** The tiles' order: lowest first, then by name. */
+  featured_order?: number;
+  /** The tile's square image (an upload's link); the tile shows cover_image without one. */
+  tile_image?: string | null;
   is_active?: boolean;
   status?: string;
   created_at?: string;

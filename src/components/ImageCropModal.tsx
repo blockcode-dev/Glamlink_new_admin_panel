@@ -4,12 +4,7 @@ import React, { useRef } from "react";
 import ImgCrop from "antd-img-crop";
 import { Upload, type UploadFile, type UploadProps } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import imageCompression from "browser-image-compression";
-import compressionLibPath from "browser-image-compression/dist/browser-image-compression.js?url";
-
-// The compression worker loads the library with importScripts(), by default from the
-// jsdelivr CDN. Point it at the copy in our build instead; a blob worker needs an absolute URL.
-const compressionLibURL = new URL(compressionLibPath, window.location.href).href;
+import { compressImage } from "../utils/compressImage";
 
 interface ImageCropModalProps {
   aspect?: number;
@@ -41,14 +36,6 @@ const ImageCropModal = ({
   const latest = useRef(fileList);
   latest.current = fileList;
 
-  const compress = (file: File) =>
-    imageCompression(file, {
-      maxSizeMB: 2,
-      maxWidthOrHeight: 2000,
-      useWebWorker: true,
-      libURL: compressionLibURL,
-    });
-
   const addCropped: NonNullable<UploadProps["beforeUpload"]> = (file) => {
     const entry: UploadFile = {
       uid: Date.now().toString(),
@@ -69,7 +56,7 @@ const ImageCropModal = ({
       rotationSlider
       modalTitle="Crop Image"
       modalOk="Crop & Save"
-      beforeCrop={compress}
+      beforeCrop={compressImage}
     >
       {/* One image per pick: the crop modal handles a single file at a time. */}
       <Upload

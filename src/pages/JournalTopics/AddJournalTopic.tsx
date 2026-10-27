@@ -15,6 +15,7 @@ import RichTextEditor from "../../components/RichTextEditor";
 import { CreateJournalTopic, UploadJournalMedia } from "../../services/Api/JournalApi";
 
 import styles from "./JournalTopics.module.scss";
+import TopicTileFields, { appendTileFields } from "./TopicTileFields";
 import { apiErrorMessage, isFormValidationError } from "../../utils/apiError";
 
 const AddJournalTopic = () => {
@@ -41,6 +42,7 @@ const AddJournalTopic = () => {
 
       formData.append("name", values.name);
       formData.append("description", description || "");
+      appendTileFields(formData, values);
 
       if (fileList.length > 0) {
         formData.append("images", fileList[0].originFileObj!);
@@ -202,6 +204,8 @@ const AddJournalTopic = () => {
               </Form.Item>
             </div>
           </div>
+
+          <TopicTileFields />
 
           {/* ACTIONS */}
           <div className={styles.sectionCard}>

@@ -7,11 +7,6 @@ import {
   message,
   Modal,
   Tooltip,
-  Form,
-  Select,
-  Tag,
-  Divider,
-  List,
   Card,
   Button,
   Input,
@@ -24,30 +19,20 @@ import dayjs from "dayjs";
 import {
   CreateFounder,
   DeleteUser,
-  GetAllkeywords,
-  GetAllProfessional,
-  GetAllReferralByProfessionalId,
-  GetProfessionalPayoutSummary,
   GetProfessionals,
-  GetUserPromotions,
-  ProfessialPayout,
-  PromoteUserAPI,
-  UnpromoteAllAPI,
-  UnpromoteUserAPI,
 } from "../../services/Api/UserApi";
 
 import {
   CloudDownloadOutlined,
   DeleteOutlined,
-  DollarOutlined,
   EyeOutlined,
   SafetyCertificateFilled,
   SearchOutlined,
-  StarOutlined,
 } from "@ant-design/icons";
 import { apiErrorBody, apiErrorMessage, apiErrorStatus } from "../../utils/apiError";
 import { singleSorter, type TableChangeHandler, type TableParams, type WithIndex } from "../../utils/table";
-import type { PayoutSummary, Professional, Promotion, PromotionTarget, User } from "../../types/user";
+import type { Professional } from "../../types/user";
+import { downloadCsv } from "../../utils/csv";
 
 const Professionals = () => {
   const navigate = useNavigate();
@@ -55,24 +40,6 @@ const Professionals = () => {
   const [userBackupData, setUserBackupData] = useState<WithIndex<Professional>[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
-  const [payoutSummary, setPayoutSummary] = useState<PayoutSummary | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [paying, setPaying] = useState(false);
-
-  const [promotionModalVisible, setPromotionModalVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<Professional | null>(null);
-
-  const [professions, setProfessions] = useState<PromotionTarget[]>([]);
-  const [keywords, setKeywords] = useState<PromotionTarget[]>([]);
-  const [selectedProfession, setSelectedProfession] = useState<number | null>(null);
-  const [selectedKeyword, setSelectedKeyword] = useState<number[] | null | undefined>(null);
-
-  const [promotions, setPromotions] = useState<Promotion[]>([]);
-  // Referral modal states
-  const [isReferralModalOpen, setReferralModalOpen] = useState(false);
-  const [selectedReferrals, setSelectedReferrals] = useState<User[]>([]);
-  const [referralLoading, setReferralLoading] = useState(false);
 
   // 🔹 Shared style for the small icon-only action buttons in the table
   const smallIconBtnStyle = {
@@ -81,50 +48,6 @@ const Professionals = () => {
     padding: 0,
     borderRadius: "25px",
   };
-
-  const openReferralModal = async (professionalId: number) => {
-    try {
-      setReferralLoading(true);
-      const res = await GetAllReferralByProfessionalId(professionalId);
-      const users = res.data?.data?.users || []; // assuming API returns { users: [...] }
-      setSelectedReferrals(users);
-      setReferralModalOpen(true);
-    } catch (err) {
-      message.error("Failed to load referred users");
-    } finally {
-      setReferralLoading(false);
-    }
-  };
-
-  const fetchUserPromotions = async (userId: number) => {
-    try {
-      const res = await GetUserPromotions(userId);
-      setPromotions(res.data.data || []);
-    } catch (err) {
-      message.error("Failed to load promotions");
-    }
-  };
-
-  const openPromotionManager = (record: Professional) => {
-    setSelectedUser(record);
-    fetchUserPromotions(record.id);
-    setPromotionModalVisible(true);
-  };
-
-  const fetchProfessions = async () => {
-    const res = await GetAllProfessional();
-    setProfessions(res.data.data || []);
-  };
-
-  const fetchKeywords = async () => {
-    const res = await GetAllkeywords();
-    setKeywords(res.data.data || []);
-  };
-
-  useEffect(() => {
-    fetchProfessions();
-    fetchKeywords();
-  }, []);
 
   const [tableParams, setTableParams] = useState<TableParams>({
     pagination: {
@@ -189,62 +112,11 @@ const Professionals = () => {
       ),
     },
     {
-      title: "Referral",
-      width: 110,
-      dataIndex: "referral_code",
-      render: (referral_code, record) => {
-        const referrals = record.referrals || []; // list of referral details
-        const count = record.referral_count || 0; // use API field instead of length
-
-        if (count === 0) {
-          return referral_code || "-";
-        }
-
-        if (count === 1 && referrals.length === 1) {
-          return (
-            <>
-              {referral_code} ({count}) - {referrals[0].name}
-            </>
-          );
-        }
-
-        // More than one -> make count clickable
-        return (
-          <>
-            {referral_code} (
-            <a onClick={() => openReferralModal(record.id)}>{count}</a>)
-          </>
-        );
-      },
-    },
-
-    {
       title: "Account Created On",
       dataIndex: "created_at",
       width: "30%",
       render: (date) => dayjs(date).format("YYYY-MM-DD HH:mm:ss"),
     },
-    {
-      title: "Promotion",
-      dataIndex: "promotion",
-      width: 90,
-      align: "center",
-      render: (_, record) => (
-        <Tooltip placement="bottom" title="Manage Promotion">
-          <Button
-            style={{
-              ...smallIconBtnStyle,
-              color: record.is_promoted ? "var(--color-rating)" : "var(--color-text-tertiary)", // highlighted if promoted, muted otherwise
-              borderColor: record.is_promoted ? "var(--color-rating)" : "var(--color-text-tertiary)",
-              backgroundColor: record.is_promoted ? "var(--color-warning-soft)" : "transparent", // light background for promoted
-            }}
-            onClick={() => openPromotionManager(record)}
-            icon={<StarOutlined />}
-            shape="circle" />
-        </Tooltip>
-      ),
-    },
-
     {
       title: "Action",
       dataIndex: "action",
@@ -254,23 +126,9 @@ const Professionals = () => {
           <Tooltip placement="bottom" title="Founders Badge">
             <Switch
               checked={record.is_founder}
-              onChange={() => handlePromotionToggle(record)}
+              onChange={() => handleFounderToggle(record)}
               size="small"
             />
-          </Tooltip>
-
-          <Tooltip placement="bottom" title="View Payouts to Professional">
-            <Button
-              style={{
-                ...smallIconBtnStyle,
-                color: "var(--color-success)",
-                borderColor: "var(--color-success)",
-              }}
-              onClick={() => {
-                fetchPayoutSummary(record.id);
-              }}
-              icon={<DollarOutlined />}
-              shape="circle" />
           </Tooltip>
 
           <Button
@@ -385,7 +243,7 @@ const Professionals = () => {
     setData(searchList);
   };
 
-  const handlePromotionToggle = async (userData: Professional) => {
+  const handleFounderToggle = async (userData: Professional) => {
     setLoading(true);
 
     try {
@@ -495,22 +353,11 @@ const Professionals = () => {
   };
 
   const exportToCSV = () => {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      "ID,Name,Mobile,Email\n" +
-      data
-        .map(
-          (row) =>
-            `${row.id},${row.user_profile.name},${row.user_profile.mobile},${row.email}`,
-        )
-        .join("\n");
-
-    const encodedURI = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedURI);
-    link.setAttribute("download", "customers.csv");
-    document.body.appendChild(link);
-    link.click();
+    downloadCsv(
+      "professionals.csv",
+      ["ID", "Name", "Mobile", "Email"],
+      data.map((row) => [row.id, row.user_profile?.name, row.user_profile?.mobile, row.email]),
+    );
   };
 
   const navigateToViewUser = (event: React.MouseEvent<HTMLElement>, id: number) => {
@@ -522,127 +369,6 @@ const Professionals = () => {
     onChange: (selectedRowKeys: React.Key[]) => {
       setSelectedRowKeys(selectedRowKeys);
     },
-  };
-
-  const fetchPayoutSummary = async (professionalId: number) => {
-    try {
-      const res = await GetProfessionalPayoutSummary(professionalId);
-      const professional = data.find((p) => p.id === professionalId);
-      setSelectedProfessional(professional || null);
-
-      if (res.data.success) {
-        const result = res.data.data;
-
-        if (result.length === 0) {
-          setPayoutSummary(null); // No payout to show
-        } else {
-          setPayoutSummary(result[0]);
-        }
-      } else {
-        setPayoutSummary(null);
-        message.error(res.data.message || "Failed to fetch payout summary.");
-      }
-
-      setIsModalOpen(true); // Always show modal
-    } catch (err) {
-      console.error("Error fetching payout summary:", err);
-      message.error("Server error.");
-      setIsModalOpen(true);
-      setPayoutSummary(null);
-    }
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
-
-  const handlePayout = async () => {
-    if (!selectedProfessional || !payoutSummary?.netPayout) return;
-
-    setPaying(true);
-    try {
-      const formData = new FormData();
-      formData.append("professional_id", String(selectedProfessional.id));
-      formData.append("amount", parseFloat(String(payoutSummary.netPayout)).toFixed(2)); // Ensure proper decimal format
-
-      const response = await ProfessialPayout(formData);
-
-      if (response.status === 201) {
-        message.success("Payout processed successfully.");
-        setIsModalOpen(false);
-      }
-    } catch (err) {
-      console.error("Payout error:", err instanceof Error ? err.message : err);
-
-      if (apiErrorStatus(err) !== undefined) {
-        if (apiErrorStatus(err) === 400) {
-          message.error("You have insufficient funds in your Stripe account.");
-        } else if (apiErrorStatus(err) === 500) {
-          message.error("Professional hasn't connected their Stripe account.");
-        } else {
-          message.error("Unexpected error occurred.");
-        }
-      } else {
-        message.error("Server error.");
-      }
-    } finally {
-      setPaying(false);
-    }
-  };
-
-  const handlePromote = async () => {
-    if (!selectedUser) return;
-    if (!selectedProfession && !selectedKeyword) {
-      message.error("Please select a profession and keyword");
-      return;
-    }
-
-    try {
-      await PromoteUserAPI({
-        user_id: selectedUser.id,
-        professionId: selectedProfession || null,
-        keywordIds: selectedKeyword || [],
-      });
-      message.success("User promoted successfully!");
-
-      setPromotionModalVisible(false);
-      getData();
-      setSelectedProfessional(null);
-      setSelectedKeyword(undefined);
-    } catch (err) {
-      message.error("Failed to promote user");
-    }
-  };
-
-  const handleUnpromoteSingle = async (item: Promotion) => {
-    if (!selectedUser) return;
-    try {
-      await UnpromoteUserAPI({
-        user_id: selectedUser.id,
-        professionId: item.type === "profession" ? item.ref_id : null,
-        keywordIds: item.type === "keyword" ? [item.ref_id] : [],
-      });
-      message.success("Unpromoted successfully!");
-      fetchUserPromotions(selectedUser.id);
-      setSelectedProfessional(null);
-      setSelectedKeyword(undefined);
-    } catch (err) {
-      message.error("Failed to unpromote");
-    }
-  };
-
-  const handleUnpromoteAll = async () => {
-    if (!selectedUser) return;
-    try {
-      await UnpromoteAllAPI({ user_id: selectedUser.id });
-      message.success("All promotions removed!");
-      setPromotionModalVisible(false);
-      setSelectedProfessional(null);
-      setSelectedKeyword(undefined);
-      getData();
-    } catch (err) {
-      message.error("Failed to unpromote all");
-    }
   };
 
   return (
@@ -736,231 +462,6 @@ const Professionals = () => {
         />
       </Card>
 
-      <Modal
-        title={
-          <span style={{ fontWeight: 600, fontSize: "18px" }}>
-            Payout Summary -{" "}
-            {selectedProfessional?.user_profile?.name || "Professional"}
-          </span>
-        }
-        open={isModalOpen}
-        onCancel={handleCancel}
-        footer={[
-          <Button
-            onClick={handleCancel}
-            style={{ marginRight: "10px", borderRadius: "8px", height: "32px" }}>Cancel</Button>,
-          <Button
-            loading={paying}
-            onClick={handlePayout}
-            style={{ marginRight: "10px", borderRadius: "8px", height: "32px" }}
-            disabled={!payoutSummary?.netPayout || !selectedProfessional}
-            type="primary">Process Payout</Button>,
-        ]}
-      >
-        {payoutSummary ? (
-          <div style={{ display: "grid", rowGap: "12px", padding: "10px 0" }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>
-                <strong>Gross Sales :</strong>
-              </span>
-              <span>${payoutSummary.grossSales}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>
-                <strong>Total Revenue:</strong>
-              </span>
-              <span>${payoutSummary.totalRevenue}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>
-                <strong>Tax Collected:</strong>
-              </span>
-              <span>${payoutSummary.totalTax}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>
-                <strong>Platform Fee:</strong>
-              </span>
-              <span>${payoutSummary.totalPlatformFees}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>
-                <strong>Net Payable Amount:</strong>
-              </span>
-              <span style={{ fontWeight: 600, color: "var(--color-primary)" }}>
-                ${payoutSummary.netPayout}
-              </span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>
-                <strong>Total Orders:</strong>
-              </span>
-              <span>{payoutSummary.totalOrders}</span>
-            </div>
-          </div>
-        ) : (
-          <div style={{ textAlign: "center", padding: "20px", color: "var(--color-text-tertiary)" }}>
-            <p>
-              <strong>No payout available for this professional.</strong>
-            </p>
-          </div>
-        )}
-      </Modal>
-
-      <Modal
-        title={`Manage Promotion - ${selectedUser?.user_profile?.name}`}
-        open={promotionModalVisible}
-        onCancel={() => {
-          setPromotionModalVisible(false);
-          setSelectedProfessional(null);
-          setSelectedKeyword(undefined);
-        }}
-        footer={null}
-        width={650}
-      >
-        <h4>Current Promotions</h4>
-
-        {promotions.length > 0 ? (
-          <List
-            itemLayout="horizontal"
-            dataSource={promotions}
-            renderItem={(item) => (
-              <List.Item
-                actions={[
-                  <Button
-                    size="small"
-                    danger
-                    type="link"
-                    onClick={() => handleUnpromoteSingle(item)}
-                  >
-                    Unpromote
-                  </Button>,
-                ]}
-              >
-                <List.Item.Meta
-                  title={
-                    <span>
-                      {item.title}{" "}
-                      <Tag
-                        color={item.type === "profession" ? "blue" : "purple"}
-                      >
-                        {item.type}
-                      </Tag>
-                    </span>
-                  }
-                  description={
-                    <>
-                      <div>
-                        Purchased:{" "}
-                        {dayjs(item.purchase_date).format("YYYY/MM/DD")}
-                      </div>
-                      <div
-                        style={{ color: item.days_left < 10 ? "var(--color-error)" : "var(--color-success)" }}
-                      >
-                        Expires: {dayjs(item.expiry_date).format("YYYY/MM/DD")}{" "}
-                        ({item.days_left} days left)
-                      </div>
-                    </>
-                  }
-                />
-              </List.Item>
-            )}
-          />
-        ) : (
-          <p style={{ textAlign: "center", color: "var(--color-text-tertiary)", marginBottom: 20 }}>
-            No active promotions
-          </p>
-        )}
-
-        <Divider />
-        <h4>Add New Promotion</h4>
-        <Form layout="vertical">
-          <Form.Item label="Select Profession">
-            <Select
-              value={selectedProfession}
-              placeholder="Select Profession"
-              style={{ width: "100%" }}
-              options={professions.map((p) => ({
-                label: p.title,
-                value: p.id,
-              }))}
-              onChange={(val) => setSelectedProfession(val)}
-            />
-          </Form.Item>
-
-          <Form.Item label="Select Service / Keyword">
-            <Select
-              value={
-                selectedKeyword && selectedKeyword.length > 0
-                  ? selectedKeyword
-                  : undefined
-              }
-              placeholder="Select Service / Keyword"
-              mode="multiple"
-              style={{ width: "100%" }}
-              options={keywords.map((k) => ({ label: k.title, value: k.id }))}
-              onChange={(val) => setSelectedKeyword(val)}
-            />
-          </Form.Item>
-
-          <Button
-            type="primary"
-            block
-            style={{ background: "var(--color-rating)", borderColor: "var(--color-rating)" }}
-            onClick={handlePromote}
-          >
-            Promote
-          </Button>
-        </Form>
-
-        {promotions.length > 0 && (
-          <div style={{ textAlign: "center", marginTop: 16 }}>
-            <Button danger type="link" onClick={handleUnpromoteAll}>
-              Unpromote All
-            </Button>
-          </div>
-        )}
-      </Modal>
-
-      <Modal
-        open={isReferralModalOpen}
-        onCancel={() => setReferralModalOpen(false)}
-        footer={null}
-        title="Referred Users"
-        width={600} // optional: to make table fit better
-      >
-        {referralLoading ? (
-          <p style={{ textAlign: "center" }}>Loading...</p>
-        ) : selectedReferrals.length > 0 ? (
-          <Table<User>
-            dataSource={selectedReferrals}
-            rowKey="id"
-            pagination={false}
-            columns={[
-              {
-                title: "Name",
-                dataIndex: ["user_profile", "name"],
-                render: (text) => text || "-",
-              },
-              {
-                title: "Email",
-                dataIndex: "email",
-                render: (text) => text || "-",
-              },
-              {
-                title: "Joined On",
-                dataIndex: "created_at",
-                render: (date) =>
-                  date ? new Date(date).toLocaleDateString() : "-",
-              },
-            ]}
-          />
-        ) : (
-          <p style={{ textAlign: "center", color: "var(--color-text-tertiary)" }}>
-            No referred users found
-          </p>
-        )}
-      </Modal>
     </div>
   );
 };

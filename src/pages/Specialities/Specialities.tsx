@@ -14,7 +14,6 @@ import {
     DeleteOutlined,
 	EditOutlined,
 	PlusOutlined,
-	RightCircleOutlined,
 	SearchOutlined,
 } from "@ant-design/icons";
 import { apiErrorStatus } from "../../utils/apiError";
@@ -52,7 +51,7 @@ const Specialities = () => {
 			width: "30%",
 		},
 		{
-			title: "Number of Services",
+			title: "Professionals",
 			dataIndex: "number_of_users",
 			width: "30%",
 			render: (number_of_users, record) => {
@@ -320,16 +319,6 @@ const Specialities = () => {
 							dataIndex: "created_at",
 							width: "30%",
 							render: (date) => dayjs(date).format("YYYY-MM-DD HH:mm:ss"),
-						},
-						{
-							title: "",
-							key: "redirect",
-							render: (text, record) => (
-								<RightCircleOutlined
-									style={{ fontSize: "20px", cursor: "pointer" }}
-									onClick={() => navigate(`/view-user/${record.id}`)}
-								/>
-							),
 						},
 					]}
 					dataSource={userListData}

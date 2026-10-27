@@ -16,3 +16,6 @@ export const VIDEO_BASE_URL = required("VITE_VIDEO_BASE_URL");
 
 // Loaded on first use by utils/googleMaps.ts (access card address search and geocoding).
 export const GOOGLE_MAPS_API_KEY = required("VITE_GOOGLE_MAPS_API_KEY");
+
+// The public website, for "view on site" links; optional (production by default).
+export const WEBSITE_URL = (import.meta.env.VITE_WEBSITE_URL || "https://glamlink.net").replace(/\/+$/, "");

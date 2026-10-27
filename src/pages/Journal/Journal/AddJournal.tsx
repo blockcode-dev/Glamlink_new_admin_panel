@@ -8,6 +8,7 @@ import {
   Upload,
   message,
   Select,
+  Switch,
   Row,
   Col,
   Empty,
@@ -50,6 +51,8 @@ import {
 import { GetAllBusinessCards } from "../../../services/Api/BusinessCardApi";
 import styles from "./AddJournal.module.scss";
 import { apiErrorMessage, errorMessage } from "../../../utils/apiError";
+import { showFieldError } from "../../../utils/formErrors";
+import { warnUnmatchedMentions } from "./FeaturedPeople";
 import type { MentionSource } from "../../../components/richText/extensions";
 import type {
   Author,
@@ -338,6 +341,7 @@ const AddBlog = () => {
       formData.append("seo_title", values.seo_title || "");
       formData.append("meta_description", values.meta_description || "");
       formData.append("slug", values.slug || "");
+      formData.append("is_featured", values.is_featured ? "true" : "false");
 
       if (values.shop_ids?.length) {
         formData.append("shop_ids", JSON.stringify(values.shop_ids));
@@ -373,6 +377,7 @@ const AddBlog = () => {
       const createResponse = await CreateJournal(formData);
 
       const journalId = createResponse?.data?.data?.id;
+      warnUnmatchedMentions(createResponse?.data?.data?.unmatched_mentions);
 
       if (!journalId) {
         throw new Error("Journal created but journal ID was not returned");
@@ -430,8 +435,10 @@ const AddBlog = () => {
     } catch (err) {
       console.error(err);
 
+      // A taken slug is refused with details.field "slug": show it on the field.
       message.error(
-        apiErrorMessage(err) ||
+        showFieldError(form, err) ||
+          apiErrorMessage(err) ||
           errorMessage(err) ||
           "Failed to create journal",
       );
@@ -574,6 +581,18 @@ const AddBlog = () => {
                   rows={3}
                   placeholder="A brief summary shown in journal listings"
                 />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24}>
+              <Form.Item
+                name="is_featured"
+                label="Featured (Journal hero)"
+                valuePropName="checked"
+                initialValue={false}
+                extra="The Journal page's hero shows the newest featured article."
+              >
+                <Switch />
               </Form.Item>
             </Col>
           </Row>

@@ -1,7 +1,7 @@
 /** @format */
 
 import React, { useEffect, useState } from "react";
-import { Table, Space, message, Modal, Form, Input, Button, type TableColumnsType } from "antd";
+import { Table, Space, message, Modal, Form, Input, InputNumber, Button, type TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import {
     DeleteJournalCategory,
@@ -11,7 +11,7 @@ import {
 } from "../../../services/Api/JournalApi";
 
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { apiErrorMessage } from "../../../utils/apiError";
+import { apiErrorMessage, isFormValidationError } from "../../../utils/apiError";
 import { type WithIndex } from "../../../utils/table";
 import type { JournalCategory } from "../../../types/journal";
 
@@ -36,11 +36,34 @@ const JournalCategory = () => {
             dataIndex: "title",
             sorter: (a, b) => a.title.localeCompare(b.title),
             width: "40%",
+            render: (title, record) => (
+                <div>
+                    <div>{title}</div>
+                    {record.description && (
+                        <div style={{ fontSize: 12, color: "var(--color-text-tertiary)" }}>{record.description}</div>
+                    )}
+                </div>
+            ),
+        },
+        {
+            // The list comes in the Journal sidebar's order.
+            title: "Sidebar Order",
+            dataIndex: "sort_order",
+            width: 130,
+            sorter: (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0),
+            render: (order) => order ?? 0,
+        },
+        {
+            title: "Published Articles",
+            dataIndex: "article_count",
+            width: 160,
+            sorter: (a, b) => (a.article_count ?? 0) - (b.article_count ?? 0),
+            render: (count) => count ?? 0,
         },
         {
             title: "Created On",
             dataIndex: "created_at",
-            width: "30%",
+            width: 180,
             render: (date) => dayjs(date).format("YYYY-MM-DD HH:mm:ss"),
         },
         {
@@ -181,7 +204,11 @@ const JournalCategory = () => {
     // ✅ Open Edit Modal
     const openEditModal = (record: JournalCategory) => {
         setEditingId(record.id);
-        form.setFieldsValue({ title: record.title });
+        form.setFieldsValue({
+            title: record.title,
+            description: record.description ?? "",
+            sort_order: record.sort_order ?? 0,
+        });
         setModalVisible(true);
     };
 
@@ -191,6 +218,8 @@ const JournalCategory = () => {
             const values = await form.validateFields();
             const formData = new FormData();
             formData.append("title", values.title);
+            formData.append("description", values.description ?? "");
+            formData.append("sort_order", String(values.sort_order ?? 0));
 
             if (editingId) {
                 await UpdateJournalCategory(editingId, formData);
@@ -203,8 +232,10 @@ const JournalCategory = () => {
             setModalVisible(false);
             form.resetFields();
             getData();
-        } catch {
-            message.error("Something went wrong. Please try again.");
+        } catch (error) {
+            // The form already shows what's missing.
+            if (isFormValidationError(error)) return;
+            message.error(apiErrorMessage(error) || "Something went wrong. Please try again.");
         }
     };
 
@@ -287,6 +318,18 @@ const JournalCategory = () => {
                         ]}
                     >
                         <Input placeholder="Enter category name" />
+                    </Form.Item>
+                    <Form.Item label="Description" name="description">
+                        <Input.TextArea rows={3} placeholder="A line about the category (optional)" />
+                    </Form.Item>
+                    <Form.Item
+                        label="Sidebar order"
+                        name="sort_order"
+                        initialValue={0}
+                        extra="The Journal page lists categories by this number, lowest first, then by name."
+                        rules={[{ type: "integer", message: "A whole number" }]}
+                    >
+                        <InputNumber precision={0} style={{ width: 160 }} />
                     </Form.Item>
                 </Form>
             </Modal>

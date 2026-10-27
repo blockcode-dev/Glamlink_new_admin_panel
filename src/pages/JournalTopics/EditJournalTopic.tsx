@@ -15,6 +15,7 @@ import RichTextEditor from "../../components/RichTextEditor";
 import { GetJournalTopicById, UpdateJournalTopic, UploadJournalMedia } from "../../services/Api/JournalApi";
 
 import styles from "./JournalTopics.module.scss";
+import TopicTileFields, { appendTileFields } from "./TopicTileFields";
 import { apiErrorMessage, isFormValidationError } from "../../utils/apiError";
 import { useIdParam } from "../../utils/routing";
 
@@ -47,6 +48,9 @@ const EditJournalTopic = () => {
 
       form.setFieldsValue({
         name: topic.name || "",
+        is_featured: Boolean(topic.is_featured),
+        featured_order: topic.featured_order ?? null,
+        tile_image: topic.tile_image || "",
       });
 
       setDescription(topic.description || "");
@@ -83,6 +87,7 @@ const EditJournalTopic = () => {
 
       formData.append("name", values.name);
       formData.append("description", description || "");
+      appendTileFields(formData, values);
 
       if (fileList.length > 0) {
         formData.append("images", fileList[0].originFileObj!);
@@ -263,6 +268,8 @@ const EditJournalTopic = () => {
               </Form.Item>
             </div>
           </div>
+
+          <TopicTileFields />
 
           {/* ACTIONS */}
           <div className={styles.sectionCard}>

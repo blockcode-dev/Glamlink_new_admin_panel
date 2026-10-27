@@ -28,14 +28,14 @@ describe("App routing", () => {
 
   it("shows the layout and the requested page when signed in", async () => {
     localStorage.setItem("adminToken", "test-token");
-    const { container } = renderAt("/banner");
-    expect(await screen.findByText("BANNER CONTENT")).toBeInTheDocument();
+    const { container } = renderAt("/newsletter");
+    expect(await screen.findByText(/People who signed up through the website's newsletter forms/)).toBeInTheDocument();
     expect(container.querySelector(".ant-layout-sider")).toBeInTheDocument();
     expect(screen.getByText("Access Management")).toBeInTheDocument();
   });
 
   it("shows the login form inside the layout route when signed out", () => {
-    renderAt("/users");
+    renderAt("/professionals");
     expect(screen.getByRole("button", { name: "SIGN IN" })).toBeInTheDocument();
   });
 
@@ -51,21 +51,21 @@ describe("App routing", () => {
 
   it("swaps the layout for the login form when the session ends", async () => {
     localStorage.setItem("adminToken", "test-token");
-    renderAt("/banner");
-    expect(await screen.findByText("BANNER CONTENT")).toBeInTheDocument();
+    renderAt("/newsletter");
+    expect(await screen.findByText(/People who signed up through the website's newsletter forms/)).toBeInTheDocument();
 
     act(() => clearSession());
     expect(screen.getByRole("button", { name: "SIGN IN" })).toBeInTheDocument();
-    expect(screen.queryByText("BANNER CONTENT")).not.toBeInTheDocument();
+    expect(screen.queryByText(/People who signed up through the website's newsletter forms/)).not.toBeInTheDocument();
   });
 
   // The token itself is attached by the shared client (utils/session.test.ts).
   it("loads the profile and pending counts only once signed in", async () => {
     const get = vi.mocked(axios.get);
     const requested = (path: string) => get.mock.calls.some(([url]) => url.endsWith(path));
-    const paths = ["admin/profile", "form/getPendingFormCount", "product/getPendingProductCount"];
+    const paths = ["admin/profile", "form/getPendingFormCount", "directory/applications"];
 
-    renderAt("/users");
+    renderAt("/professionals");
     expect(screen.getByRole("button", { name: "SIGN IN" })).toBeInTheDocument();
     expect(paths.filter(requested)).toEqual([]);
 
@@ -78,5 +78,30 @@ describe("App routing", () => {
     localStorage.setItem("adminToken", "test-token");
     renderAt("/blogs");
     expect(screen.queryByText(/blog/i)).not.toBeInTheDocument();
+  });
+
+  // The website comes first: the mobile app's screens are gone until the app is rebuilt.
+  it.each([
+    ["/users", /USER MANAGEMENT/i],
+    ["/posts-list", /posts/i],
+    ["/clips-list", /clips/i],
+    ["/appointments", /appointment/i],
+    ["/product-list", /product/i],
+    ["/orders", /orders/i],
+    ["/reward-rules", /reward/i],
+    ["/banner", /banner/i],
+  ])("has no app screen at %s", (path, heading) => {
+    localStorage.setItem("adminToken", "test-token");
+    renderAt(path);
+    expect(screen.queryByRole("heading", { name: heading })).not.toBeInTheDocument();
+  });
+
+  it("shows no app screens in the sidebar", async () => {
+    localStorage.setItem("adminToken", "test-token");
+    renderAt("/");
+    await screen.findByText("Access Management");
+    for (const label of ["Users", "Posts", "Clips", "Appointments", "Referrals", "Glam Rewards Rules", "Ecommerce", "Banner"]) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument();
+    }
   });
 });

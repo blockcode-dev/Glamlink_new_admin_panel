@@ -9,6 +9,7 @@ import { adFromResponse, GetAdById } from "../../services/Api/AdApi";
 import styles from "./ViewAd.module.scss";
 import { useIdParam } from "../../utils/routing";
 import type { Ad } from "../../types/ads";
+import AdPerformance from "./AdPerformance";
 
 const behaviourLabel: Record<string, string> = {
   static: "Static — scrolls normally with the page",
@@ -178,6 +179,8 @@ const ViewAd = () => {
           </div>
         </div>
       </div>
+
+      <AdPerformance adId={ad.id} />
     </div>
   );
 };

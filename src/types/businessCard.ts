@@ -53,6 +53,8 @@ export interface CardMedia {
 /** Fields that some cards store as JSON strings and others as arrays/objects. */
 type Stored<T> = T | string | null;
 
+export type CardStatus = "draft" | "pending" | "accepted" | "rejected";
+
 export interface BusinessCard {
   id: number;
   name: string;
@@ -66,8 +68,8 @@ export interface BusinessCard {
   website?: string | null;
   booking_link?: string | null;
   preferred_booking_method?: string[] | null;
-  /** "pending", "accepted" or "rejected". */
-  status?: string;
+  /** A guest's card is a draft until a plan is chosen or paid; drafts are left out of the card list. */
+  status?: CardStatus;
   created_by_admin?: boolean;
   /** Only active cards can be @mentioned in journal content. */
   is_active?: boolean;
@@ -177,6 +179,25 @@ export interface AccessOrder {
   shipping_postal_code?: string | null;
   shipping_country?: string | null;
   business_card?: { business_card_link?: string | null } | null;
+  /** The buyer's account. */
+  user_id?: number | null;
+  /** The carrier and service chosen at checkout, then those of the label bought. */
+  carrier?: string | null;
+  service?: string | null;
+  /** The Shippo rate chosen at checkout; none when shipping was flat or free. */
+  shippo_rate_id?: string | null;
+  /** Set while the order has a label. */
+  shippo_transaction_id?: string | null;
+  /** The label's PDF, to print. */
+  label_url?: string | null;
+  label_created_at?: string | null;
+  /** Shippo's tracking: PRE_TRANSIT, TRANSIT, DELIVERED, RETURNED, FAILURE or UNKNOWN. */
+  tracking_status?: string | null;
+  /** Shippo's words for the latest scan. */
+  tracking_status_details?: string | null;
+  /** Set by Shippo's tracking. */
+  shipped_at?: string | null;
+  delivered_at?: string | null;
 }
 
 export interface FulfillmentUpdate {

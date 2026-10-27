@@ -154,6 +154,18 @@ const JournalTopics = () => {
     },
 
     {
+      title: "Home Page",
+      dataIndex: "is_featured",
+      width: 120,
+      align: "center",
+      sorter: (a, b) =>
+        Number(Boolean(b.is_featured)) - Number(Boolean(a.is_featured)) ||
+        (a.featured_order ?? 0) - (b.featured_order ?? 0),
+      render: (featured, record) =>
+        featured ? <Tag color="geekblue">Tile {record.featured_order ?? 0}</Tag> : "-",
+    },
+
+    {
       title: "Status",
       dataIndex: "is_active",
       width: 110,

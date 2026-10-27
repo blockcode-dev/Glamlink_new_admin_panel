@@ -1,7 +1,7 @@
 import axios from "axios";
 import { BASE_URL } from "../Host";
 import type { ApiResponse, Paged } from "../../types/api";
-import type { Ad } from "../../types/ads";
+import type { Ad, AdDaily, AdTotals } from "../../types/ads";
 
 type Id = number | string;
 
@@ -32,4 +32,14 @@ export const DeleteAd = async (ad_id: Id | Id[]) => {
   return await axios.post<ApiResponse<unknown>>(`${BASE_URL}ads/delete`, {
     ad_id: ids,
   });
+};
+
+/** Every ad's views, clicks and click rate between `from` and `to` (YYYY-MM-DD, both optional). */
+export const GetAdTotals = async (range: { from?: string; to?: string } = {}) => {
+  return axios.get<ApiResponse<AdTotals[]>>(`${BASE_URL}ads/admin/stats`, { params: range });
+};
+
+/** One ad's views and clicks by day. 404 NOT_FOUND for an ad that doesn't exist. */
+export const GetAdDaily = async (id: Id, range: { from?: string; to?: string } = {}) => {
+  return axios.get<ApiResponse<AdDaily>>(`${BASE_URL}ads/${id}/stats`, { params: range });
 };

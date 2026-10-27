@@ -21,6 +21,7 @@ import {
   UpdateEducation,
 } from "../../../../services/Api/JournalApi";
 import { useIdParam } from "../../../../utils/routing";
+import { apiErrorStatus } from "../../../../utils/apiError";
 
 const EditEducation = () => {
   const id = useIdParam();
@@ -51,7 +52,13 @@ const EditEducation = () => {
           },
         ]);
       }
-    } catch {
+    } catch (error) {
+      // The API answers 404 for an item that doesn't exist (any more).
+      if (apiErrorStatus(error) === 404) {
+        message.error("This education item doesn't exist; it may have been deleted");
+        navigate("/education");
+        return;
+      }
       message.error("Failed to load education");
     }
   };

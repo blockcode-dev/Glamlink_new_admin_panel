@@ -1,0 +1,220 @@
+// Access Pricing: plan cards like the website's, price cards, and the forms' rows.
+
+.intro {
+  margin: 0 0 14px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  max-width: 820px;
+}
+
+.muted {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.subText {
+  display: block;
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.result {
+  margin-bottom: 16px;
+}
+
+.failures {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.sectionTitle {
+  margin: 24px 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.section + .section {
+  margin-top: 28px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-border);
+}
+
+.section:first-child .sectionTitle {
+  margin-top: 4px;
+}
+
+.listLabel {
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.saveButton {
+  margin-top: 14px;
+}
+
+// A Form.Item inside a table cell.
+.cellItem {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+// ---- plan cards ----
+
+.planCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.planHidden {
+  border-style: dashed;
+  background: var(--color-surface-muted);
+
+  .planName,
+  .planPrice,
+  .features {
+    color: var(--color-text-tertiary);
+  }
+}
+
+.planTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.planName {
+  margin: 12px 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.planPrice {
+  font-size: 18px;
+  color: var(--color-text);
+}
+
+.planTagline {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.features {
+  flex: 1;
+  margin: 14px 0 0;
+  padding: 14px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+}
+
+.featureIcon {
+  margin-top: 3px;
+  color: var(--color-primary);
+}
+
+.featureSoon {
+  color: var(--color-text-tertiary);
+
+  .featureIcon {
+    color: var(--color-text-disabled);
+  }
+}
+
+.featureKeychain {
+  font-weight: 600;
+}
+
+.soonTag {
+  margin-inline-start: 4px;
+  font-size: 11px;
+}
+
+.planFoot {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+// ---- the plan form's feature lines ----
+
+.featureRow {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.featureText {
+  flex: 1 1 260px;
+}
+
+.featureButtons {
+  padding-top: 1px;
+}
+
+// ---- price cards ----
+
+.priceCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.priceName {
+  font-weight: 600;
+}
+
+.priceAmount {
+  margin: 2px 0;
+  font-size: 22px;
+}

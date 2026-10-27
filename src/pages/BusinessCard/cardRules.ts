@@ -1,5 +1,6 @@
 import type { FormInstance, FormRule } from "antd";
 import { apiErrorBody } from "../../utils/apiError";
+import { showFieldError } from "../../utils/formErrors";
 import { htmlToText } from "../../utils/sanitizeHtml";
 
 // The API checks a card with the website form's rules (backend docs/access.md, section 1).
@@ -73,14 +74,7 @@ const FORM_FIELD: Record<string, string> = { instagram: "instagram_links" };
 export const showCardError = (form: FormInstance, error: unknown): string | null => {
   const body = apiErrorBody(error);
   if (body?.code !== "INVALID_CARD") return null;
-  const text = body.message || "Please check the card's details.";
-  const field = body.details?.field;
-  if (field) {
-    const name = FORM_FIELD[field] ?? field;
-    form.setFields([{ name, errors: [text] }]);
-    form.scrollToField(name, { block: "center" });
-  }
-  return text;
+  return showFieldError(form, error, FORM_FIELD) ?? (body.message || "Please check the card's details.");
 };
 
 /** The id of the card this email already has, when creating answers 409 CARD_EXISTS. */

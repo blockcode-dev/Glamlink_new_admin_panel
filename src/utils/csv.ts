@@ -22,7 +22,11 @@ export const toCsv = (header: string[], rows: Cell[][]): string =>
 /** Saves `toCsv(header, rows)` as `filename`. */
 export const downloadCsv = (filename: string, header: string[], rows: Cell[][]) => {
   // The BOM makes Excel read the file as UTF-8.
-  const blob = new Blob(["﻿", toCsv(header, rows)], { type: "text/csv;charset=utf-8" });
+  saveFile(new Blob(["﻿", toCsv(header, rows)], { type: "text/csv;charset=utf-8" }), filename);
+};
+
+/** Hands a file (e.g. a CSV the API made) to the browser to save as `filename`. */
+export const saveFile = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;

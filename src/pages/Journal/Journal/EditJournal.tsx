@@ -8,6 +8,7 @@ import {
   Upload,
   message,
   Select,
+  Switch,
   Row,
   Col,
   Empty,
@@ -32,6 +33,7 @@ import {
   SearchOutlined,
   InfoCircleOutlined,
   TagsOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import RichTextEditor from "../../../components/RichTextEditor";
 import dayjs from "dayjs";
@@ -71,6 +73,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import styles from "./AddJournal.module.scss";
 import { useIdParam } from "../../../utils/routing";
+import { apiErrorMessage } from "../../../utils/apiError";
+import { showFieldError } from "../../../utils/formErrors";
+import FeaturedPeople, { warnUnmatchedMentions } from "./FeaturedPeople";
 import type { MentionSource } from "../../../components/richText/extensions";
 import type {
   Author,
@@ -428,6 +433,7 @@ const EditBlog = () => {
         seo_title: blog.seo_title || "",
         meta_description: blog.meta_description || "",
         slug: blog.slug || "",
+        is_featured: Boolean(blog.is_featured),
         shop_ids: (blog.shops || []).map((shop) => shop.id),
         status: blog.status || "draft",
         publish_date: blog.publish_date
@@ -553,6 +559,7 @@ const EditBlog = () => {
       formData.append("seo_title", values.seo_title || "");
       formData.append("meta_description", values.meta_description || "");
       formData.append("slug", values.slug || "");
+      formData.append("is_featured", values.is_featured ? "true" : "false");
 
       if (values.publish_date) {
         formData.append(
@@ -603,7 +610,8 @@ const EditBlog = () => {
           }
         });
 
-      await UpdateJournal(id, formData);
+      const updated = await UpdateJournal(id, formData);
+      warnUnmatchedMentions(updated.data?.data?.unmatched_mentions);
 
       // Sync paragraph-level topic tags picked up from the editor content.
       // This is a SEPARATE, non-atomic write from the content save above —
@@ -655,7 +663,8 @@ const EditBlog = () => {
       }
     } catch (err) {
       console.error(err);
-      message.error("Failed to update journal");
+      // A taken slug is refused with details.field "slug": show it on the field.
+      message.error(showFieldError(form, err) || apiErrorMessage(err) || "Failed to update journal");
     } finally {
       setSubmitting(false);
     }
@@ -839,6 +848,18 @@ const EditBlog = () => {
                   rows={3}
                   placeholder="A brief summary shown in journal listings"
                 />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24}>
+              <Form.Item
+                name="is_featured"
+                label="Featured (Journal hero)"
+                valuePropName="checked"
+                initialValue={false}
+                extra="The Journal page's hero shows the newest featured article."
+              >
+                <Switch />
               </Form.Item>
             </Col>
           </Row>
@@ -1250,6 +1271,15 @@ const EditBlog = () => {
               </SortableContext>
             </DndContext>
           )}
+        </SectionCard>
+
+        {/* FEATURED PEOPLE */}
+        <SectionCard
+          icon={<TeamOutlined />}
+          title="Featured people"
+          hint="Who the article's page features: its @mentions and people added here. @mentions in the content update when the article is saved."
+        >
+          <FeaturedPeople journalId={id} />
         </SectionCard>
 
         {/* TOPICS */}

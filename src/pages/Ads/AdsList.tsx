@@ -9,10 +9,11 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
-import { GetAllAds, DeleteAd } from "../../services/Api/AdApi";
+import { GetAllAds, DeleteAd, GetAdTotals } from "../../services/Api/AdApi";
 import dayjs from "dayjs";
 import styles from "./AdsList.module.scss";
-import type { Ad } from "../../types/ads";
+import DateRangeFilter, { lastDays, rangeParams, type DateRange } from "../../components/DateRangeFilter";
+import type { Ad, AdTotals } from "../../types/ads";
 
 const { Search } = Input;
 
@@ -26,6 +27,9 @@ const Ads = () => {
   const [data, setData] = useState<Ad[]>([]);
   const [backupData, setBackupData] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(false);
+  // Views and clicks per ad for the chosen days; null range = all time.
+  const [range, setRange] = useState<DateRange | null>(() => lastDays(30));
+  const [totals, setTotals] = useState<Map<number, AdTotals>>(new Map());
   const navigate = useNavigate();
 
   const getData = async () => {
@@ -48,6 +52,21 @@ const Ads = () => {
   useEffect(() => {
     getData();
   }, []);
+
+  useEffect(() => {
+    let current = true;
+    GetAdTotals(rangeParams(range))
+      .then((res) => {
+        if (current) setTotals(new Map(res.data.data.map((row) => [row.ad_id, row])));
+      })
+      .catch((err) => {
+        console.error("Error loading ad counts:", err);
+        if (current) message.error("Couldn't load the ads' views and clicks");
+      });
+    return () => {
+      current = false;
+    };
+  }, [range]);
 
   const onSearch = (value: string) => {
     const filtered = backupData.filter((item) =>
@@ -144,6 +163,27 @@ const Ads = () => {
     },
 
     {
+      title: "Views / Clicks",
+      key: "performance",
+      width: 150,
+      sorter: (a, b) => (totals.get(a.id)?.impressions ?? 0) - (totals.get(b.id)?.impressions ?? 0),
+      render: (_, record) => {
+        const counts = totals.get(record.id);
+        if (!counts) return <span className={styles.sizeText}>No views</span>;
+        return (
+          <div>
+            <div>
+              {counts.impressions.toLocaleString()} / {counts.clicks.toLocaleString()}
+            </div>
+            <div className={styles.sizeText}>
+              {counts.click_rate === null ? "No views" : `${counts.click_rate}% click rate`}
+            </div>
+          </div>
+        );
+      },
+    },
+
+    {
       title: "Status / Schedule",
       key: "status-schedule",
       width: 160,
@@ -226,6 +266,7 @@ const Ads = () => {
         </div>
 
         <div className={styles.headerActions}>
+          <DateRangeFilter value={range} onChange={setRange} allowAllTime />
           <Search
             placeholder="Search by slot id..."
             allowClear
@@ -249,7 +290,7 @@ const Ads = () => {
           rowKey="id"
           loading={loading}
           size="middle"
-          scroll={{ x: 826 }}
+          scroll={{ x: 976 }}
           pagination={{
             pageSize: 50,
             showSizeChanger: false,

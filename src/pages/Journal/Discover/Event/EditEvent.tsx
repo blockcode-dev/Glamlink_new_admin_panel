@@ -20,6 +20,7 @@ import dayjs from "dayjs";
 import ImgCrop from "antd-img-crop";
 import { GetEventById, UpdateEvent } from "../../../../services/Api/JournalApi";
 import { useIdParam } from "../../../../utils/routing";
+import { apiErrorStatus } from "../../../../utils/apiError";
 
 const EditEvent = () => {
   const id = useIdParam();
@@ -51,8 +52,14 @@ const EditEvent = () => {
           },
         ]);
       }
-    } catch {
-      message.error("Failed to load education");
+    } catch (error) {
+      // The API answers 404 for an item that doesn't exist (any more).
+      if (apiErrorStatus(error) === 404) {
+        message.error("This event doesn't exist; it may have been deleted");
+        navigate("/events");
+        return;
+      }
+      message.error("Failed to load event");
     }
   };
 

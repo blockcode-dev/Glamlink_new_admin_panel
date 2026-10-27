@@ -1,20 +1,5 @@
 import type { UserRef } from "./user";
 
-export interface Faq {
-  id: number;
-  question: string;
-  answer: string;
-}
-
-export interface Banner {
-  id: number;
-  file_name: string;
-  /** "Image" or "Video". */
-  file_type: string;
-  banner_user: UserRef;
-  created_at: string;
-}
-
 /** A professional's application form, one row per applicant. */
 export interface FormSubmission {
   id: number;
@@ -45,4 +30,47 @@ export interface FormAnswer {
     /** "FILE_UPLOAD" answers hold a file URL. */
     type: string;
   };
+}
+
+/** Someone on the newsletter list (one row per email), from the website's sign-up forms. */
+export interface NewsletterSubscriber {
+  id: number;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  /** Which form they used: "popup", "footer", "podcast", … (lower-case letters, digits and dashes). */
+  source: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A professional's "Apply for Feature" request from the website's media kit. Every field is required on the form. */
+export interface FeatureRequest {
+  id: number;
+  name: string;
+  specialty: string;
+  email: string;
+  phone: string;
+  city: string;
+  /** The feature they want: "Cover Feature", "Pro Spotlight", … */
+  interest: string;
+  created_at: string;
+}
+
+/** One term people typed into the website's search, lower-cased. Nothing about who searched is kept. */
+export interface SearchTerm {
+  term: string;
+  searches: number;
+  /** How many results the latest search for it found. */
+  last_results: number;
+  last_searched_at: string;
+}
+
+/** The home page's hand-set parts. Images are links to uploads on the API's host. */
+export interface HomeSettings {
+  hero_image: string | null;
+  /** The chips under the search box: at most 10, each at most 60 characters. */
+  popular_searches: string[];
+  find_professional_image: string | null;
+  updated_at: string | null;
 }

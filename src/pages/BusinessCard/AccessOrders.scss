@@ -238,6 +238,46 @@ $border: var(--color-border);
     padding: 10px 26px !important;
     font-weight: 600 !important;
   }
+
+  // ---- shipping label ----
+  .ao-label-grid {
+    margin-bottom: 14px;
+  }
+
+  .ao-label-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .ao-fulfillment-note {
+    margin: -6px 0 12px;
+  }
+}
+
+// Small print in the order details, the label section and the rate picker.
+.ao-label-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: $text-muted;
+}
+
+// ---- "Buy label" rate picker ----
+.ao-rate-modal {
+  .ao-label-alert {
+    margin-bottom: 14px;
+  }
+
+  .ao-rates {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .ao-rate-title {
+    font-weight: 600;
+    color: $text-dark;
+  }
 }
 
 // ---- Access Card modal specific ----

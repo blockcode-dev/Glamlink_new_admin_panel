@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Table, message, Space, Button, type TableColumnsType } from "antd";
 import { useNavigate } from "react-router";
 import { GetAdmins, DeleteAdmin } from "../../services/Api/Api";
-import Alert from "../Customer/Alert";
+import DeleteConfirmButton from "../../components/DeleteConfirmButton";
 import { PlusOutlined } from "@ant-design/icons";
 import { apiErrorStatus } from "../../utils/apiError";
 import { singleSorter, type TableChangeHandler, type TableParams } from "../../utils/table";
@@ -97,7 +97,7 @@ const AdminUser = () => {
 			width: 350,
 			render: (text, record) => (
 				<Space>
-					<Alert title="Admin" handleDelete={() => removeUser(record.id)} />
+					<DeleteConfirmButton title="Admin" handleDelete={() => removeUser(record.id)} />
 				</Space>
 			),
 		},

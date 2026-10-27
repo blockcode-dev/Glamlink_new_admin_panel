@@ -146,7 +146,16 @@ const Blogs = () => {
       title: "Title",
       dataIndex: "title",
       width: 200,
-      render: (text) => <div className={styles.titleCell}>{text}</div>,
+      render: (text, record) => (
+        <div className={styles.titleCell}>
+          {text}
+          {record.is_featured && (
+            <Tag color="gold" style={{ borderRadius: 20, marginLeft: 6 }}>
+              Featured
+            </Tag>
+          )}
+        </div>
+      ),
     },
 
     {

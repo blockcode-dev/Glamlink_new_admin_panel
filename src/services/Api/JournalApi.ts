@@ -4,6 +4,7 @@ import axios from "axios";
 import { BASE_URL } from "../Host";
 import type { ApiResponse, FlexibleList, Paged } from "../../types/api";
 import type {
+	ArticleMentions,
 	Author,
 	DiscoverEvent,
 	Education,
@@ -93,6 +94,28 @@ export const DeleteJournal = async (journal_id: Id | Id[]) => {
 
 export const CreateJournal = async (formData: FormData) => {
 	return await axios.post<ApiResponse<Journal>>(BASE_URL + "journal", formData);
+};
+
+// Who an article features: its @handles (matched to pages and cards when read) and accounts added here.
+// Each call answers the article's mentions as they now stand.
+
+export const GetArticleMentions = async (journalId: Id) => {
+	return axios.get<ApiResponse<ArticleMentions>>(`${BASE_URL}journal/${journalId}/mentions`);
+};
+
+/** Features a professional or brand account the article never @mentions. */
+export const AddArticleMention = async (journalId: Id, userId: number) => {
+	return axios.post<ApiResponse<ArticleMentions>>(`${BASE_URL}journal/${journalId}/mentions`, { user_id: userId });
+};
+
+/** Sets an @handle aside (it stays in the text and stays aside when the article is saved again), or back. */
+export const SetArticleMentionExcluded = async (journalId: Id, mentionId: number, excluded: boolean) => {
+	return axios.put<ApiResponse<ArticleMentions>>(`${BASE_URL}journal/${journalId}/mentions/${mentionId}`, { excluded });
+};
+
+/** Removes an added account (an @handle is set aside instead). */
+export const RemoveArticleMention = async (journalId: Id, mentionId: number) => {
+	return axios.delete<ApiResponse<ArticleMentions>>(`${BASE_URL}journal/${journalId}/mentions/${mentionId}`);
 };
 
 export const UpdateJournalSortOrder = async (data: SortOrder<"journals">) => {

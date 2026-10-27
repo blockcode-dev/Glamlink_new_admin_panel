@@ -19,3 +19,21 @@ export interface Ad {
   start_date?: string | null;
   end_date?: string | null;
 }
+
+/** One ad's views and clicks over a date range (GET /ads/admin/stats lists ads with any count). */
+export interface AdTotals {
+  ad_id: number;
+  /** Views: counted once an ad is half in view on the website. */
+  impressions: number;
+  clicks: number;
+  /** Clicks per view, in percent; null without views. */
+  click_rate: number | null;
+}
+
+/** One ad's views and clicks per day (only days with any) over a date range. */
+export interface AdDaily {
+  ad_id: number;
+  impressions: number;
+  clicks: number;
+  days: { day: string; impressions: number; clicks: number }[];
+}

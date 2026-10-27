@@ -1,0 +1,74 @@
+.section {
+  margin: 4px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.grid {
+  margin-bottom: 20px;
+}
+
+.tile {
+  height: 100%;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--color-primary-border);
+    box-shadow: 0 2px 8px var(--color-shadow);
+    outline: none;
+  }
+}
+
+.tileHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.tileIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.value {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-text);
+}
+
+.attention {
+  color: var(--color-warning);
+}
+
+.hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.listTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+
+  h4 {
+    margin: 0;
+  }
+}

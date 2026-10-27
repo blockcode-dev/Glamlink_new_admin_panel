@@ -10,9 +10,12 @@ export interface ApiErrorBody {
   error?: string;
   /** Machine-readable reason on newer endpoints, e.g. "INVALID_CARD", "CARD_EXISTS". */
   code?: string;
-  /** Extra facts for some codes: the field a check failed on, the conflicting record. */
-  details?: { field?: string; card_id?: number | string };
+  /** Extra facts for some codes: the field a check failed on, the conflicting record or account. */
+  details?: { field?: string; card_id?: number | string; user_id?: number | string };
 }
+
+/** The `code` of a failed API call, e.g. "NOT_FOUND", "ACCOUNT_EXISTS". */
+export const apiErrorCode = (error: unknown): string | undefined => apiErrorBody(error)?.code;
 
 /** HTTP status of a failed API call. */
 export const apiErrorStatus = (error: unknown): number | undefined =>

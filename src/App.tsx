@@ -7,52 +7,17 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Login from "./pages/Login/Login";
 import ChangePassword from "./pages/Sidebar/Settings/ChangePassword/ChangePassword";
 import MainLayout from "./components/MainLayout";
-import User from "./pages/Customer/User";
-import ViewCustomer from "./pages/Customer/ViewCustomer";
 import AdminUser from "./pages/AdminManagement/AdminUser";
 import ViewAdmin from "./pages/AdminManagement/ViewAdmin";
 import AddAdmin from "./pages/AdminManagement/AddAdmin";
 import LoginLogs from "./pages/Sidebar/LoginActivity/LoginLogs";
 import Error401 from "./pages/ErrorPages/Error401";
-import ServiceCategory from "./pages/ServiceCategory/ServiceCategory";
-import AddServiceCategory from "./pages/ServiceCategory/AddServiceCategroy";
-import EditServiceCategory from "./pages/ServiceCategory/EditServiceCategory";
 import Professionals from "./pages/Professionals/Professionals";
 import ViewProfessionals from "./pages/Professionals/ViewProfessionals";
 import Specialities from "./pages/Specialities/Specialities";
 import AddSpecialities from "./pages/Specialities/AddSpecialities";
 import EditSpecialities from "./pages/Specialities/EditSpecialities";
-import Appointments from "./pages/Appointments/Appointments";
-import Posts from "./pages/Post/Post";
-import Clips from "./pages/Clips/Clips";
-import UserPost from "./pages/Customer/Data/UserPost";
-import UserFollower from "./pages/Customer/Data/UserFollower";
-import UserFollowing from "./pages/Customer/Data/UserFollowing";
-import UserClips from "./pages/Customer/Data/UserClips";
-import PostLiked from "./pages/Customer/Data/PostLiked";
-import PostComment from "./pages/Customer/Data/PostComment";
-import ClipsLiked from "./pages/Customer/Data/ClipsLiked";
-import ClipsCommented from "./pages/Customer/Data/ClipsCommented";
-import ReviewsGiven from "./pages/Customer/Data/ReviewsGiven";
-import ReviewsTaken from "./pages/Customer/Data/ReviewsTaken";
-import UserBookings from "./pages/Customer/Data/UserBookings";
-import ProfessionalBooking from "./pages/Customer/Data/ProfessionalBooking";
-import UserService from "./pages/Customer/Data/UserService";
-import Availability from "./pages/Customer/Data/Availability";
-import ProductCategory from "./pages/Ecommerce/ProductCategory/ProductCategory";
-import EditProductCategory from "./pages/Ecommerce/ProductCategory/EditProductCategory";
-import AddProductCategory from "./pages/Ecommerce/ProductCategory/AddProductCategory";
-import Product from "./pages/Ecommerce/Product/Product";
-import ViewProduct from "./pages/Ecommerce/Product/ViewProduct";
-import Ratings from "./pages/Ecommerce/Product/Rating";
-import Orders from "./pages/Ecommerce/Order/Orders";
 import ProfessionalForm from "./pages/ProfessionalForm/ProfessionalForm";
-import Banner from "./pages/Banner/Banner";
-import Faq from "./pages/Content/FAQ/Faq";
-import CreateFaq from "./pages/Content/FAQ/CreateFaq";
-import EditFaq from "./pages/Content/FAQ/EditFaq";
-import Referral from "./pages/Referral/Referral";
-import RewardRules from "./pages/RewardRules/RewardRules";
 import BusinessCard from "./pages/BusinessCard/BusinessCard";
 import JournalCategory from "./pages/Journal/JournalCategory/JournalCategory";
 import Authors from "./pages/Journal/Authors/Authors";
@@ -86,6 +51,25 @@ import JournalTopicDetails from "./pages/JournalTopics/JournalTopicDetails";
 import AccessCardAnalytics from "./pages/AccessCardAnalytics/AccessCardAnalytics";
 import PartnerInquiries from "./pages/PartnerInquiries/PartnerInquiries";
 import ViewPartnerInquiry from "./pages/PartnerInquiries/ViewPartnerInquiry";
+import NewsletterSubscribers from "./pages/Newsletter/NewsletterSubscribers";
+import FeatureRequests from "./pages/FeatureRequests/FeatureRequests";
+import SearchTerms from "./pages/SearchTerms/SearchTerms";
+import HomeSettings from "./pages/HomeSettings/HomeSettings";
+import ProfilePages from "./pages/ProfilePages/ProfilePages";
+import NewBrandPage from "./pages/ProfilePages/NewBrandPage";
+import EditProfilePage from "./pages/ProfilePages/EditProfilePage";
+import ProfilePageAnalytics from "./pages/ProfilePages/ProfilePageAnalytics";
+import MagazineIssues from "./pages/Magazine/MagazineIssues";
+import IssueForm from "./pages/Magazine/IssueForm";
+import WatchSeries from "./pages/Watch/WatchSeries";
+import WatchVideos from "./pages/Watch/WatchVideos";
+import EditVideo from "./pages/Watch/EditVideo";
+import DirectoryApplications from "./pages/DirectoryApplications/DirectoryApplications";
+import AddDirectoryListing from "./pages/DirectoryApplications/AddDirectoryListing";
+import EditDirectoryListing from "./pages/DirectoryApplications/EditDirectoryListing";
+import ViewDirectoryApplication from "./pages/DirectoryApplications/ViewDirectoryApplication";
+import AccessPricing from "./pages/AccessPricing/AccessPricing";
+import AccessSubscriptions from "./pages/AccessSubscriptions/AccessSubscriptions";
 
 // Colours come from the tokens in index.css, which index.tsx loads before this module runs.
 const theme = antdTheme();
@@ -103,100 +87,22 @@ function App() {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="/reset-password" element={<ChangePassword />} />
-          <Route path="/users" element={<User />} />
           <Route path="/professionals" element={<Professionals />} />
           <Route
             path="/viewProfessionals/:id"
             element={<ViewProfessionals />}
           />
-
-          <Route path="/viewUser/:id" element={<ViewCustomer />} />
           <Route path="/adminList" element={<AdminUser />} />
           <Route path="/viewAdmin" element={<ViewAdmin />} />
           <Route path="/addAdmin" element={<AddAdmin />} />
 
           <Route path="/loginLogs" element={<LoginLogs />} />
 
-
-
-
-
-          <Route path="/service-categories" element={<ServiceCategory />} />
-          <Route
-            path="/add-service-categories"
-            element={<AddServiceCategory />}
-          />
-          <Route
-            path="/edit-service-categories/:id"
-            element={<EditServiceCategory />}
-          />
-
-
-
-
-
-
-
-
-
           <Route path="/specialities" element={<Specialities />} />
           <Route path="/add-specialities" element={<AddSpecialities />} />
           <Route path="/edit-specialities/:id" element={<EditSpecialities />} />
-          <Route path="/appointments" element={<Appointments />} />
-          <Route path="/posts-list" element={<Posts />} />
-          <Route path="/clips-list" element={<Clips />} />
-
-
-
-
-
-
-
-
-
-
-          <Route path="/viewUserPost/:id" element={<UserPost />} />
-          <Route path="/viewUserFollower/:id" element={<UserFollower />} />
-          <Route path="/viewUserFollowing/:id" element={<UserFollowing />} />
-          <Route path="/viewUserClips/:id" element={<UserClips />} />
-          <Route path="/viewUserPostLikes/:id" element={<PostLiked />} />
-          <Route path="/viewUserPostComment/:id" element={<PostComment />} />
-          <Route path="/viewUserClipsLiked/:id" element={<ClipsLiked />} />
-          <Route
-            path="/viewUserClipsCommented/:id"
-            element={<ClipsCommented />}
-          />
-          <Route path="/viewUserReviewsGiven/:id" element={<ReviewsGiven />} />
-          <Route path="/viewUserReviewsTaken/:id" element={<ReviewsTaken />} />
-          <Route path="/viewUserBookings/:id" element={<UserBookings />} />
-          <Route
-            path="/viewProfessionalBooking/:id"
-            element={<ProfessionalBooking />}
-          />
-          <Route path="/viewUserService/:id" element={<UserService />} />
-          <Route path="/viewAvailability/:id" element={<Availability />} />
-          <Route path="/product-category" element={<ProductCategory />} />
-          <Route
-            path="/edit-product-category/:id"
-            element={<EditProductCategory />}
-          />
-          <Route
-            path="/add-product-category"
-            element={<AddProductCategory />}
-          />
-          <Route path="/product-list" element={<Product />} />
-          <Route path="/view-product/:id" element={<ViewProduct />} />
-          <Route path="/product-rating/:id" element={<Ratings />} />
-          <Route path="/orders" element={<Orders />} />
-
 
           <Route path="/form" element={<ProfessionalForm />} />
-          <Route path="/banner" element={<Banner />} />
-          <Route path="/faqs" element={<Faq />} />
-          <Route path="/createFaq" element={<CreateFaq />} />
-          <Route path="/editFaq/:id" element={<EditFaq />} />
-          <Route path="/referral" element={<Referral />} />
-          <Route path="/reward-rules" element={<RewardRules />} />
           <Route path="/digital-card" element={<BusinessCard />} />
           <Route path="/addBusinessCard" element={<CreateBusinessCard />} />
           <Route path="/editBusinessCard/:id" element={<EditBusinessCard />} />
@@ -233,6 +139,10 @@ function App() {
             element={<EditPodcastSchedule />}
           />
           <Route path="/access-orders" element={<AccessOrders />} />
+          {/* The admin's order email links straight to one order. */}
+          <Route path="/access-orders/:id" element={<AccessOrders />} />
+          <Route path="/access-subscriptions" element={<AccessSubscriptions />} />
+          <Route path="/access-pricing" element={<AccessPricing />} />
           <Route path="/ads" element={<Ads />} />
           <Route path="/add-ad" element={<AddAd />} />
           <Route path="/edit-ad/:id" element={<AddAd />} />
@@ -240,6 +150,24 @@ function App() {
           <Route path="/access-analytics" element={<AccessCardAnalytics />} />
           <Route path="/partner-inquiries" element={<PartnerInquiries />} />
           <Route path="/view-partner-inquiry/:id" element={<ViewPartnerInquiry />} />
+          <Route path="/feature-requests" element={<FeatureRequests />} />
+          <Route path="/newsletter" element={<NewsletterSubscribers />} />
+          <Route path="/home-page" element={<HomeSettings />} />
+          <Route path="/search-terms" element={<SearchTerms />} />
+          <Route path="/pages" element={<ProfilePages />} />
+          <Route path="/pages/new" element={<NewBrandPage />} />
+          <Route path="/pages/:userId" element={<EditProfilePage />} />
+          <Route path="/pages/:userId/analytics" element={<ProfilePageAnalytics />} />
+          <Route path="/magazine" element={<MagazineIssues />} />
+          <Route path="/magazine/add" element={<IssueForm />} />
+          <Route path="/magazine/edit/:id" element={<IssueForm />} />
+          <Route path="/watch/videos" element={<WatchVideos />} />
+          <Route path="/watch/videos/:id" element={<EditVideo />} />
+          <Route path="/watch/series" element={<WatchSeries />} />
+          <Route path="/directory-applications" element={<DirectoryApplications />} />
+          <Route path="/directory-applications/add" element={<AddDirectoryListing />} />
+          <Route path="/directory-applications/edit/:id" element={<EditDirectoryListing />} />
+          <Route path="/directory-applications/:id" element={<ViewDirectoryApplication />} />
         </Route>
       </Routes>
     </Router>

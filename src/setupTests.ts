@@ -26,3 +26,9 @@ window.matchMedia ??= (query: string) => ({
   removeEventListener() {},
   dispatchEvent: () => false,
 });
+// antd tables that scroll sideways (and a few other components) watch their size; jsdom has no ResizeObserver.
+window.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};

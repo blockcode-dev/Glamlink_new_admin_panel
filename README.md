@@ -1,6 +1,8 @@
 # Glamlink Admin Panel
 
-Admin dashboard for Glamlink: users, professionals, access cards, journals, ads, e-commerce and app content.
+Admin panel for the Glamlink website (glamlink.net): professionals and their public pages, Access cards (requests, orders, pricing, subscriptions), the directory and its applications, the journal, magazine, videos and podcast, ads, the home page, and what the website's forms collect.
+
+The website comes first. The mobile app's screens (app users, posts, clips, followers, bookings, services, shop products and orders, referrals and rewards, banners and app FAQs) were removed until the app is rebuilt; they are in git history at `2970239`. What the panel must do for the new API is in the backend's `docs/handoff/admin-panel.md`.
 
 ## Stack
 
@@ -37,6 +39,7 @@ Read at build time from `.env` (see `.env.example`). Only variables prefixed wit
 | `VITE_IMAGE_BASE_URL` | Base URL for uploaded images; production: `https://api.glamlink.net/images/` |
 | `VITE_VIDEO_BASE_URL` | Base URL for uploaded videos; production: `https://api.glamlink.net/videos/` |
 | `VITE_GOOGLE_MAPS_API_KEY` | Google Maps address search and geocoding on the access card forms; the script loads on first use (`src/utils/googleMaps.ts`) |
+| `VITE_WEBSITE_URL` | Optional. The public website, for "view on site" links (`src/utils/website.ts`); defaults to `https://glamlink.net` |
 
 The API only answers browsers on origins it lists (`ACCESSDOMAINS` on the server; production: `https://admin.glamlink.net`). To run the panel locally against it, ask for `http://localhost:3000` to be added.
 
@@ -62,13 +65,16 @@ The ad video cropper uses the browser's own encoder (WebCodecs, through Mediabun
 index.html                Vite entry (loads src/index.tsx)
 src/
   App.tsx                 Routes
-  components/             Shared components (layout, rich-text editor, image cropper)
+  components/             Shared components: layout, rich-text editor, image cropper, and for the newer screens
+                          PageHeader/Panel, AccountSelect (pick professional and brand accounts),
+                          ImageUploadField (upload an image, keep its link), DateRangeFilter
   config/                 Environment, dayjs and the antd theme (built from index.css)
   index.css               The only global stylesheet; every colour token lives here
   pages/                  One folder per admin section
   services/Api/           API calls, one module per backend area, typed with the models in types/
   types/                  API response shapes and domain models (users, journals, access cards, …)
-  utils/                  Shared helpers: API error readers, table state, :id route param
+  utils/                  Shared helpers: API error readers, showFieldError (a refusal's details.field on its
+                          form field), table state, :id route param, CSV export, website links
   setupTests.ts           Vitest setup (jest-dom matchers, jsdom shims)
   vite-env.d.ts           Types for the VITE_* environment variables
 ```

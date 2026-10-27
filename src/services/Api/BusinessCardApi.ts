@@ -7,6 +7,7 @@ import type {
   FeaturedLink,
   FulfillmentUpdate,
 } from "../../types/businessCard";
+import type { OrderRates, VoidedLabel } from "../../types/access";
 
 type Id = number | string;
 
@@ -17,8 +18,11 @@ export const UpdateStatus = async (formData: FormData) => {
   );
 };
 
-export const GetAllBusinessCards = async () => {
-  return await axios.get<ApiResponse<BusinessCard[]>>(BASE_URL + `businessCard/getAllBusinessCards`);
+/** Every card but guest drafts; `status` lists only that status ("draft" lists the drafts). */
+export const GetAllBusinessCards = async (status?: BusinessCard["status"]) => {
+  return await axios.get<ApiResponse<BusinessCard[]>>(BASE_URL + `businessCard/getAllBusinessCards`, {
+    params: status ? { status } : undefined,
+  });
 };
 
 export const DeleteBusinessCard = async (category_id: React.Key[]) => {
@@ -47,8 +51,18 @@ export const UpdateBusinessCard = async (id: Id, formData: FormData) => {
   );
 };
 
+/** A page of orders, newest first, with how many there are in all. */
+export interface AccessOrderPage {
+  data: AccessOrder[];
+  pagination?: { total: number; page: number; limit: number; totalPages: number };
+}
+
+/**
+ * The newest orders. The API reads `page` and `limit` from the request body, which a GET can't carry, so it answers
+ * its first 10 whatever is asked (until it reads the query); `pagination.total` still counts every order.
+ */
 export const GetAllAccessOrders = async (params: { page?: number; limit?: number } = {}) => {
-  return await axios.get<ApiResponse<{ data: AccessOrder[] }>>(BASE_URL + `businessCard/access-orders`, {
+  return await axios.get<ApiResponse<AccessOrderPage>>(BASE_URL + `businessCard/access-orders`, {
     params,
   });
 };
@@ -66,6 +80,28 @@ export const UpdateAccessOrderFulfillment = async (id: Id, formData: Fulfillment
     BASE_URL + `businessCard/access-orders/${id}/fulfillment`,
     formData,
   );
+};
+
+/** Today's Shippo rates for an order's keychain parcel, cheapest first. 400 NOTHING_TO_SHIP for an order with no parcel. */
+export const GetAccessOrderRates = async (id: Id) => {
+  return axios.get<ApiResponse<OrderRates>>(`${BASE_URL}businessCard/access-orders/${id}/rates`);
+};
+
+/**
+ * Buys the order's label: `rateId` (one of today's rates), else the rate chosen at checkout, else today's rate for the
+ * same service (or the cheapest). Answers the order, now processing, with its tracking number and `label_url`.
+ * 409 LABEL_EXISTS; 502 LABEL_FAILED with Shippo's reasons in the message; 400 NOTHING_TO_SHIP or NO_SHIPPING_RATES.
+ */
+export const BuyAccessOrderLabel = async (id: Id, rateId?: string) => {
+  return axios.post<ApiResponse<AccessOrder>>(
+    `${BASE_URL}businessCard/access-orders/${id}/label`,
+    rateId ? { rate_id: rateId } : {},
+  );
+};
+
+/** Voids an unused label (Shippo refunds it); the order goes back to pending. 409 LABEL_IN_USE once it has shipped. */
+export const VoidAccessOrderLabel = async (id: Id) => {
+  return axios.post<ApiResponse<VoidedLabel>>(`${BASE_URL}businessCard/access-orders/${id}/label/void`);
 };
 
 export const ReorderFeaturedLinks = async (

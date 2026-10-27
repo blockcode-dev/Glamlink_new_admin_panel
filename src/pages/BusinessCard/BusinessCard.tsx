@@ -7,6 +7,7 @@ import {
   Modal,
   message,
   Select,
+  Segmented,
   Tag,
   Card,
   Divider,
@@ -62,6 +63,8 @@ const BusinessCard = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<BusinessCard | null>(null);
   const [qrModalOpen, setQrModalOpen] = useState(false);
+  // Live cards, or the guest drafts the API leaves out of the list.
+  const [view, setView] = useState<"cards" | "drafts">("cards");
 
   const openViewModal = (record: BusinessCard) => {
     setSelectedCard(record);
@@ -81,7 +84,7 @@ const BusinessCard = () => {
   const getData = async () => {
     try {
       setLoading(true);
-      let result = await GetAllBusinessCards();
+      let result = await GetAllBusinessCards(view === "drafts" ? "draft" : undefined);
       const newData = result.data.data.map((item, index) => ({
         ...item,
         index: index + 1,
@@ -100,7 +103,7 @@ const BusinessCard = () => {
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [view]);
 
   const handleTableChange: TableChangeHandler<WithIndex<BusinessCard>> = (pagination, filters, sorter) => {
     const { field, order } = singleSorter(sorter);
@@ -350,6 +353,10 @@ const getPurchaseInfo = (record: BusinessCard): PurchaseInfo => {
       dataIndex: "status",
       width: 110,
       render: (status, record) => {
+        // A draft goes live when its guest chooses a plan or pays, not by review.
+        if (status === "draft") {
+          return <Tag style={{ fontSize: 10, padding: "0 5px" }}>DRAFT</Tag>;
+        }
         return (
           <Select
             value={status}
@@ -581,13 +588,15 @@ const getPurchaseInfo = (record: BusinessCard): PurchaseInfo => {
             className="page-title"
             style={{ margin: 0, fontWeight: 700, fontSize: 20 }}
           >
-            Digital Business Cards
+            {view === "drafts" ? "Guest Drafts" : "Digital Business Cards"}
           </h3>
           <p
             className="page-sub-title"
             style={{ margin: "4px 0 0 0", color: "var(--color-text-secondary)", fontSize: 13 }}
           >
-            Review, manage, and approve submitted digital business cards.
+            {view === "drafts"
+              ? "Cards guests started on the website without choosing a plan or paying yet. Each goes live once its guest does."
+              : "Review, manage, and approve submitted digital business cards."}
           </p>
         </div>
 
@@ -597,6 +606,14 @@ const getPurchaseInfo = (record: BusinessCard): PurchaseInfo => {
             alignItems: "center",
             gap: "12px"
           }}>
+          <Segmented
+            value={view}
+            onChange={(value) => setView(value as "cards" | "drafts")}
+            options={[
+              { value: "cards", label: "Cards" },
+              { value: "drafts", label: "Guest drafts" },
+            ]}
+          />
           <Input
             type="search"
             onChange={(e) => onSearch(e.target.value)}

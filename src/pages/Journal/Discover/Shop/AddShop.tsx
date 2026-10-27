@@ -27,6 +27,8 @@ import {
   UpdateJournalTopicShops,
 } from "../../../../services/Api/JournalApi";
 import { apiErrorMessage } from "../../../../utils/apiError";
+import { showFieldError } from "../../../../utils/formErrors";
+import ProductSiteFields, { appendProductSiteFields } from "./ProductSiteFields";
 import type { JournalTopic } from "../../../../types/journal";
 
 const AddShop = () => {
@@ -88,6 +90,7 @@ const AddShop = () => {
 }
       formData.append("link", values.link);
       formData.append("status", status);
+      appendProductSiteFields(formData, values);
 
       if (fileList.length) {
         formData.append(
@@ -154,8 +157,10 @@ const AddShop = () => {
     } catch (error) {
       console.error(error);
 
+      // A taken slug or a wrong owner or brand is refused with details.field.
       message.error(
-        apiErrorMessage(error) ||
+        showFieldError(form, error) ||
+          apiErrorMessage(error) ||
           "Failed to create Shop",
       );
     }
@@ -262,6 +267,8 @@ const AddShop = () => {
               </Select.Option>
             </Select>
           </Form.Item>
+
+          <ProductSiteFields isNew />
 
           {/* ==========================
               TOPICS

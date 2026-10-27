@@ -2,10 +2,11 @@
 
 Tracks the work done against the code and dependency audit of the admin panel ([full audit](https://claude.ai/code/artifact/e5486df6-a77d-4fd4-abc6-0030334b5224)). The audit was taken at commit `4ebfc15` on `main`.
 
-- **Branch:** `refactor/one-library-per-job`. All work below is **uncommitted** on this branch.
-- **Status as of:** 2026-10-15.
+- **Branch:** `main`. Passes 1–9 are committed (`2970239`); pass 10 is **uncommitted**.
+- **Status as of:** 2026-10-28.
 - **Backend questions:** security items that need a server change or answer are collected in [Admin panel security: backend changes and questions](https://claude.ai/code/artifact/7cf1fb80-6241-4282-b8a6-9966c6290ed9). The panel side of those items waits for its answers.
-- **Not yet done:** a manual pass in a real browser. Build, tests and lint pass, and every route renders in the test environment, but nobody has clicked through the app since these changes.
+- **Backend requests (pass 10):** [Glamlink Backend Requests — Admin Panel](https://claude.ai/artifact/Qb8i2fdiYQAN6TNMUG86KY): what the backend should change, with a status per row (the findings table in pass 10, kept up to date there).
+- **Not yet done:** a manual pass in a real browser, against the new API. Build, tests and lint pass, and every route renders in the test environment, but nobody has clicked through the app since these changes; the screens of pass 10 have never met a real API.
 
 ## At a glance
 
@@ -15,13 +16,13 @@ Tracks the work done against the code and dependency audit of the admin panel ([
 | `npm audit` | 143 advisories (4 critical, 45 high) | 0 |
 | Packages in lockfile | 1,739 | 363 |
 | Direct dependencies | 41 (no dev dependencies) | 28 + 14 dev |
-| Production JS | 6.2 MB (1.62 MB gzipped), one file | 2.85 MB (852 KB gzipped), still one file |
+| Production JS | 6.2 MB (1.62 MB gzipped), one file | 2.91 MB (891 KB gzipped), still one file |
 | UI kits / icon sets | 5 / 5 | 1 / 1 (antd, `@ant-design/icons`) |
 | Jobs done by two or more libraries | 10 | 0 |
 | Routes unreachable from the UI | 29 | 0 (deleted) |
 | `console.*` calls | 320 (including credential logging) | 222 in the source, all `console.error` / `console.warn`; none in production builds |
-| Tests | None | 51 (Vitest) |
-| Lint | ESLint (CRA): 51 hook-dependency and 14 anchor warnings | oxlint: 0 errors; 60 warnings (42 hook deps, 14 anchors, 4 missing keys) |
+| Tests | None | 153 in 32 files (Vitest) |
+| Lint | ESLint (CRA): 51 hook-dependency and 14 anchor warnings | oxlint: 0 errors; 16 warnings (14 hook deps, 1 anchor, 1 missing key), all in older files |
 | Colour literals outside the global stylesheet | 876 in 71 files (266 distinct values) | 0, enforced by a test; card-data swatches excepted |
 | Language | JavaScript | TypeScript, `strict` mode, 0 type errors; the build fails on a type error |
 
@@ -226,6 +227,60 @@ The backend answered every question in the [backend questions doc](https://claud
   - The 26 double-slash URLs (`/api/v1//journal/topic`) are fixed.
   - `.env.example` holds the new API's URLs; the README says the API only answers listed origins (local dev needs `http://localhost:3000` added).
 
+### 10. Website first, and the new API's admin screens (Oct 28)
+
+The backend's handoff note (`glamlink-backend/docs/handoff/admin-panel.md`) lists what the panel must and can do for the new API; the website comes first, the app in about three months. This pass removes the app's screens and builds the website's.
+
+**Removed: the mobile app's screens.** The backend files these under `src/mobile/`, and the website signs in professional accounts only (`user` accounts are the app's). All restorable from `2970239`.
+
+- Users (app accounts) and their detail screen with its 14 activity tabs (posts, clips, likes, comments, followers, following, reviews, bookings, services, availability).
+- Posts, Clips, Appointments, Service Categories, Banner, app FAQs (`/faq`; the journal's FAQs stay), Referrals, Glam Rewards Rules, and Ecommerce (product categories, products, ratings, orders).
+- On Professionals: the referral column, promotions and payouts. The founder badge stays (the website shows it).
+- The old dashboard: every number on it was the app's (posts, clips, likes, bookings, time slots).
+- 8 API modules, the social and e-commerce types, and the app fields of the user types. `Customer/Alert` moved to `components/DeleteConfirmButton`, `AccountFields` to `Professionals/`.
+
+**New screens** (sidebar groups in brackets):
+
+| Screen | Route | Handoff section |
+| --- | --- | --- |
+| Dashboard: work waiting, what is live, the last 30 days, inquiries, searches | `/` | (replaces the app's) |
+| Profile Pages: list, edit, new brand page, claim email, analytics | `/pages`, `/pages/new`, `/pages/:userId`, `/pages/:userId/analytics` | 8.6, 8.13 |
+| Directory Applications: list by status, view, approve (or as a brand), reject, edit, add, delete; badge | `/directory-applications…` | 8.5 |
+| [Inquiries] Feature Requests, Newsletter (search, source, CSV export, delete) | `/feature-requests`, `/newsletter` | 8.4 |
+| [Access Cards] Subscriptions (cancel, complimentary Pro) and Pricing (plans, prices with history, discounts, personal prices, settings and entitlements) | `/access-subscriptions`, `/access-pricing` | 7.1, 7.2 |
+| [Media] Magazine (issues, their people), Videos (import a link, import playlists, people, topics), Video Series | `/magazine…`, `/watch/videos…`, `/watch/series` | 8.8, 8.9 |
+| [Website] Home Page (hero and Find-a-Professional images, popular searches), Search Terms (most searched, found nothing) | `/home-page`, `/search-terms` | 8.2, 8.10 |
+
+**Changed screens:**
+
+- **Access orders:** buy a label (a rate picker), print, void, tracking; Access Pro-only orders say "Nothing to ship"; `/access-orders/:id` opens one order (the admin's order email links there).
+- **Card requests:** a "Guest drafts" view (`?status=draft`); a draft's status shows as a tag, not a select.
+- **Articles:** "Featured (Journal hero)"; after saving, the @handles that match no one; a "Featured people" panel (add, set aside, remove); a taken slug shows on its field.
+- **Journal categories:** sidebar order, description, published article count.
+- **Topics:** "Show on the home page", tile order and square tile image; a Home Page column on the list.
+- **Shop products:** slug, the page's longer description, owner and brand pickers, "Featured on the home page" and its order; a deleted product (or education item, or event) says so instead of failing.
+- **Ads:** views, clicks and click rate on the list for a date range; per-day numbers on an ad's page.
+- **Professional view:** the app activity card became "On the website" (page shown or why not, address, Access card, listing, topics, links to edit the page and its analytics); an empty profession shows nothing (it used to default to "Esthetician").
+- **Sidebar:** grouped; the current page is highlighted and its group opens; group keys can't clash with routes; badges for applicant forms and directory applications, re-counted on each change of page. "Directory" is now "Directory Sections" (it edits the directory's sections; applications are separate).
+
+**Shared pieces for these screens:** `components/PageHeader` (with `Panel`), `components/AccountSelect` (professional and brand accounts, by name, from the pages list), `components/ImageUploadField` (uploads through `POST /journal/upload`, keeps the link the API wants), `components/DateRangeFilter`, `utils/formErrors` (`showFieldError`: a refusal's `details.field` on its form field), `utils/money`, `utils/website` with the optional `VITE_WEBSITE_URL`, and `utils/compressImage` (shared with the image cropper).
+
+**Fixed on the way:** the Specialities "view user" arrow (a broken route, and the API answers profile ids, not account ids: removed) and its "Number of Services" column (it counts professionals), "Failed to load education" on the event screen, the Professionals CSV export (now escaped like the others), the app-only "Welcome Melanie".
+
+**Backend findings** (the panel works around each; each is worth a backend change). They are tracked for the backend, with smaller notes and server steps, in [Glamlink Backend Requests — Admin Panel](https://claude.ai/artifact/Qb8i2fdiYQAN6TNMUG86KY):
+
+| Finding | Effect | Panel today |
+| --- | --- | --- |
+| `GET /businessCard/access-orders` reads `page`, `limit`, `search` and the status filters from `req.body`, which a GET has none of | The panel only ever gets the newest 10 orders | Says "the newest 10 of N"; asks for 200, which works once the API reads the query |
+| The magazine's admin view has no raw `publuu_*` / `flipbook_url` fields, only the built `flipbook` | Saving an issue that has both a link and Publuu ids (or one id) clears what the form can't show | Sends what it shows |
+| `social: []` on a page is stored as "no links", hiding the card's | The website's own owner editor sends `"[]"`, so an owner who clears their links hides the card's | Sends `null` for an empty list |
+| `GET /profiles/admin/:userId` doesn't say whether the account is `claimed` | The page screen can't tell if a claim email is needed | Takes it from the list; a 409 ALREADY_CLAIMED hides the button |
+| Subscription rows hold `user_id` only | No name or email in the list | Looks each account up once (at most 20 a page) |
+| Approving a directory application saves the status before making the account | If making the account fails, it stays "approved" with no account | Reloads after a failed review; approving again retries |
+| Analytics dates are checked against the database's "today" | An admin ahead of the server's day is refused for "today" | Leaves out a `to` of today or later |
+| `PUT /journalCategory/:id` sets `description` only when it isn't empty | A category's description can't be cleared | (nothing) |
+| The 14 seeded magazine covers are still on glamlink.net until `npm run magazine:covers` runs; the API refuses a cover not on its host | Sending the cover back unchanged would fail every save | Sends the cover only when it changed |
+
 **Still in use but unmaintained:** browser-image-compression has had no release since March 2023. It does real work: it shrinks photos to at most 2000 px before cropping. Replace it with a small in-house resize helper when convenient.
 
 ## Status against the audit
@@ -305,28 +360,28 @@ The version mismatches and duplicate copies are gone: Bootstrap CSS/JS is remove
 
 | Where | Problem | Status |
 | --- | --- | --- |
-| `Specialities.tsx:336` | Links to `/view-user/:id`; the route is `/viewUser/:id` | **Open** |
-| `/view-order/:id`, `ViewOrder.tsx` | The route rendered ViewOrder with no id; `onClose` is never called | **Partly**: route deleted, and the drawer no longer requests `getOrderById/null` on load; ViewOrder still never calls `onClose`, so the order list doesn't refresh after an edit |
+| `Specialities.tsx:336` | Links to `/view-user/:id`; the route is `/viewUser/:id` | **Done** (pass 10): removed; the API lists profile ids, not account ids, so there is no account to open |
+| `/view-order/:id`, `ViewOrder.tsx` | The route rendered ViewOrder with no id; `onClose` is never called | **Gone** (pass 10): the app's orders screens are removed |
 | `Banner.tsx`, `ProfessionalForm.tsx`, `Product.tsx` | Sorter reads `a.user_profile.name` | **Done** (TypeScript migration): each now sorts by the name its column shows |
-| `Specialities.tsx`, `ProductCategory.tsx` | Stale `tableParams.pagination.current` overwrites the requested page | **Open** |
+| `Specialities.tsx`, `ProductCategory.tsx` | Stale `tableParams.pagination.current` overwrites the requested page | **Open** in Specialities; ProductCategory is gone (pass 10) |
 | `Orders.tsx` | Search reads a different path than the column shows | **Done** (TypeScript migration): searches the customer name the table shows |
 | `MainLayout.tsx:104,120` | Badge counts requested without the token | **Done** (security pass) |
 | `MainLayout.tsx` | Profile and counts fetched on mount, before login | **Done** (security pass): they load once signed in |
 | `MainLayout.tsx:70,87` | Expired session keeps the token | **Done** (security pass): cleared by the global handler |
-| `MainLayout.tsx:168` and menu items | `defaultSelectedKeys={[""]}`; parent and child share keys `/journals`, `/podcast-schedule`, `/product-category` | **Open** (the "Duplicated key" warning still logs) |
+| `MainLayout.tsx:168` and menu items | `defaultSelectedKeys={[""]}`; parent and child share keys `/journals`, `/podcast-schedule`, `/product-category` | **Done** (pass 10): groups have their own keys, and the current page is selected |
 | `Login.tsx:33` | `error.response.data` read without a guard | **Done**: errors are read through `apiErrorMessage`; unknown errors now show a message, and a missing token is refused (security pass) |
-| `Dashboard.tsx:433` | Professionals chart uses `period`, not `professionalPeriod` | **Open** |
-| `Dashboard.tsx:1243,1280` | Dropdowns default to "week"; state starts at "today" | **Open** |
-| `Dashboard.tsx:96` | Y-axis `max: 50` cuts off larger values | **Open** |
-| `Dashboard.tsx:1081` | `rowKey="course_id"`, a field the rows lack | **Open** |
-| `User.tsx:106,174` | Sort fields look swapped; search covers only the current page | **Open** |
+| `Dashboard.tsx:433` | Professionals chart uses `period`, not `professionalPeriod` | **Gone** (pass 10): the dashboard was rebuilt for the website |
+| `Dashboard.tsx:1243,1280` | Dropdowns default to "week"; state starts at "today" | **Gone** (pass 10) |
+| `Dashboard.tsx:96` | Y-axis `max: 50` cuts off larger values | **Gone** (pass 10) |
+| `Dashboard.tsx:1081` | `rowKey="course_id"`, a field the rows lack | **Gone** (pass 10) |
+| `User.tsx:106,174` | Sort fields look swapped; search covers only the current page | **Gone** (pass 10): the app users screen is removed |
 | `AddAdmin` | "Select Role" option could submit `role_id = NaN` | **Done** (now an antd Select with a placeholder) |
 | 7 files | antd props passed to PrimeReact buttons | **Done** (PrimeReact removed) |
 | `AdminUser.tsx` | `<div s>` typo | **Done** |
-| Missing React keys (6 places) | | **Partly**: 2 were on deleted pages; `CreateBusinessCard.tsx:1193` and 3 in `Professionals.tsx` remain |
-| `AppointmentsApi.ts`, `ClipsApi.ts`, `PostApi.ts` | `timezone: "Asia/Kolkata"` hard-coded | **Open** |
-| `DashboardApi.ts:16,22` | `BASE_URL + "/admin/..."` gives `//admin` | **Open** |
-| `Product.tsx:319` | Effect depends on `[tableParams]`; every sort or page click refetches everything | **Open** |
+| Missing React keys (6 places) | | **Partly**: `CreateBusinessCard.tsx:1193` remains; the rest went with deleted pages and modals |
+| `AppointmentsApi.ts`, `ClipsApi.ts`, `PostApi.ts` | `timezone: "Asia/Kolkata"` hard-coded | **Gone** (pass 10) |
+| `DashboardApi.ts:16,22` | `BASE_URL + "/admin/..."` gives `//admin` | **Gone** (pass 10) |
+| `Product.tsx:319` | Effect depends on `[tableParams]`; every sort or page click refetches everything | **Gone** (pass 10) |
 | `Banner.tsx` | Redirects to six routes that don't exist here | **Done** (removed) |
 
 ### Mismatched UI
@@ -336,12 +391,12 @@ The version mismatches and duplicate copies are gone: Bootstrap CSS/JS is remove
 | Several kits on one screen | **Done** | antd everywhere |
 | No shared theme; several brand-teal shades and blues | **Done** | One palette in `index.css` and an app-wide antd theme built from it (pass 8); a test keeps colour literals out of every other file |
 | 15 date display formats | **Open** | Still 15, including both `DD/MM/YYYY` and `MM/DD/YYYY` |
-| "Welcome Melanie", "Employee(s) deleted", "Number of Services", two "Status" columns in Products, Change Password at `/reset-password` | **Open** | All five unchanged |
-| Current page never highlighted | **Open** | |
+| "Welcome Melanie", "Employee(s) deleted", "Number of Services", two "Status" columns in Products, Change Password at `/reset-password` | **Partly** | Pass 10: the greeting went with the old dashboard, the Products columns with the app's screens, and Specialities' count is titled "Professionals"; "Employee(s)" (a log line on Professionals) and `/reset-password` remain |
+| Current page never highlighted | **Done** | Pass 10: the sidebar selects the current page (and the item a sub-page belongs to) and opens its group |
 | Scrollbars hidden (`index.css`, `MainLayout.scss`) | **Open** | |
 | Header menu needs Bootstrap JS; `<li>` in a `<div>`; "Sign Out" link without `to` | **Done** | antd Dropdown |
 | Banner row checkboxes with no bulk action | **Done** | Removed |
-| Orders shows plain "Loading..." text | **Open** | `Orders.tsx:157` |
+| Orders shows plain "Loading..." text | **Gone** | The app's orders screen is removed (pass 10) |
 | Deprecated antd props (`visible`, `bodyStyle`) | **Done** | Part of the antd 6 migration |
 | 14 `<a>` elements without `href` | **Open** | Lint reports 14 `anchor-is-valid` warnings |
 
@@ -417,21 +472,15 @@ Strict typing flagged code that reads fields that don't exist, passes arguments 
 
 ## Suggested next steps
 
-1. **Browser QA of this branch.** Nothing has been clicked through since the migration. Priorities:
+1. **Browser QA against the new API** (its testing mode). Nothing has been clicked through since the migration, and the screens of pass 10 have only run in tests. Priorities:
+   - the new screens, with real data: pricing and subscriptions (Stripe test keys), buying and voiding a label (Shippo test keys), approving a directory application, importing a YouTube link;
    - visual changes from antd 6;
    - the small fixes listed in [Found during the TypeScript migration](#found-during-the-typescript-migration);
    - the modals and drawer listed in pass 5;
-   - video previews;
-   - the rich-text editor on the journal pages;
-   - image cropping.
-2. **Security, backend side.** The panel's own fixes are done (pass 7). The rest waits on answers in the [backend questions doc](https://claude.ai/code/artifact/7cf1fb80-6241-4282-b8a6-9966c6290ed9):
-   - server auth on the 122 endpoints called without a token (40 change data); this is the most urgent item;
-   - one header scheme, then one shared axios client that attaches the token to every request;
-   - 401 vs 403, so the panel can log out on 401;
-   - token lifetime, revocation, login rate limiting, and maybe httpOnly cookies;
-   - a new, restricted Maps key and security headers on the panel's host.
-3. **Route-level lazy loading**, to get the 852 KB gzipped bundle off the login path.
-4. **The 11 open bugs** in the broken-code table, plus the "kept as-is" items found during the TypeScript migration.
+   - video previews, the rich-text editor on the journal pages, image cropping.
+2. **Backend changes from pass 10's findings** (the table in pass 10), first the access orders list reading its paging from the query.
+3. **Route-level lazy loading**, to get the 891 KB gzipped bundle off the login path.
+4. **The open bugs** in the broken-code table, plus the "kept as-is" items found during the TypeScript migration.
 5. **Date format:** a single date-format helper (the theme is done, pass 8). Font sizes, spacing and radii are still written per file; tokens for them would be the next step after colour.
 6. **Housekeeping:**
    - fix the misspelled file names;
